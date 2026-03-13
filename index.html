@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NUTRI-VEG | Wellness Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <div id="setup-screen" class="organic-panel">
+        <header>
+            <h1>NUTRI<span>-ME</span></h1>
+            <p>Guida Nutrizionale Avanzata</p>
+        </header>
+        <div class="input-grid">
+            <div class="row">
+                <input type="number" id="eta" placeholder="Età">
+                <input type="number" id="altezza" placeholder="cm">
+                <input type="number" id="peso" placeholder="kg">
+            </div>
+            <select id="sesso">
+                <option value="uomo">Maschio</option>
+                <option value="donna">Femmina</option>
+            </select>
+            <select id="attivita">
+                <option value="1.2">Sedentario</option>
+                <option value="1.4">Leggera Attività</option>
+                <option value="1.6">Attivo (3-5 workout)</option>
+                <option value="1.9">Elite (Agonista)</option>
+            </select>
+            <select id="obiettivo">
+                <option value="-500">Deficit Hard (-500 kcal)</option>
+                <option value="-250">Deficit Soft (-250 kcal)</option>
+                <option value="0">Mantenimento</option>
+                <option value="300">Surplus Massa (+300 kcal)</option>
+            </select>
+        </div>
+        <button onclick="salvaProfilo()" class="btn-green">INIZIA</button>
+    </div>
+
+    <main id="main-app" style="display:none;">
+        <nav class="top-nav">
+            <button onclick="mostraSezione('home')">DASHBOARD</button>
+            <button onclick="mostraSezione('diario')">DIARIO</button>
+            <button onclick="mostraSezione('pasti-rapidi')">LE MIE RICETTE</button>
+            <button onclick="logout()" class="reset-link">LOGOUT</button>
+        </nav>
+
+        <section id="home" class="tab-content">
+            <div class="status-card">
+                <div class="chart-box">
+                    <canvas id="mainChart"></canvas>
+                    <div class="chart-label">
+                        <span id="kcalLeft">0</span>
+                        <small>KCAL RIMANENTI</small>
+                    </div>
+                </div>
+                <div class="macro-display">
+                    <div class="m-card p-border"><span>PRO</span><strong id="val-p">0g</strong></div>
+                    <div class="m-card c-border"><span>CARB</span><strong id="val-c">0g</strong></div>
+                    <div class="m-card f-border"><span>FAT</span><strong id="val-g">0g</strong></div>
+                </div>
+            </div>
+
+            <div class="micro-panel">
+                <h3>MICRONUTRIENTI (Giorno Selezionato)</h3>
+                <div class="micro-grid">
+                    <div class="micro-item">
+                        <div class="micro-label"><span>Ferro</span><small id="txt-fe">0/14mg</small></div>
+                        <div class="bar"><div id="bar-ferro" style="width:0%"></div></div>
+                    </div>
+                    <div class="micro-item">
+                        <div class="micro-label"><span>Calcio</span><small id="txt-ca">0/1000mg</small></div>
+                        <div class="bar"><div id="bar-calcio" style="width:0%"></div></div>
+                    </div>
+                    <div class="micro-item">
+                        <div class="micro-label"><span>Vit. B12</span><small id="txt-b12">0/2.4µg</small></div>
+                        <div class="bar"><div id="bar-b12" style="width:0%"></div></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="diario" class="tab-content" style="display:none;">
+            <div class="calendar-container">
+                <div class="calendar-nav">
+                    <button onclick="cambiaMese(-1)">&lt;</button>
+                    <span id="currentMonthYear"></span>
+                    <button onclick="cambiaMese(1)">&gt;</button>
+                </div>
+                <div id="calendar-grid" class="calendar-grid-small"></div>
+            </div>
+
+            <div class="log-panel">
+                <div class="date-header"><h2 id="date-title-pretty">Oggi</h2></div>
+                <div class="search-engine">
+                    <input type="text" id="food-search" placeholder="Cerca tra centinaia di alimenti..." oninput="cercaAlimento(event, 'diario')">
+                    <div id="search-results" class="results-overlay"></div>
+                </div>
+                <div class="meal-chips">
+                    <button class="chip" onclick="selectMealType('Colazione')">Colazione</button>
+                    <button class="chip" onclick="selectMealType('Pranzo')">Pranzo</button>
+                    <button class="chip" onclick="selectMealType('Cena')">Cena</button>
+                    <button class="chip" onclick="selectMealType('Spuntino')">Spuntino</button>
+                </div>
+                <div id="add-panel" class="quick-add" style="display:none;">
+                    <div class="selected-info">
+                        <span id="selected-meal-label" class="meal-tag">Pasto</span>
+                        <span id="selected-name">ALIMENTO</span>
+                    </div>
+                    <div class="add-row">
+                        <input type="number" id="qty" value="100">
+                        <button onclick="salvaPasto()" class="btn-green">AGGIUNGI</button>
+                    </div>
+                </div>
+                <ul id="day-log-list" class="entry-list"></ul>
+            </div>
+        </section>
+
+        <section id="pasti-rapidi" class="tab-content" style="display:none;">
+            <div class="organic-panel" style="max-width: 100%;">
+                <h3>CREA NUOVA RICETTA</h3>
+                <input type="text" id="recipe-name" placeholder="Nome della Ricetta (es. Lasagna Veg)">
+                
+                <div class="search-engine">
+                    <input type="text" id="recipe-food-search" placeholder="Aggiungi ingrediente..." oninput="cercaAlimento(event, 'ricetta')">
+                    <div id="recipe-search-results" class="results-overlay"></div>
+                </div>
+
+                <div id="recipe-add-panel" class="quick-add" style="display:none; background: #f0fdf4; padding: 10px; border-radius: 10px; margin: 10px 0;">
+                    <span id="recipe-selected-name" style="font-weight: bold;"></span>
+                    <div class="add-row">
+                        <input type="number" id="recipe-qty" value="100">
+                        <button onclick="aggiungiIngredienteRicetta()" class="btn-green" style="width: auto;">+</button>
+                    </div>
+                </div>
+
+                <ul id="current-recipe-items" class="entry-list"></ul>
+
+                <div id="recipe-summary" class="micro-panel" style="background: #eee; border-radius: 10px; margin-top: 10px; display: none;">
+                    <strong>Totale Ricetta:</strong>
+                    <div id="recipe-totals-text" style="font-size: 0.8rem;"></div>
+                </div>
+
+                <button onclick="salvaRicettaDefinitiva()" class="btn-orange">SALVA NEI MIEI PIATTI</button>
+                
+                <hr>
+                <h3>LE MIE RICETTE SALVATE</h3>
+                <ul id="preset-list" class="entry-list"></ul>
+            </div>
+        </section>
+    </main>
+    <script src="script.js"></script>
+</body>
+</html>
