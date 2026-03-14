@@ -3,156 +3,348 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NUTRI-VEG | Wellness Tracker</title>
+    <title>NUTRI-VEG | Premium Wellness</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
-    <div id="setup-screen" class="organic-panel">
-        <header>
-            <h1>NUTRI<span>-ME</span></h1>
-            <p>Guida Nutrizionale Avanzata</p>
-        </header>
-        <div class="input-grid">
-            <div class="row">
-                <input type="number" id="eta" placeholder="Età">
-                <input type="number" id="altezza" placeholder="cm">
-                <input type="number" id="peso" placeholder="kg">
+    <div id="setup-screen" class="organic-panel welcome-card">
+        <header class="welcome-header">
+            <div class="brand-logo" aria-label="Nutri-Me">
+                <svg width="220" height="56" viewBox="0 0 220 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="g1" x1="0" y1="0" x2="1" y2="0">
+                            <stop offset="0%" stop-color="#00C0B2" />
+                            <stop offset="100%" stop-color="#00A9D6" />
+                        </linearGradient>
+                    </defs>
+                    <text x="0" y="38" font-family="'Poppins', sans-serif" font-weight="800" font-size="44" fill="url(#g1)">NUTRI-ME</text>
+                </svg>
             </div>
-            <select id="sesso">
-                <option value="uomo">Maschio</option>
-                <option value="donna">Femmina</option>
-            </select>
-            <select id="attivita">
-                <option value="1.2">Sedentario</option>
-                <option value="1.4">Leggera Attività</option>
-                <option value="1.6">Attivo (3-5 workout)</option>
-                <option value="1.9">Elite (Agonista)</option>
-            </select>
-            <select id="obiettivo">
-                <option value="-500">Deficit Hard (-500 kcal)</option>
-                <option value="-250">Deficit Soft (-250 kcal)</option>
-                <option value="0">Mantenimento</option>
-                <option value="300">Surplus Massa (+300 kcal)</option>
-            </select>
+        </header>
+
+        <div class="progress-container"><div class="progress-bar-fill" id="wizard-progress"></div></div>
+
+        <div class="setup-wizard" id="setup-wizard">
+            <div class="wizard-step active" data-step="1">
+                <label>Username</label>
+                <input type="text" id="username" placeholder="Inserisci il tuo username" />
+                <label>Sesso</label>
+                <select id="user-sex">
+                    <option value="">Seleziona</option>
+                    <option value="donna">Donna</option>
+                    <option value="uomo">Uomo</option>
+                    <option value="neutro">Altro/Preferisco non specificare</option>
+                </select>
+            </div>
+
+            <div class="wizard-step" data-step="2">
+                <label>Età</label>
+                <input type="number" id="wizard-age" placeholder="Età" min="8" max="120" />
+                <label>Peso (kg)</label>
+                <input type="number" id="wizard-weight" placeholder="Peso in kg" min="20" max="300" />
+            </div>
+
+            <div class="wizard-step" data-step="3">
+                <label>Altezza (cm)</label>
+                <input type="number" id="wizard-height" placeholder="Altezza in cm" min="80" max="250" />
+            </div>
+
+            <div class="wizard-step" data-step="4">
+                <label>Tipo di lavoro</label>
+                <select id="wizard-job">
+                    <option value="">Seleziona</option>
+                    <option value="sedentario">Sedentario</option>
+                    <option value="moderato">Moderato</option>
+                    <option value="attivo">Attivo</option>
+                </select>
+            </div>
+
+            <div class="wizard-step" data-step="5">
+                <label>Quante volte ti alleni a settimana?</label>
+                <input type="number" id="wizard-workouts" placeholder="Numero allenamenti" min="0" max="14" />
+            </div>
+
+            <div class="wizard-step" data-step="6">
+                <label>Obiettivo</label>
+                <select id="wizard-goal">
+                    <option value="">Seleziona</option>
+                    <option value="dimagrire">Dimagrire</option>
+                    <option value="mantenere">Mantenere</option>
+                    <option value="massa">Massa</option>
+                </select>
+            </div>
+
+            <div class="wizard-step" data-step="7">
+                <label>Regime alimentare specifico</label>
+                <input type="text" id="wizard-diet" placeholder="Es. vegetariano, vegano, paleo" />
+            </div>
+
+            <div class="wizard-step" data-step="8">
+                <label>Allergie</label>
+                <input type="text" id="wizard-allergies" placeholder="Es. lattosio, glutine" />
+            </div>
+
+            <div class="wizard-step" data-step="9">
+                <label>Intolleranze</label>
+                <input type="text" id="wizard-intolerances" placeholder="Es. frutta secca, uova" />
+            </div>
+
+            <div class="wizard-step" data-step="10">
+                <label>Pasti giornalieri</label>
+                <input type="number" id="wizard-meals" placeholder="Numero pasti" min="1" max="10" />
+            </div>
+
+            <div class="wizard-step" data-step="11">
+                <label>Punto debole</label>
+                <input type="text" id="wizard-weakpoint" placeholder="Es. sonnolenza post pranzo" />
+            </div>
+
+            <div class="wizard-step" data-step="12">
+                <label>Quanta acqua bevi solitamente? (L)</label>
+                <input type="number" id="wizard-water" placeholder="Litri d'acqua al giorno" step="0.1" min="0" max="10" />
+            </div>
         </div>
-        <button onclick="salvaProfilo()" class="btn-green">INIZIA</button>
+
+        <div class="wizard-controls">
+            <button class="btn-secondary" id="prev-btn" onclick="prevStep()" disabled>Indietro</button>
+            <button class="btn-secondary" id="skip-btn" onclick="skipStep()" style="display:none;">Skip</button>
+            <button class="btn-main" id="next-btn" onclick="nextStep()">Avanti</button>
+        </div>
     </div>
 
     <main id="main-app" style="display:none;">
-        <nav class="top-nav">
-            <button onclick="mostraSezione('home')">DASHBOARD</button>
-            <button onclick="mostraSezione('diario')">DIARIO</button>
-            <button onclick="mostraSezione('pasti-rapidi')">LE MIE RICETTE</button>
-            <button onclick="logout()" class="reset-link">LOGOUT</button>
+        <nav class="bottom-nav">
+            <button onclick="mostraSezione('home')" class="nav-item">
+                <div class="icon">📊</div><span>Home</span>
+            </button>
+            <button onclick="mostraSezione('diario')" class="nav-item">
+                <div class="icon">📅</div><span>Diario</span>
+            </button>
+            <button onclick="mostraSezione('pasti-rapidi')" class="nav-item">
+                <div class="icon">🍳</div><span>Ricette</span>
+            </button>
+            <button onclick="logout()" class="nav-item logout">
+                <div class="icon">🚪</div><span>Esci</span>
+            </button>
         </nav>
 
         <section id="home" class="tab-content">
-            <div class="status-card">
-                <div class="chart-box">
-                    <canvas id="mainChart"></canvas>
-                    <div class="chart-label">
-                        <span id="kcalLeft">0</span>
-                        <small>KCAL RIMANENTI</small>
+            <div id="home-screen" class="screen active">
+                <header class="dash-header">
+                    <div>
+                        <h1>Dashboard</h1>
+                        <p id="current-date">Venerdì, 22 Nov</p>
                     </div>
-                </div>
-                <div class="macro-display">
-                    <div class="m-card p-border"><span>PRO</span><strong id="val-p">0g</strong></div>
-                    <div class="m-card c-border"><span>CARB</span><strong id="val-c">0g</strong></div>
-                    <div class="m-card f-border"><span>FAT</span><strong id="val-g">0g</strong></div>
-                </div>
-            </div>
+                    <div class="profile-badge">
+                        <img src="https://via.placeholder.com/40" alt="Profilo">
+                    </div>
+                </header>
 
-            <div class="micro-panel">
-                <h3>MICRONUTRIENTI (Giorno Selezionato)</h3>
-                <div class="micro-grid">
-                    <div class="micro-item">
-                        <div class="micro-label"><span>Ferro</span><small id="txt-fe">0/14mg</small></div>
-                        <div class="bar"><div id="bar-ferro" style="width:0%"></div></div>
+                <div class="organic-panel main-chart-card">
+                    <div class="chart-container">
+                        <canvas id="kcalChart"></canvas>
+                        <div class="chart-center-text">
+                            <span id="center-kcal-value">0</span>
+                            <small>kcal rimaste</small>
+                        </div>
                     </div>
-                    <div class="micro-item">
-                        <div class="micro-label"><span>Calcio</span><small id="txt-ca">0/1000mg</small></div>
-                        <div class="bar"><div id="bar-calcio" style="width:0%"></div></div>
+                    <div class="kcal-details">
+                        <div class="kcal-item">
+                            <span class="dot consumate"></span>
+                            <p>Consumate <strong id="home-kcal-intake">0 kcal</strong></p>
+                        </div>
+                        <div class="kcal-item">
+                            <span class="dot obiettivo"></span>
+                            <p>Obiettivo <strong id="home-kcal-goal">2200 kcal</strong></p>
+                        </div>
                     </div>
-                    <div class="micro-item">
-                        <div class="micro-label"><span>Vit. B12</span><small id="txt-b12">0/2.4µg</small></div>
-                        <div class="bar"><div id="bar-b12" style="width:0%"></div></div>
+                </div>
+
+                <div class="macros-grid">
+                    <div class="macro-card carb">
+                        <div class="macro-info">
+                            <label>Carboidrati</label>
+                            <span id="home-carb">0/0 g</span>
+                        </div>
+                        <div class="progress-bar"><div id="bar-carb" style="width: 0%"></div></div>
+                    </div>
+                    <div class="macro-card prot">
+                        <div class="macro-info">
+                            <label>Proteine</label>
+                            <span id="home-prot">0/0 g</span>
+                        </div>
+                        <div class="progress-bar"><div id="bar-prot" style="width: 0%"></div></div>
+                    </div>
+                    <div class="macro-card fat">
+                        <div class="macro-info">
+                            <label>Grassi</label>
+                            <span id="home-fat">0/0 g</span>
+                        </div>
+                        <div class="progress-bar"><div id="bar-fat" style="width: 0%"></div></div>
+                    </div>
+                </div>
+
+                <div class="micro-targets">
+                    <h3>Target Micronutrienti</h3>
+
+                    <div class="micro-row">
+                        <div class="micro-row-top">
+                            <div class="micro-row-title"><span>💧</span><span>Acqua</span></div>
+                            <strong id="val-water">0.0 / 7000 ml</strong>
+                        </div>
+                        <div class="micro-progress"><div id="bar-water" style="width:0%"></div></div>
+                    </div>
+
+                    <div class="micro-row">
+                        <div class="micro-row-top">
+                            <div class="micro-row-title"><span>🩸</span><span>Ferro</span></div>
+                            <strong id="val-fe">0 / 14 mg</strong>
+                        </div>
+                        <div class="micro-progress"><div id="bar-fe" style="width:0%"></div></div>
+                    </div>
+
+                    <div class="micro-row">
+                        <div class="micro-row-top">
+                            <div class="micro-row-title"><span>🥛</span><span>Calcio</span></div>
+                            <strong id="val-ca">0 / 1000 mg</strong>
+                        </div>
+                        <div class="micro-progress"><div id="bar-ca" style="width:0%"></div></div>
+                    </div>
+
+                    <div class="micro-row">
+                        <div class="micro-row-top">
+                            <div class="micro-row-title"><span>🧪</span><span>Magnesio</span></div>
+                            <strong id="val-mg">0 / 300 mg</strong>
+                        </div>
+                        <div class="micro-progress"><div id="bar-mg" style="width:0%"></div></div>
+                    </div>
+
+                    <div class="micro-row">
+                        <div class="micro-row-top">
+                            <div class="micro-row-title"><span>🍌</span><span>Potassio</span></div>
+                            <strong id="val-k">0 / 3500 mg</strong>
+                        </div>
+                        <div class="micro-progress"><div id="bar-k" style="width:0%"></div></div>
+                    </div>
+
+                    <div class="micro-row">
+                        <div class="micro-row-top">
+                            <div class="micro-row-title"><span>🧬</span><span>Vit. B12</span></div>
+                            <strong id="val-b12">0 / 2.4 µg</strong>
+                        </div>
+                        <div class="micro-progress"><div id="bar-b12" style="width:0%"></div></div>
+                    </div>
+
+                    <div class="micro-row">
+                        <div class="micro-row-top">
+                            <div class="micro-row-title"><span>🌿</span><span>Acido folico</span></div>
+                            <strong id="val-fol">0 / 400 µg</strong>
+                        </div>
+                        <div class="micro-progress"><div id="bar-fol" style="width:0%"></div></div>
+                    </div>
+                </div>
+
+                <div class="stats-row">
+                    <div class="stat-mini-card">
+                        <i class="icon-water"></i>
+                        <small>Acqua attuale</small>
+                        <strong id="home-water">0.0 L</strong>
+                    </div>
+                    <div class="stat-mini-card">
+                        <i class="icon-water"></i>
+                        <small>Obiettivo acqua</small>
+                        <strong id="water-goal-display">0.0 L</strong>
                     </div>
                 </div>
             </div>
         </section>
 
         <section id="diario" class="tab-content" style="display:none;">
-            <div class="calendar-container">
-                <div class="calendar-nav">
-                    <button onclick="cambiaMese(-1)">&lt;</button>
-                    <span id="currentMonthYear"></span>
-                    <button onclick="cambiaMese(1)">&gt;</button>
+            <div class="organic-panel calendar-box">
+                <div id="diary-profile-summary" class="diary-profile-summary"></div>
+                <div class="cal-header">
+                    <button onclick="cambiaMese(-1)">←</button>
+                    <h3 id="currentMonthYear">Mese Anno</h3>
+                    <button onclick="cambiaMese(1)">→</button>
                 </div>
-                <div id="calendar-grid" class="calendar-grid-small"></div>
+                <div id="calendar-grid" class="calendar-grid"></div>
             </div>
 
-            <div class="log-panel">
-                <div class="date-header"><h2 id="date-title-pretty">Oggi</h2></div>
-                <div class="search-engine">
-                    <input type="text" id="food-search" placeholder="Cerca tra centinaia di alimenti..." oninput="cercaAlimento(event, 'diario')">
-                    <div id="search-results" class="results-overlay"></div>
-                </div>
-                <div class="meal-chips">
-                    <button class="chip" onclick="selectMealType('Colazione')">Colazione</button>
-                    <button class="chip" onclick="selectMealType('Pranzo')">Pranzo</button>
-                    <button class="chip" onclick="selectMealType('Cena')">Cena</button>
-                    <button class="chip" onclick="selectMealType('Spuntino')">Spuntino</button>
-                </div>
-                <div id="add-panel" class="quick-add" style="display:none;">
-                    <div class="selected-info">
-                        <span id="selected-meal-label" class="meal-tag">Pasto</span>
-                        <span id="selected-name">ALIMENTO</span>
-                    </div>
-                    <div class="add-row">
-                        <input type="number" id="qty" value="100">
-                        <button onclick="salvaPasto()" class="btn-green">AGGIUNGI</button>
+            <div class="log-section">
+                <div class="section-header">
+                    <h2 id="date-title-pretty">Oggi</h2>
+                    <div class="meal-selector">
+                        <button class="chip active" onclick="selectMealType('Colazione', this)">Coz</button>
+                        <button class="chip" onclick="selectMealType('Pranzo', this)">Pran</button>
+                        <button class="chip" onclick="selectMealType('Cena', this)">Cena</button>
+                        <button class="chip" onclick="selectMealType('Snack', this)">Snk</button>
                     </div>
                 </div>
-                <ul id="day-log-list" class="entry-list"></ul>
+
+                <div class="search-box">
+                    <input type="text" id="food-search" placeholder="Cerca cibo o ricetta..." oninput="cercaAlimento(event, 'main')">
+                    <div id="search-results" class="search-dropdown"></div>
+                </div>
+
+                <div id="add-panel" class="floating-add-panel" style="display:none;">
+                    <div class="add-content">
+                        <span id="selected-name">Mela</span>
+                        <div class="qty-control">
+                            <input type="number" id="qty" value="100"> <span>g</span>
+                            <button onclick="salvaPasto()" class="btn-confirm">AGGIUNGI</button>
+                        </div>
+                    </div>
+                </div>
+
+                <ul id="day-log-list" class="premium-list"></ul>
             </div>
         </section>
 
         <section id="pasti-rapidi" class="tab-content" style="display:none;">
-            <div class="organic-panel" style="max-width: 100%;">
-                <h3>CREA NUOVA RICETTA</h3>
-                <input type="text" id="recipe-name" placeholder="Nome della Ricetta (es. Lasagna Veg)">
+            
+            <div class="organic-panel">
+                <h3 class="panel-title">Chef Mode: Crea Piatto</h3>
+                <input type="text" id="recipe-name" class="main-input" placeholder="Nome della tua ricetta...">
                 
-                <div class="search-engine">
-                    <input type="text" id="recipe-food-search" placeholder="Aggiungi ingrediente..." oninput="cercaAlimento(event, 'ricetta')">
-                    <div id="recipe-search-results" class="results-overlay"></div>
+                <div class="search-box">
+                    <input type="text" id="recipe-search" placeholder="Aggiungi ingrediente..." oninput="cercaAlimento(event, 'ricetta')">
+                    <div id="recipe-results" class="search-dropdown"></div>
                 </div>
 
-                <div id="recipe-add-panel" class="quick-add" style="display:none; background: #f0fdf4; padding: 10px; border-radius: 10px; margin: 10px 0;">
-                    <span id="recipe-selected-name" style="font-weight: bold;"></span>
-                    <div class="add-row">
-                        <input type="number" id="recipe-qty" value="100">
-                        <button onclick="aggiungiIngredienteRicetta()" class="btn-green" style="width: auto;">+</button>
-                    </div>
+                <div id="recipe-add-panel" class="mini-add" style="display:none;">
+                    <span id="recipe-selected-name"></span>
+                    <input type="number" id="recipe-qty" value="100">
+                    <button onclick="aggiungiIngredienteRicetta()">+</button>
                 </div>
 
-                <ul id="current-recipe-items" class="entry-list"></ul>
-
-                <div id="recipe-summary" class="micro-panel" style="background: #eee; border-radius: 10px; margin-top: 10px; display: none;">
-                    <strong>Totale Ricetta:</strong>
-                    <div id="recipe-totals-text" style="font-size: 0.8rem;"></div>
-                </div>
-
-                <button onclick="salvaRicettaDefinitiva()" class="btn-orange">SALVA NEI MIEI PIATTI</button>
+                <ul id="current-recipe-items" class="recipe-build-list"></ul>
                 
-                <hr>
-                <h3>LE MIE RICETTE SALVATE</h3>
-                <ul id="preset-list" class="entry-list"></ul>
+                <div id="recipe-summary" class="summary-box" style="display:none;"></div>
+                <button onclick="salvaRicettaDefinitiva()" class="btn-main orange">SALVA RICETTA NEI MIEI PIATTI</button>
             </div>
+
+            <div class="organic-panel" style="margin: 20px 15px;">
+                <h3 class="panel-title">AI Mode: Scopri il tuo piatto</h3>
+                <input type="text" id="discover-ingredients" class="main-input" placeholder="Ingredienti a disposizione (es. Zucchine, uova...)">
+                <div class="search-box" style="margin-top: 10px;">
+                    <input type="text" id="discover-ingredient-search" placeholder="Cerca ingrediente da aggiungere..." oninput="cercaAlimento(event, 'ai')">
+                    <div id="ai-results" class="search-dropdown"></div>
+                </div>
+                <ul id="ai-ingredient-list" class="recipe-build-list" style="margin-top: 10px;"></ul>
+                <input type="number" id="discover-people" class="main-input" placeholder="Per quante persone?" style="margin-top: 10px;" min="1" value="1">
+                <button onclick="generaRicettaAI()" class="btn-main orange" style="margin-top: 15px;">CREA RICETTA</button>
+                <div id="ai-recipe-result" style="display:none; margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 15px; border-left: 4px solid var(--info);"></div>
+            </div>
+
+            <hr class="spacer">
+            <h3 class="panel-title">I Tuoi Piatti Salvati</h3>
+            <ul id="preset-list" class="premium-list"></ul>
         </section>
     </main>
+
     <script src="script.js"></script>
 </body>
 </html>
