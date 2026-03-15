@@ -26,49 +26,47 @@
         </header>
 
         <div class="progress-container"><div class="progress-bar-fill" id="wizard-progress"></div></div>
-
         <div class="setup-wizard" id="setup-wizard">
             <div class="wizard-step active" data-step="1">
-                <label>Username</label>
+                <label>Username<span style="color:#000;">*</span></label>
                 <input type="text" id="username" placeholder="Inserisci il tuo username" />
-                <label>Sesso</label>
+                <label>Genere<span style="color:#000;">*</span></label>
                 <select id="user-sex">
                     <option value="">Seleziona</option>
                     <option value="donna">Donna</option>
                     <option value="uomo">Uomo</option>
                     <option value="neutro">Altro/Preferisco non specificare</option>
                 </select>
-            </div>
-
-            <div class="wizard-step" data-step="2">
-                <label>Età</label>
+                <label>Età<span style="color:#000;">*</span></label>
                 <input type="number" id="wizard-age" placeholder="Età" min="8" max="120" />
-                <label>Peso (kg)</label>
+                <label>Peso (kg)<span style="color:#000;">*</span></label>
                 <input type="number" id="wizard-weight" placeholder="Peso in kg" min="20" max="300" />
-            </div>
-
-            <div class="wizard-step" data-step="3">
-                <label>Altezza (cm)</label>
+                <label>Altezza (cm)<span style="color:#000;">*</span></label>
                 <input type="number" id="wizard-height" placeholder="Altezza in cm" min="80" max="250" />
             </div>
 
-            <div class="wizard-step" data-step="4">
-                <label>Tipo di lavoro</label>
+            <div class="wizard-step" data-step="2">
+                <label>Quanta acqua bevi al giorno (L)?<span style="color:#000;">*</span></label>
+                <input type="number" id="wizard-water" placeholder="Litri/giorno" step="0.1" min="0" max="10" />
+                <label>Allergie</label>
+                <input type="text" id="wizard-allergies" placeholder="lattosio, glutine" />
+                <label>Intolleranze</label>
+                <input type="text" id="wizard-intolerances" placeholder="frutta, uova" />
+                <label>Regime alimentare specifico</label>
+                <input type="text" id="wizard-diet" placeholder="vegetariano, vegano, paleo" />
+            </div>
+
+            <div class="wizard-step" data-step="3">
+                <label>Tipo di lavoro<span style="color:#000;">*</span></label>
                 <select id="wizard-job">
                     <option value="">Seleziona</option>
                     <option value="sedentario">Sedentario</option>
                     <option value="moderato">Moderato</option>
                     <option value="attivo">Attivo</option>
                 </select>
-            </div>
-
-            <div class="wizard-step" data-step="5">
-                <label>Quante volte ti alleni a settimana?</label>
+                <label>Quante volte ti alleni a settimana?<span style="color:#000;">*</span></label>
                 <input type="number" id="wizard-workouts" placeholder="Numero allenamenti" min="0" max="14" />
-            </div>
-
-            <div class="wizard-step" data-step="6">
-                <label>Obiettivo</label>
+                <label>Obiettivo<span style="color:#000;">*</span></label>
                 <select id="wizard-goal">
                     <option value="">Seleziona</option>
                     <option value="dimagrire">Dimagrire</option>
@@ -77,101 +75,114 @@
                 </select>
             </div>
 
-            <div class="wizard-step" data-step="7">
-                <label>Regime alimentare specifico</label>
-                <input type="text" id="wizard-diet" placeholder="Es. vegetariano, vegano, paleo" />
-            </div>
-
-            <div class="wizard-step" data-step="8">
-                <label>Allergie</label>
-                <input type="text" id="wizard-allergies" placeholder="Es. lattosio, glutine" />
-            </div>
-
-            <div class="wizard-step" data-step="9">
-                <label>Intolleranze</label>
-                <input type="text" id="wizard-intolerances" placeholder="Es. frutta secca, uova" />
-            </div>
-
-            <div class="wizard-step" data-step="10">
+            <div class="wizard-step" data-step="4">
                 <label>Pasti giornalieri</label>
                 <input type="number" id="wizard-meals" placeholder="Numero pasti" min="1" max="10" />
-            </div>
-
-            <div class="wizard-step" data-step="11">
                 <label>Punto debole</label>
-                <input type="text" id="wizard-weakpoint" placeholder="Es. sonnolenza post pranzo" />
+                <input type="text" id="wizard-weakpoint" placeholder="sonnolenza post pranzo" />
             </div>
 
-            <div class="wizard-step" data-step="12">
-                <label>Quanta acqua bevi solitamente? (L)</label>
-                <input type="number" id="wizard-water" placeholder="Litri d'acqua al giorno" step="0.1" min="0" max="10" />
+            <div class="wizard-step" data-step="5">
+                <h3 style="text-align:center;font-family:'Poppins',sans-serif;font-weight:800;font-size:1.2rem;letter-spacing:0.05em;color:#0074A6;margin-bottom:18px;text-transform:uppercase;white-space:nowrap;">OGGI MI IDENTIFICO IN:</h3>
+                <div id="avatar-grid" class="avatar-selection-grid">
+                    <img src="avatars/1.jpg" onclick="selectAvatar(this)">
+                    <img src="avatars/2.jpg" onclick="selectAvatar(this)">
+                    <img src="avatars/3.jpg" onclick="selectAvatar(this)">
+                    <img src="avatars/4.jpg" onclick="selectAvatar(this)">
+                    <img src="avatars/5.jpg" onclick="selectAvatar(this)">
+                    <img src="avatars/6.jpg" onclick="selectAvatar(this)">
+                    <img src="avatars/7.jpg" onclick="selectAvatar(this)">
+                    <img src="avatars/8.jpg" onclick="selectAvatar(this)">
+                </div>
             </div>
-        </div>
 
-        <div class="wizard-controls">
-            <button class="btn-secondary" id="prev-btn" onclick="prevStep()" disabled>Indietro</button>
-            <button class="btn-secondary" id="skip-btn" onclick="skipStep()" style="display:none;">Skip</button>
-            <button class="btn-main" id="next-btn" onclick="nextStep()">Avanti</button>
+            <div class="wizard-step" data-step="6" style="display:none;">
+                <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;">
+                    <h3 style="text-align:center;font-family:'Poppins',sans-serif;font-weight:800;font-size:1.4rem;letter-spacing:0.05em;color:#FF9800;margin-bottom:18px;text-transform:uppercase;white-space:nowrap;width:100%;">RIEPILOGO</h3>
+                    <img id="riepilogo-avatar" src="avatars/1.jpg" style="width:70px;height:70px;border-radius:50%;object-fit:cover;margin-top:8px;">
+                </div>
+                <div style="margin-top:10px;text-align:center;">
+                    <div id="riepilogo-frase" style="font-size:1.1rem;margin-bottom:10px;color:#0074A6;font-family:'Poppins',sans-serif;font-weight:600;"></div>
+                    <div id="riepilogo-dati" style="font-size:1rem;color:#333;font-family:'Inter',sans-serif;text-align:center;"></div>
+                    <button id="edit-answers-btn" class="btn-secondary" style="margin-top:18px;">Modifica risposte</button>
+                </div>
+            </div>
+            <!-- No steps beyond 6 -->
+            <div class="wizard-controls">
+                <button class="btn-secondary" id="prev-btn" onclick="prevStep()" disabled>Indietro</button>
+                <button class="btn-secondary" id="skip-btn" onclick="skipStep()" style="display:none;">Skip</button>
+                <button class="btn-main" id="next-btn" onclick="nextStep()">Avanti</button>
+            </div>
         </div>
     </div>
 
     <main id="main-app" style="display:none;">
-        <nav class="bottom-nav">
+        <nav class="side-nav">
             <button onclick="mostraSezione('home')" class="nav-item">
-                <div class="icon">📊</div><span>Home</span>
+                <div class="icon">🏠</div>
+                <span>Home</span>
             </button>
             <button onclick="mostraSezione('diario')" class="nav-item">
-                <div class="icon">📅</div><span>Diario</span>
+                <div class="icon">📅</div>
+                <span>Diario</span>
+            </button>
+            <button onclick="mostraSezione('cronologia')" class="nav-item">
+                <div class="icon">🕘</div>
+                <span>Cronologia</span>
             </button>
             <button onclick="mostraSezione('pasti-rapidi')" class="nav-item">
-                <div class="icon">🍳</div><span>Ricette</span>
+                <div class="icon">🍳</div>
+                <span>Ricette</span>
             </button>
-            <button onclick="logout()" class="nav-item logout">
-                <div class="icon">🚪</div><span>Esci</span>
+            <button onclick="mostraSezione('profilo')" class="nav-item logout">
+                <div class="nav-photo-wrapper">
+                    <img id="user-nav-photo" src="avatars/1.jpg" alt="Profilo">
+                </div>
+                <span>Profilo</span>
             </button>
         </nav>
 
         <section id="home" class="tab-content">
             <div id="home-screen" class="screen active">
-                <header class="dash-header">
-                    <div>
-                        <h1>Dashboard</h1>
-                        <p id="current-date">Venerdì, 22 Nov</p>
-                    </div>
-                    <div class="profile-badge">
-                        <img src="https://via.placeholder.com/40" alt="Profilo">
-                    </div>
-                </header>
-
-                <div class="organic-panel main-chart-card">
-                    <div class="chart-container">
-                        <canvas id="kcalChart"></canvas>
-                        <div class="chart-center-text">
-                            <span id="center-kcal-value">0</span>
-                            <small>kcal rimaste</small>
+                <div class="home-main-content">
+                        <div id="home-profile-summary" class="diary-profile-summary home-profile-summary"></div>
+                        <header class="dash-header">
+                            <div>
+                                <h1>Dashboard</h1>
+                                <p id="current-date">Venerdì, 22 Nov</p>
+                            </div>
+                            <div class="profile-badge">
+                                <img src="https://via.placeholder.com/40" alt="Profilo">
+                            </div>
+                        </header>
+                        <div class="organic-panel main-chart-card">
+                            <div class="chart-container">
+                                <canvas id="kcalChart"></canvas>
+                                <div class="chart-center-text">
+                                    <span id="center-kcal-value">0</span>
+                                    <small>kcal rimaste</small>
+                                </div>
+                            </div>
+                            <div class="kcal-details">
+                                <div class="kcal-item">
+                                    <span class="dot consumate"></span>
+                                    <p>Consumate <strong id="home-kcal-intake">0 kcal</strong></p>
+                                </div>
+                                <div class="kcal-item">
+                                    <span class="dot obiettivo"></span>
+                                    <p>Obiettivo <strong id="home-kcal-goal">2200 kcal</strong></p>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="kcal-details">
-                        <div class="kcal-item">
-                            <span class="dot consumate"></span>
-                            <p>Consumate <strong id="home-kcal-intake">0 kcal</strong></p>
-                        </div>
-                        <div class="kcal-item">
-                            <span class="dot obiettivo"></span>
-                            <p>Obiettivo <strong id="home-kcal-goal">2200 kcal</strong></p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="macros-grid">
-                    <div class="macro-card carb">
-                        <div class="macro-info">
-                            <label>Carboidrati</label>
-                            <span id="home-carb">0/0 g</span>
-                        </div>
-                        <div class="progress-bar"><div id="bar-carb" style="width: 0%"></div></div>
-                    </div>
-                    <div class="macro-card prot">
+                        <div class="macros-grid">
+                            <div class="macro-card carb">
+                                <div class="macro-info">
+                                    <label>Carboidrati</label>
+                                    <span id="home-carb">0/0 g</span>
+                                </div>
+                                <div class="progress-bar"><div id="bar-carb" style="width: 0%"></div></div>
+                            </div>
+                            <div class="macro-card prot">
                         <div class="macro-info">
                             <label>Proteine</label>
                             <span id="home-prot">0/0 g</span>
@@ -263,24 +274,15 @@
         </section>
 
         <section id="diario" class="tab-content" style="display:none;">
-            <div class="organic-panel calendar-box">
-                <div id="diary-profile-summary" class="diary-profile-summary"></div>
-                <div class="cal-header">
-                    <button onclick="cambiaMese(-1)">←</button>
-                    <h3 id="currentMonthYear">Mese Anno</h3>
-                    <button onclick="cambiaMese(1)">→</button>
-                </div>
-                <div id="calendar-grid" class="calendar-grid"></div>
-            </div>
-
-            <div class="log-section">
-                <div class="section-header">
-                    <h2 id="date-title-pretty">Oggi</h2>
+            <div class="organic-panel log-section">
+                <div class="section-header diary-section-header">
+                    <h2 id="date-title-pretty" class="diary-title">OGGI HO MANGIATO:</h2>
+                    <p id="selected-day-label" class="selected-day-label"></p>
                     <div class="meal-selector">
-                        <button class="chip active" onclick="selectMealType('Colazione', this)">Coz</button>
-                        <button class="chip" onclick="selectMealType('Pranzo', this)">Pran</button>
+                        <button class="chip" onclick="selectMealType('Colazione', this)">Colazione</button>
+                        <button class="chip" onclick="selectMealType('Pranzo', this)">Pranzo</button>
                         <button class="chip" onclick="selectMealType('Cena', this)">Cena</button>
-                        <button class="chip" onclick="selectMealType('Snack', this)">Snk</button>
+                        <button class="chip" onclick="selectMealType('Spuntino', this)">Spuntino</button>
                     </div>
                 </div>
 
@@ -292,43 +294,69 @@
                 <div id="add-panel" class="floating-add-panel" style="display:none;">
                     <div class="add-content">
                         <span id="selected-name">Mela</span>
+                        <div class="selected-food-preview">
+                            <strong id="selected-kcal-preview">0 kcal</strong>
+                            <small id="selected-macros-preview">P 0 g • C 0 g • G 0 g</small>
+                        </div>
                         <div class="qty-control">
-                            <input type="number" id="qty" value="100"> <span>g</span>
+                            <input type="number" id="qty" value="100" oninput="updateSelectedFoodPreview()"> <span>g</span>
                             <button onclick="salvaPasto()" class="btn-confirm">AGGIUNGI</button>
                         </div>
                     </div>
                 </div>
 
                 <ul id="day-log-list" class="premium-list"></ul>
+                <button onclick="finishMealEntry()" class="btn-secondary diary-finish-btn">FINE AGGIUNTA</button>
+            </div>
+
+            <div class="organic-panel calendar-box">
+                <div class="cal-header">
+                    <button onclick="cambiaMese(-1)">←</button>
+                    <h3 id="currentMonthYear">Mese Anno</h3>
+                    <button onclick="cambiaMese(1)">→</button>
+                </div>
+                <div id="calendar-grid" class="calendar-grid"></div>
+                <p id="future-date-note" class="future-date-note" style="display:none;">*nel caso in cui venga selezionata una data futura rispetto a quella di oggi non si potra aggiungere ingredienti o pasti.</p>
+            </div>
+        </section>
+
+        <section id="cronologia" class="tab-content" style="display:none;">
+            <div class="organic-panel chronology-panel">
+                <div class="section-header chronology-header">
+                    <h2>CRONOLOGIA</h2>
+                    <span class="chronology-caption">Pasti aggiunti giorno per giorno</span>
+                </div>
+                <div id="chronology-list" class="chronology-list"></div>
             </div>
         </section>
 
         <section id="pasti-rapidi" class="tab-content" style="display:none;">
-            
-            <div class="organic-panel">
+            <div class="organic-panel" style="margin: 20px auto;">
                 <h3 class="panel-title">Chef Mode: Crea Piatto</h3>
                 <input type="text" id="recipe-name" class="main-input" placeholder="Nome della tua ricetta...">
-                
                 <div class="search-box">
                     <input type="text" id="recipe-search" placeholder="Aggiungi ingrediente..." oninput="cercaAlimento(event, 'ricetta')">
                     <div id="recipe-results" class="search-dropdown"></div>
                 </div>
-
                 <div id="recipe-add-panel" class="mini-add" style="display:none;">
                     <span id="recipe-selected-name"></span>
                     <input type="number" id="recipe-qty" value="100">
                     <button onclick="aggiungiIngredienteRicetta()">+</button>
                 </div>
-
                 <ul id="current-recipe-items" class="recipe-build-list"></ul>
-                
                 <div id="recipe-summary" class="summary-box" style="display:none;"></div>
                 <button onclick="salvaRicettaDefinitiva()" class="btn-main orange">SALVA RICETTA NEI MIEI PIATTI</button>
             </div>
 
-            <div class="organic-panel" style="margin: 20px 15px;">
+            <div class="organic-panel" style="margin: 20px auto; background: #f8f9fa; border-radius: 15px; border-left: 4px solid var(--info);">
+                <h3 class="panel-title">I Tuoi Piatti Salvati</h3>
+                <ul id="preset-list" class="premium-list"></ul>
+            </div>
+
+            <hr class="spacer">
+            <div class="organic-panel" style="margin: 20px auto; background: #f8f9fa; border-radius: 15px; border-left: 4px solid var(--info);">
                 <h3 class="panel-title">AI Mode: Scopri il tuo piatto</h3>
-                <input type="text" id="discover-ingredients" class="main-input" placeholder="Ingredienti a disposizione (es. Zucchine, uova...)">
+                <input type="hidden" id="discover-ingredients" class="main-input" placeholder="Ingredienti a disposizione (es. Zucchine, uova...)" style="display:none;">
                 <div class="search-box" style="margin-top: 10px;">
                     <input type="text" id="discover-ingredient-search" placeholder="Cerca ingrediente da aggiungere..." oninput="cercaAlimento(event, 'ai')">
                     <div id="ai-results" class="search-dropdown"></div>
@@ -338,11 +366,86 @@
                 <button onclick="generaRicettaAI()" class="btn-main orange" style="margin-top: 15px;">CREA RICETTA</button>
                 <div id="ai-recipe-result" style="display:none; margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 15px; border-left: 4px solid var(--info);"></div>
             </div>
-
-            <hr class="spacer">
-            <h3 class="panel-title">I Tuoi Piatti Salvati</h3>
-            <ul id="preset-list" class="premium-list"></ul>
         </section>
+
+        <section id="profilo" class="tab-content" style="display:none;">
+            <div class="organic-panel">
+                <h3 class="panel-title" style="color: #0074A6; text-transform: uppercase; justify-content: center; width: 100%;">PROFILO</h3>
+
+                <div class="profile-avatar-wrapper">
+                    <img id="profile-avatar-preview" src="avatars/1.jpg" alt="Avatar profilo">
+                </div>
+
+                <div id="profilo-summary" class="profile-summary-box" style="margin-bottom: 20px; padding: 14px; background: #f8f9fa; border-radius: 14px; border: 1px solid var(--border);">
+                    <strong class="profile-summary-title">Riepilogo attuale</strong>
+                    <div id="profilo-summary-content" class="profile-summary-content" style="margin-top: 10px; color: var(--text);"></div>
+                </div>
+
+                <details class="profile-editor">
+                    <summary class="btn-main orange profile-editor-toggle">MODIFICA PROFILO</summary>
+
+                    <div class="profile-editor-content">
+                        <div style="display: grid; gap: 12px;">
+                            <input type="text" id="profilo-username" class="main-input" placeholder="Nome utente">
+                            <select id="profilo-sex">
+                                <option value="uomo">Uomo</option>
+                                <option value="donna">Donna</option>
+                            </select>
+                            <input type="number" id="profilo-age" class="main-input" placeholder="Età">
+                            <input type="number" id="profilo-weight" class="main-input" placeholder="Peso (kg)">
+                            <input type="number" id="profilo-height" class="main-input" placeholder="Altezza (cm)">
+                            <select id="profilo-job">
+                                <option value="sedentario">Sedentario</option>
+                                <option value="moderato">Moderato</option>
+                                <option value="attivo">Attivo</option>
+                            </select>
+                            <input type="number" id="profilo-workouts" class="main-input" placeholder="Allenamenti a settimana">
+                            <select id="profilo-goal">
+                                <option value="dimagrire">Dimagrire</option>
+                                <option value="mantenere">Mantenere</option>
+                                <option value="massa">Massa</option>
+                            </select>
+                            <input type="text" id="profilo-diet" class="main-input" placeholder="Dieta">
+                            <input type="text" id="profilo-allergies" class="main-input" placeholder="Allergie">
+                            <input type="text" id="profilo-intolerances" class="main-input" placeholder="Intolleranze">
+                            <input type="number" id="profilo-meals" class="main-input" placeholder="Pasti al giorno">
+                            <input type="text" id="profilo-weakpoint" class="main-input" placeholder="Punto debole">
+                            <input type="number" step="0.1" id="profilo-water" class="main-input" placeholder="Acqua giornaliera (L)">
+                        </div>
+
+                        <div style="margin-top: 20px;">
+                            <h3 style="text-align:center;font-family:'Poppins',sans-serif;font-weight:800;font-size:1.2rem;letter-spacing:0.05em;color:#0074A6;margin-bottom:18px;text-transform:uppercase;white-space:nowrap;">OGGI MI IDENTIFICO IN:</h3>
+                            <div class="avatar-selection-grid">
+                                <img src="avatars/1.jpg" onclick="selectAvatar(this)">
+                                <img src="avatars/2.jpg" onclick="selectAvatar(this)">
+                                <img src="avatars/3.jpg" onclick="selectAvatar(this)">
+                                <img src="avatars/4.jpg" onclick="selectAvatar(this)">
+                                <img src="avatars/5.jpg" onclick="selectAvatar(this)">
+                                <img src="avatars/6.jpg" onclick="selectAvatar(this)">
+                                <img src="avatars/7.jpg" onclick="selectAvatar(this)">
+                                <img src="avatars/8.jpg" onclick="selectAvatar(this)">
+                            </div>
+                        </div>
+
+                        <button onclick="salvaModificheProfilo()" class="btn-main">Salva Modifiche</button>
+                    </div>
+                </details>
+
+                <button onclick="apriConfermaResetProfilo()" style="background-color: #dc3545; color: white; margin-top: 20px;" class="btn-main">Resetta il mio profilo</button>
+            </div>
+        </section>
+
+        <div id="reset-profile-modal" class="confirm-modal" style="display:none;">
+            <div class="confirm-modal-backdrop" onclick="chiudiConfermaResetProfilo()"></div>
+            <div class="confirm-modal-card" role="dialog" aria-modal="true" aria-labelledby="reset-profile-title">
+                <h3 id="reset-profile-title" class="confirm-modal-title">Conferma reset</h3>
+                <p class="confirm-modal-text">Se resetti il tuo profilo tutte le informazioni inserite andranno perse. Procedo?</p>
+                <div class="confirm-modal-actions">
+                    <button onclick="eseguiResetProfilo()" class="btn-main" style="background-color: #dc3545; color: white;">Si</button>
+                    <button onclick="chiudiConfermaResetProfilo()" class="btn-secondary">No</button>
+                </div>
+            </div>
+        </div>
     </main>
 
     <script src="script.js"></script>
