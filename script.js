@@ -99,9 +99,9 @@ function mostraRiepilogo() {
 
 // --- Avatar Selection Logic ---
 let selectedAvatarPath = "";
-const avatarAssetVersion = '20260315-1';
+const avatarAssetVersion = '20260315-3';
 
-const avatarFallbacks = {
+const defaultEmbeddedAvatarAssets = {
     'avatars/1.jpg': createInlineAvatarFallback('1', '#4f8cff'),
     'avatars/2.jpg': createInlineAvatarFallback('2', '#2fbf71'),
     'avatars/3.jpg': createInlineAvatarFallback('3', '#ff8a3d'),
@@ -110,6 +110,12 @@ const avatarFallbacks = {
     'avatars/6.jpg': createInlineAvatarFallback('6', '#00a7b7'),
     'avatars/7.jpg': createInlineAvatarFallback('7', '#6d7c8f'),
     'avatars/8.jpg': createInlineAvatarFallback('8', '#f0b429')
+};
+
+const embeddedAvatarAssets = window.AVATAR_DATA_URIS || {};
+
+const avatarFallbacks = {
+    ...defaultEmbeddedAvatarAssets
 };
 
 function createInlineAvatarFallback(label, color) {
@@ -156,7 +162,7 @@ function getAvatarChoicePath(element) {
 
 function getAvatarFallback(path) {
     const normalizedPath = normalizeAvatarPath(path);
-    return avatarFallbacks[normalizedPath] || avatarFallbacks['avatars/1.jpg'];
+    return embeddedAvatarAssets[normalizedPath] || avatarFallbacks[normalizedPath] || avatarFallbacks['avatars/1.jpg'];
 }
 
 function bindAvatarFallback(img, preferredPath) {
