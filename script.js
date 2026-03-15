@@ -57,10 +57,14 @@ function mostraRiepilogo() {
             // Gestione avatar: se avatarUrl è vuoto, mostra avatar di default
             const avatarElem = document.getElementById('riepilogo-avatar');
             if (avatarUrl && avatarUrl.trim() !== '') {
-                avatarElem.src = avatarUrl;
+                avatarElem.dataset.avatarPath = normalizeAvatarPath(avatarUrl);
+                avatarElem.src = resolveAvatarUrl(avatarUrl);
+                bindAvatarFallback(avatarElem, avatarUrl);
                 avatarElem.style.display = 'block';
             } else {
-                avatarElem.src = 'avatars/1.jpg'; // avatar di default
+                avatarElem.dataset.avatarPath = 'avatars/1.jpg';
+                avatarElem.src = resolveAvatarUrl('avatars/1.jpg'); // avatar di default
+                bindAvatarFallback(avatarElem, 'avatars/1.jpg');
                 avatarElem.style.display = 'block';
             }
         } else {
@@ -95,11 +99,42 @@ function mostraRiepilogo() {
 
 // --- Avatar Selection Logic ---
 let selectedAvatarPath = "";
+const avatarAssetVersion = '20260315-1';
+
+const avatarFallbacks = {
+    'avatars/1.jpg': createInlineAvatarFallback('1', '#4f8cff'),
+    'avatars/2.jpg': createInlineAvatarFallback('2', '#2fbf71'),
+    'avatars/3.jpg': createInlineAvatarFallback('3', '#ff8a3d'),
+    'avatars/4.jpg': createInlineAvatarFallback('4', '#9b6bff'),
+    'avatars/5.jpg': createInlineAvatarFallback('5', '#ff5d73'),
+    'avatars/6.jpg': createInlineAvatarFallback('6', '#00a7b7'),
+    'avatars/7.jpg': createInlineAvatarFallback('7', '#6d7c8f'),
+    'avatars/8.jpg': createInlineAvatarFallback('8', '#f0b429')
+};
+
+function createInlineAvatarFallback(label, color) {
+    const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+            <rect width="120" height="120" rx="26" fill="${color}" />
+            <circle cx="60" cy="44" r="22" fill="rgba(255,255,255,0.92)" />
+            <path d="M28 101c5-18 18-28 32-28s27 10 32 28" fill="rgba(255,255,255,0.92)" />
+            <text x="60" y="112" text-anchor="middle" font-family="Poppins, Arial, sans-serif" font-size="16" font-weight="700" fill="rgba(255,255,255,0.96)">Avatar ${label}</text>
+        </svg>
+    `;
+
+    return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+}
 
 function normalizeAvatarPath(path) {
     if (!path) return 'avatars/1.jpg';
 
-    const normalized = String(path).replace(/\\/g, '/');
+    const rawPath = String(path);
+
+    if (rawPath.startsWith('data:image/')) {
+        return 'avatars/1.jpg';
+    }
+
+    const normalized = rawPath.replace(/\\/g, '/').split('?')[0].split('#')[0];
     const avatarsIndex = normalized.toLowerCase().lastIndexOf('avatars/');
 
     if (avatarsIndex !== -1) {
@@ -109,16 +144,76 @@ function normalizeAvatarPath(path) {
     return normalized;
 }
 
+function resolveAvatarUrl(path) {
+    const normalizedPath = normalizeAvatarPath(path);
+    return `${normalizedPath}?v=${avatarAssetVersion}`;
+}
+
+function getAvatarChoicePath(element) {
+    if (!element) return 'avatars/1.jpg';
+    return normalizeAvatarPath(element.dataset.avatarPath || element.getAttribute('src'));
+}
+
+function getAvatarFallback(path) {
+    const normalizedPath = normalizeAvatarPath(path);
+    return avatarFallbacks[normalizedPath] || avatarFallbacks['avatars/1.jpg'];
+}
+
+function bindAvatarFallback(img, preferredPath) {
+    if (!img) return;
+
+    const avatarPath = normalizeAvatarPath(preferredPath || img.dataset.avatarPath || img.getAttribute('src'));
+    img.dataset.avatarPath = avatarPath;
+    img.onerror = () => {
+        img.onerror = null;
+        img.src = getAvatarFallback(avatarPath);
+    };
+
+    if (img.complete && img.naturalWidth === 0) {
+        img.src = getAvatarFallback(avatarPath);
+        return;
+    }
+
+    img.src = resolveAvatarUrl(avatarPath);
+}
+
+function syncHomeBadgeAvatar(src) {
+    const homeBadgeAvatar = document.querySelector('.profile-badge img');
+    if (!homeBadgeAvatar) return;
+
+    const normalizedSrc = normalizeAvatarPath(src);
+    homeBadgeAvatar.dataset.avatarPath = normalizedSrc;
+    homeBadgeAvatar.src = resolveAvatarUrl(normalizedSrc);
+    bindAvatarFallback(homeBadgeAvatar, normalizedSrc);
+}
+
+function setupAvatarFallbacks() {
+    document.querySelectorAll('img[src^="avatars/"]').forEach((img) => {
+        bindAvatarFallback(img);
+    });
+
+    const homeBadgeAvatar = document.querySelector('.profile-badge img');
+    if (homeBadgeAvatar) {
+        syncHomeBadgeAvatar(selectedAvatarPath || 'avatars/1.jpg');
+    }
+}
+
 function aggiornaAvatarProfilo(src) {
     const avatarPreview = document.getElementById('profile-avatar-preview');
     const navAvatar = document.getElementById('user-nav-photo');
     const normalizedSrc = normalizeAvatarPath(src);
     if (avatarPreview && normalizedSrc) {
-        avatarPreview.src = normalizedSrc;
+        avatarPreview.dataset.avatarPath = normalizedSrc;
+        avatarPreview.src = resolveAvatarUrl(normalizedSrc);
+        bindAvatarFallback(avatarPreview, normalizedSrc);
     }
     if (navAvatar && normalizedSrc) {
-        navAvatar.src = normalizedSrc;
+        navAvatar.dataset.avatarPath = normalizedSrc;
+        navAvatar.src = resolveAvatarUrl(normalizedSrc);
+        bindAvatarFallback(navAvatar, normalizedSrc);
     }
+
+    syncHomeBadgeAvatar(normalizedSrc);
 }
 
 function selectAvatar(element) {
@@ -126,7 +221,7 @@ function selectAvatar(element) {
     document.querySelectorAll('.avatar-selection-grid img').forEach(img => img.classList.remove('selected'));
     // Aggiunge selezione a questo
     element.classList.add('selected');
-    selectedAvatarPath = normalizeAvatarPath(element.getAttribute('src'));
+    selectedAvatarPath = getAvatarChoicePath(element);
     aggiornaAvatarProfilo(selectedAvatarPath);
     // Salva nel profilo locale
     const profilo = JSON.parse(localStorage.getItem('nv_profilo')) || {};
@@ -142,6 +237,9 @@ function loadSavedAvatar() {
         profilo.avatarUrl = selectedAvatarPath;
         localStorage.setItem('nv_profilo', JSON.stringify(profilo));
         aggiornaAvatarProfilo(selectedAvatarPath);
+
+    } else {
+        aggiornaAvatarProfilo('avatars/1.jpg');
     }
 }
 
@@ -183,12 +281,10 @@ if (typeof window.nextStep === 'function') {
 const datiAlimenti = `
 1) Bresaola di Tacchino: 110 kcal, 1,5 g grassi, 0,5 g grassi saturi, 1,0 g carboidrati, 0,8 g zuccheri, 0 g fibre, 23,0 g proteine, 3,50 g sale.
 2) Culatello (di Zibello): 225 kcal, 12,5 g grassi, 4,2 g grassi saturi, 0 g carboidrati, 0 g zuccheri, 0 g fibre, 28,0 g proteine, 4,00 g sale.
-3) Fiocco di Prosciutto: 195 kcal, 9,0 g grassi, 3,2 g grassi saturi, 0,5 g carboidrati, 0,2 g zuccheri, 0 g fibre, 28,0 g proteine, 4,20 g sale.
 4) Prosciutto Cotto Alta QualitÃ : 130 kcal, 5,0 g grassi, 1,8 g grassi saturi, 0,5 g carboidrati, 0,5 g zuccheri, 0 g fibre, 20,0 g proteine, 2,00 g sale.
 5) Prosciutto Cotto Scelto: 145 kcal, 7,5 g grassi, 2,5 g grassi saturi, 1,5 g carboidrati, 1,2 g zuccheri, 0 g fibre, 18,0 g proteine, 2,20 g sale.
 6) Prosciutto Cotto di Praga (affumicato): 155 kcal, 8,5 g grassi, 3,0 g grassi saturi, 1,0 g carboidrati, 0,8 g zuccheri, 0 g fibre, 19,0 g proteine, 2,30 g sale.
 7) Fesa di Tacchino Arrosto: 105 kcal, 1,5 g grassi, 0,5 g grassi saturi, 1,5 g carboidrati, 1,0 g zuccheri, 0 g fibre, 21,5 g proteine, 2,10 g sale.
-8) Petto di Pollo Arrosto (affettato): 100 kcal, 1,2 g grassi, 0,4 g grassi saturi, 1,0 g carboidrati, 0,8 g zuccheri, 0 g fibre, 21,0 g proteine, 2,00 g sale.
 9) Carpaccio di Manzo (confezionato/salume): 120 kcal, 3,0 g grassi, 1,2 g grassi saturi, 0,5 g carboidrati, 0,5 g zuccheri, 0 g fibre, 22,5 g proteine, 2,50 g sale.
 10) Salame Milano: 385 kcal, 32,0 g grassi, 11,5 g grassi saturi, 1,5 g carboidrati, 1,0 g zuccheri, 0 g fibre, 23,0 g proteine, 3,80 g sale.
 11) Salame Ungherese: 405 kcal, 35,0 g grassi, 12,5 g grassi saturi, 1,0 g carboidrati, 0,5 g zuccheri, 0 g fibre, 21,5 g proteine, 4,00 g sale.
@@ -1949,6 +2045,7 @@ function initApp(profile) {
     profilo = profile;
     document.getElementById('setup-screen').style.display = 'none';
     document.getElementById('main-app').style.display = 'block';
+    setupAvatarFallbacks();
     loadSavedAvatar();
     renderUserProfileSummary();
     mostraSezione('home');
@@ -1957,6 +2054,7 @@ function initApp(profile) {
 }
 
 window.onload = () => {
+    setupAvatarFallbacks();
     const storedProfile = JSON.parse(localStorage.getItem('nv_profilo'));
     if (!storedProfile || isFirstAccess()) {
         document.getElementById('setup-screen').style.display = 'block';
@@ -2252,7 +2350,7 @@ function caricaDatiProfilo() {
     selectedAvatarPath = normalizeAvatarPath(datiProfilo.avatarUrl || selectedAvatarPath);
     aggiornaAvatarProfilo(selectedAvatarPath || 'avatars/1.jpg');
     document.querySelectorAll('.avatar-selection-grid img').forEach((img) => {
-        img.classList.toggle('selected', !!selectedAvatarPath && normalizeAvatarPath(img.getAttribute('src')) === selectedAvatarPath);
+        img.classList.toggle('selected', !!selectedAvatarPath && getAvatarChoicePath(img) === selectedAvatarPath);
     });
 }
 
