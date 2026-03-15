@@ -96,14 +96,28 @@ function mostraRiepilogo() {
 // --- Avatar Selection Logic ---
 let selectedAvatarPath = "";
 
+function normalizeAvatarPath(path) {
+    if (!path) return 'avatars/1.jpg';
+
+    const normalized = String(path).replace(/\\/g, '/');
+    const avatarsIndex = normalized.toLowerCase().lastIndexOf('avatars/');
+
+    if (avatarsIndex !== -1) {
+        return normalized.slice(avatarsIndex);
+    }
+
+    return normalized;
+}
+
 function aggiornaAvatarProfilo(src) {
     const avatarPreview = document.getElementById('profile-avatar-preview');
     const navAvatar = document.getElementById('user-nav-photo');
-    if (avatarPreview && src) {
-        avatarPreview.src = src;
+    const normalizedSrc = normalizeAvatarPath(src);
+    if (avatarPreview && normalizedSrc) {
+        avatarPreview.src = normalizedSrc;
     }
-    if (navAvatar && src) {
-        navAvatar.src = src;
+    if (navAvatar && normalizedSrc) {
+        navAvatar.src = normalizedSrc;
     }
 }
 
@@ -112,7 +126,7 @@ function selectAvatar(element) {
     document.querySelectorAll('.avatar-selection-grid img').forEach(img => img.classList.remove('selected'));
     // Aggiunge selezione a questo
     element.classList.add('selected');
-    selectedAvatarPath = element.src;
+    selectedAvatarPath = normalizeAvatarPath(element.getAttribute('src'));
     aggiornaAvatarProfilo(selectedAvatarPath);
     // Salva nel profilo locale
     const profilo = JSON.parse(localStorage.getItem('nv_profilo')) || {};
@@ -124,8 +138,10 @@ function selectAvatar(element) {
 function loadSavedAvatar() {
     const profilo = JSON.parse(localStorage.getItem('nv_profilo'));
     if (profilo && profilo.avatarUrl) {
-        selectedAvatarPath = profilo.avatarUrl;
-        aggiornaAvatarProfilo(profilo.avatarUrl);
+        selectedAvatarPath = normalizeAvatarPath(profilo.avatarUrl);
+        profilo.avatarUrl = selectedAvatarPath;
+        localStorage.setItem('nv_profilo', JSON.stringify(profilo));
+        aggiornaAvatarProfilo(selectedAvatarPath);
     }
 }
 
@@ -2233,10 +2249,10 @@ function caricaDatiProfilo() {
         `;
     }
 
-    selectedAvatarPath = datiProfilo.avatarUrl || selectedAvatarPath;
+    selectedAvatarPath = normalizeAvatarPath(datiProfilo.avatarUrl || selectedAvatarPath);
     aggiornaAvatarProfilo(selectedAvatarPath || 'avatars/1.jpg');
     document.querySelectorAll('.avatar-selection-grid img').forEach((img) => {
-        img.classList.toggle('selected', !!datiProfilo.avatarUrl && img.src === datiProfilo.avatarUrl);
+        img.classList.toggle('selected', !!selectedAvatarPath && normalizeAvatarPath(img.getAttribute('src')) === selectedAvatarPath);
     });
 }
 
