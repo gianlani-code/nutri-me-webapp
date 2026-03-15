@@ -1806,6 +1806,7 @@ let activeDate = formatLocalIsoDate(new Date());
 let currentMonth = new Date();
 let currentMealType = null;
 let aiSelectedIngredients = [];
+let aiGeneratedRecipes = [];
 
 function formatLocalIsoDate(date) {
     const year = date.getFullYear();
@@ -1954,7 +1955,7 @@ function updateSelectedFoodPreview() {
 }
 
 function findFoodSourceByName(name) {
-    return [...db, ...ricetteSalvate].find(item => (item.nome || item.n) === name) || null;
+    return [...db, ...ricetteSalvate.filter((item) => !item.aiGenerated)].find(item => (item.nome || item.n) === name) || null;
 }
 
 function getEntryReferenceValues(entry) {
@@ -2684,7 +2685,7 @@ function cercaAlimento(e, context) {
 
     if (query.length < 2) return;
 
-    const fullDb = [...db, ...ricetteSalvate];
+    const fullDb = [...db, ...ricetteSalvate.filter((item) => !item.aiGenerated)];
     const filtered = fullDb.filter(f => (f.nome && f.nome.toLowerCase().includes(query)) || (f.n && f.n.toLowerCase().includes(query)));
 
     filtered.forEach(f => {
@@ -2927,10 +2928,10 @@ function aggiornaListaRicetteSalvate() {
             <div style="display:flex;justify-content:space-between;align-items:center;">
                 <div>
                     <strong style="font-family:'Poppins',sans-serif;">${r.n}</strong><br>
-                    <small style="color:#7f8c8d;">${Math.round(r.k)} kcal / porzione</small>
+                    <small style="color:#7f8c8d;">${r.aiGenerated ? 'AI Mode salvata come ispirazione' : `${Math.round(r.k)} kcal / porzione`}</small>
                 </div>
                 <div style="display:flex;gap:6px;">
-                    <button onclick="modificaRicetta(${i})" style="background:#34b27f;color:white;border:none;border-radius:10px;padding:5px 8px;">✎</button>
+                    ${r.aiGenerated ? '' : `<button onclick="modificaRicetta(${i})" style="background:#34b27f;color:white;border:none;border-radius:10px;padding:5px 8px;">✎</button>`}
                     <button onclick="eliminaRicetta(${i})" style="background:#ff9800;color:white;border:none;border-radius:10px;padding:5px 8px;">🗑</button>
                 </div>
             </div>
@@ -3011,27 +3012,229 @@ function rimuovi(index) {
     aggiornaUI();
 }
 
-function generaRicettaAI() {
-    let ingredienti = document.getElementById('discover-ingredients').value || "quello che trovi in frigo";
-    if (aiSelectedIngredients.length > 0) {
-        ingredienti = aiSelectedIngredients.join(', ');
-    }
-    const persone = parseInt(document.getElementById('discover-people').value) || 1;
-    const resultBox = document.getElementById('ai-recipe-result');
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
 
-    if (persone < 1) {
-        alert("Inserisci un numero di persone valido!");
-        return;
-    }
+function getAIProfilePayload() {
+    const storedProfile = JSON.parse(localStorage.getItem('nv_profilo')) || profilo || {};
+
+    return {
+        username: storedProfile.username || '',
+        goal: storedProfile.goal || '',
+        diet: storedProfile.diet || '',
+        allergies: storedProfile.allergies || '',
+        intolerances: storedProfile.intolerances || '',
+        jobType: storedProfile.jobType || '',
+        workoutsPerWeek: storedProfile.workoutsPerWeek || 0,
+        targetCalories: storedProfile.target || 0
+    };
+}
+
+function getAIFallbackRecipes(ingredients, people, profile) {
+    const safeIngredients = ingredients.length > 0 ? ingredients : ['verdure miste'];
+    const lead = safeIngredients.slice(0, 3);
+    const leadText = lead.join(', ');
+    const goal = profile.goal || 'mantenere';
+    const diet = profile.diet || 'equilibrato';
+    const jobType = profile.jobType || 'moderato';
+
+    const goalHintMap = {
+        dimagrire: 'con porzioni sazianti e una struttura leggera',
+        mantenere: 'con un equilibrio semplice tra energia e sazieta',
+        massa: 'con una spinta proteica e carboidrati utili al recupero'
+    };
+
+    const dietHint = diet && diet !== 'regime alimentare non specificato'
+        ? `Compatibile con un approccio ${diet}.`
+        : 'Pensata per adattarsi facilmente a una dispensa quotidiana.';
+
+    const jobHintMap = {
+        sedentario: 'Richiede poco tempo e sporca il minimo indispensabile.',
+        moderato: 'Sta bene in una routine settimanale normale.',
+        attivo: 'Funziona bene anche come pasto post giornata intensa.'
+    };
+
+    return [
+        {
+            title: `Padellata smart di ${lead[0] || 'frigo'} e ${lead[1] || 'dispensa'}`,
+            style: 'Svuotafrigo express',
+            summary: `Una proposta veloce per ${people} ${people === 1 ? 'persona' : 'persone'} che valorizza ${leadText}.`,
+            whyItFits: `Ideata per l'obiettivo ${goal} ${goalHintMap[goal] || goalHintMap.mantenere}. ${dietHint} ${jobHintMap[jobType] || jobHintMap.moderato}`,
+            ingredients: [...lead, 'olio EVO', 'aglio o cipolla', 'erbe aromatiche'],
+            steps: [
+                'Taglia gli ingredienti principali in pezzi regolari per cuocerli in modo uniforme.',
+                'Rosola un fondo con poco olio e aggiungi prima gli ingredienti piu consistenti, poi quelli piu delicati.',
+                'Regola con spezie ed erbe, quindi servi come piatto unico o come base per cereali, pane o legumi.'
+            ],
+            wasteTip: 'Usa gambi, foglie tenere e parti esterne ben lavate per dare piu volume al piatto.',
+            goalTag: goal || 'mantenere'
+        },
+        {
+            title: `Teglia anti-spreco con ${lead[0] || 'ingredienti'} al forno`,
+            style: 'Forno zero stress',
+            summary: `Una ricetta da forno semplice che trasforma pochi ingredienti in un pasto completo per ${people} ${people === 1 ? 'persona' : 'persone'}.`,
+            whyItFits: `Pensata per semplificare la preparazione e mantenere coerenza con il tuo stile di vita ${jobType || 'quotidiano'}.`,
+            ingredients: [...safeIngredients.slice(0, 4), 'pangrattato o semi', 'olio EVO', 'spezie a piacere'],
+            steps: [
+                'Disponi gli ingredienti in teglia, condisci con olio e aromi e aggiungi una parte croccante in superficie.',
+                'Cuoci finche i bordi risultano dorati e l interno resta morbido.',
+                'Servi la teglia da sola oppure accompagnata da una salsa yogurt, hummus o crema di legumi in base al regime alimentare.'
+            ],
+            wasteTip: 'Se avanzano porzioni, riusale il giorno dopo come ripieno per piadina, bowl o insalata.',
+            goalTag: goal || 'mantenere'
+        },
+        {
+            title: `Bowl creativa con ${lead[0] || 'ingredienti di stagione'}`,
+            style: 'Idea flessibile',
+            summary: 'Una terza opzione diversa dalle altre due, piu modulabile e utile anche per usare piccoli avanzi.',
+            whyItFits: `Ti lascia margine per aggiungere una quota proteica coerente con il tuo profilo e ridurre lo spreco degli ingredienti gia aperti.`,
+            ingredients: [...safeIngredients.slice(0, 3), 'base a scelta: riso, pane, patate o legumi', 'condimento leggero'],
+            steps: [
+                'Cuoci o scalda una base neutra in porzione adatta al numero di persone.',
+                'Abbina gli ingredienti scelti con una componente cremosa o croccante per dare contrasto.',
+                'Completa con semi, spezie o erbe per cambiare sapore senza comprare altro.'
+            ],
+            wasteTip: 'Perfetta per finire mezze porzioni gia cotte: anche pochi cucchiai possono diventare topping utili.',
+            goalTag: goal || 'mantenere'
+        }
+    ];
+}
+
+function renderAIRecipeResults(recipes, metadata = {}) {
+    const resultBox = document.getElementById('ai-recipe-result');
+    if (!resultBox) return;
+
+    aiGeneratedRecipes = Array.isArray(recipes) ? recipes : [];
+
+    const sourceLabel = metadata.source === 'fallback'
+        ? 'Suggerimenti smart di backup'
+        : '3 proposte generate per il tuo profilo';
 
     resultBox.style.display = 'block';
     resultBox.innerHTML = `
-        <h4 style="color: var(--info); margin-bottom: 10px;">✨ Generazione in corso...</h4>
-        <p style="font-size: 0.9rem; color: #7f8c8d;">
-            Sto analizzando gli ingredienti: <b>${ingredienti}</b> per <b>${persone} persone</b>.<br><br>
-            <i>(Nota tecnica: L'interfaccia è pronta! Per farti generare la ricetta vera e propria, dovremo collegare questa funzione al backend tramite API.)</i>
-        </p>
+        <div class="ai-mode-header">
+            <div>
+                <h4 class="ai-mode-title">${escapeHtml(sourceLabel)}</h4>
+                <p class="ai-mode-subtitle">Le ricette tengono conto degli ingredienti scelti e delle informazioni del questionario.</p>
+            </div>
+        </div>
+        <div class="ai-recipe-grid">
+            ${recipes.map((recipe, index) => `
+                <article class="ai-recipe-card">
+                    <div class="ai-recipe-card-top">
+                        <span class="ai-recipe-index">Opzione ${index + 1}</span>
+                        <span class="ai-recipe-tag">${escapeHtml(recipe.style || recipe.goalTag || 'Ricetta')}</span>
+                    </div>
+                    <h5>${escapeHtml(recipe.title)}</h5>
+                    <p class="ai-recipe-summary">${escapeHtml(recipe.summary || '')}</p>
+                    <p class="ai-recipe-fit"><strong>Perche ti puo aiutare:</strong> ${escapeHtml(recipe.whyItFits || '')}</p>
+                    <div class="ai-recipe-section">
+                        <strong>Ingredienti</strong>
+                        <ul>
+                            ${(recipe.ingredients || []).map((item) => `<li>${escapeHtml(item)}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div class="ai-recipe-section">
+                        <strong>Procedimento</strong>
+                        <ol>
+                            ${(recipe.steps || []).map((step) => `<li>${escapeHtml(step)}</li>`).join('')}
+                        </ol>
+                    </div>
+                    <p class="ai-recipe-waste"><strong>Tip anti-spreco:</strong> ${escapeHtml(recipe.wasteTip || '')}</p>
+                    <button type="button" class="ai-recipe-save-btn" onclick="salvaRicettaAI(${index})">Salva tra i miei piatti</button>
+                </article>
+            `).join('')}
+        </div>
     `;
+}
+
+function renderAIRecipeLoading(ingredients, people) {
+    const resultBox = document.getElementById('ai-recipe-result');
+    if (!resultBox) return;
+
+    resultBox.style.display = 'block';
+    resultBox.innerHTML = `
+        <div class="ai-mode-loading">
+            <h4 class="ai-mode-title">Sto costruendo 3 idee per te...</h4>
+            <p class="ai-mode-subtitle">Ingredienti analizzati: <strong>${escapeHtml(ingredients.join(', ') || 'dispensa di casa')}</strong> per <strong>${people}</strong> ${people === 1 ? 'persona' : 'persone'}.</p>
+        </div>
+    `;
+}
+
+function renderAIRecipeError(message) {
+    const resultBox = document.getElementById('ai-recipe-result');
+    if (!resultBox) return;
+
+    aiGeneratedRecipes = [];
+
+    resultBox.style.display = 'block';
+    resultBox.innerHTML = `
+        <div class="ai-mode-error">
+            <h4 class="ai-mode-title">AI Mode non disponibile</h4>
+            <p class="ai-mode-subtitle">${escapeHtml(message)}</p>
+        </div>
+    `;
+}
+
+async function generaRicettaAI() {
+    const ingredienti = aiSelectedIngredients.length > 0
+        ? [...aiSelectedIngredients]
+        : (document.getElementById('discover-ingredients').value || '')
+            .split(',')
+            .map((item) => item.trim())
+            .filter(Boolean);
+
+    const persone = parseInt(document.getElementById('discover-people').value, 10) || 1;
+    const profilePayload = getAIProfilePayload();
+
+    if (persone < 1) {
+        alert('Inserisci un numero di persone valido!');
+        return;
+    }
+
+    if (ingredienti.length === 0) {
+        alert('Aggiungi almeno un ingrediente per attivare AI Mode.');
+        return;
+    }
+
+    renderAIRecipeLoading(ingredienti, persone);
+
+    try {
+        const response = await fetch('/.netlify/functions/ai-recipes', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                ingredients: ingredienti,
+                people: persone,
+                profile: profilePayload
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Endpoint AI non raggiungibile in questo deploy.');
+        }
+
+        const payload = await response.json();
+        if (!payload || !Array.isArray(payload.recipes) || payload.recipes.length === 0) {
+            throw new Error('La risposta AI non contiene ricette valide.');
+        }
+
+        renderAIRecipeResults(payload.recipes.slice(0, 3), payload.meta || {});
+    } catch (error) {
+        console.error('AI Mode error:', error);
+        const fallbackRecipes = getAIFallbackRecipes(ingredienti, persone, profilePayload);
+        renderAIRecipeResults(fallbackRecipes, {
+            source: 'fallback'
+        });
+    }
 }
 
 let kcalChart;
@@ -3181,4 +3384,54 @@ function chiudiConfermaResetProfilo() {
 function eseguiResetProfilo() {
     chiudiConfermaResetProfilo();
     logout();
+}
+
+function salvaRicettaAI(index) {
+    const recipe = aiGeneratedRecipes[index];
+    if (!recipe) return;
+
+    const recipeName = String(recipe.title || '').trim();
+    if (!recipeName) {
+        alert('Questa ricetta AI non puo essere salvata.');
+        return;
+    }
+
+    const alreadySaved = ricetteSalvate.some((item) => (item.n || '').toLowerCase() === recipeName.toLowerCase());
+    if (alreadySaved) {
+        alert('Questa ricetta e gia presente nei tuoi piatti salvati.');
+        return;
+    }
+
+    const savedRecipe = {
+        n: recipeName,
+        k: 0,
+        p: 0,
+        c: 0,
+        g: 0,
+        fe: 0,
+        ca: 0,
+        b12: 0,
+        items: (recipe.ingredients || []).map((ingredient) => ({
+            n: ingredient,
+            qty: 0,
+            k: 0,
+            p: 0,
+            c: 0,
+            g: 0,
+            fe: 0,
+            ca: 0,
+            b12: 0
+        })),
+        aiGenerated: true,
+        aiStyle: recipe.style || '',
+        aiSummary: recipe.summary || '',
+        aiWhyItFits: recipe.whyItFits || '',
+        aiSteps: Array.isArray(recipe.steps) ? [...recipe.steps] : [],
+        aiWasteTip: recipe.wasteTip || ''
+    };
+
+    ricetteSalvate.push(savedRecipe);
+    localStorage.setItem('nv_ricette', JSON.stringify(ricetteSalvate));
+    aggiornaListaRicetteSalvate();
+    alert('Ricetta AI salvata nei tuoi piatti!');
 }
