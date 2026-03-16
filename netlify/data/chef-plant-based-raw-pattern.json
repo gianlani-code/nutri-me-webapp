@@ -1,0 +1,116 @@
+{
+  "version": "1.0",
+  "category": "alimentazione-vegetale-integrale-e-crudo",
+  "overview": {
+    "summary": "Questo blocco descrive un approccio alimentare centrato su cibi vegetali, ingredienti integrali, riduzione dei prodotti raffinati e uso frequente di frutta, verdure crude, cereali integrali, legumi, semi e frutta secca. Alcune pratiche riportate hanno natura esperienziale e non vanno trattate come regole universali o mediche.",
+    "identity": [
+      "Predilige alimenti vegetali e minimamente processati.",
+      "Riduce o esclude alimenti di origine animale in alcune impostazioni personali o etiche.",
+      "Valorizza frutta, verdure crude, cereali integrali, semi, frutta secca e preparazioni semplici."
+    ]
+  },
+  "plant_based_principles": {
+    "summary": "In chiave culinaria questo stile alimentare punta su ingredienti riconoscibili, tecniche semplici e densita nutrizionale ottenuta da combinazioni vegetali ben costruite.",
+    "key_points": [
+      "Ridurre farine molto raffinate, zuccheri bianchi e prodotti confezionati puo orientare la cucina verso preparazioni piu essenziali e ricche di ingredienti interi.",
+      "Legumi, cereali integrali, semi oleosi, frutta secca e derivati vegetali possono costruire piatti sazianti e completi.",
+      "In un'alimentazione completamente vegetale serve attenzione alla pianificazione nutrizionale e alla varietà nel tempo."
+    ]
+  },
+  "daily_pattern_examples": {
+    "summary": "Un modello quotidiano tipico in questo stile puo ruotare attorno a frutta come spuntino, grandi insalate crude e un piatto cotto integrale o a base di legumi e verdure a pranzo e cena.",
+    "examples": [
+      "colazione o spuntini con frutta di stagione",
+      "insalatone crude con verdure, germogli, olive, semi o frutta secca",
+      "piatti principali come pasta integrale, riso integrale, farro, miglio, quinoa, cous cous, zuppe, vellutate, farinata, polpette vegetali, piadine o torte salate"
+    ],
+    "notes": [
+      "Questo schema va trattato come esempio di organizzazione personale, non come unico modello corretto.",
+      "Chef AI puo ispirarsi alla modularita del pattern: base cruda, piatto cotto, snack semplici."
+    ]
+  },
+  "raw_food_logic": {
+    "summary": "L'uso del crudo in apertura di pasto o in forte presenza giornaliera appartiene a molte cucine salutistiche e domestiche, ma non va presentato come obbligo universale.",
+    "key_points": [
+      "Verdure crude, germogli e frutta possono alleggerire il profilo del pasto e aumentare freschezza e varietà sensoriale.",
+      "Mangiare crudo prima del cotto e una pratica adottata da alcune persone per ragioni digestive o di preferenza, ma non e una regola scientifica valida per tutti.",
+      "Chef AI puo proporre il crudo come opzione utile, non come prescrizione assoluta."
+    ]
+  },
+  "fruit_handling": {
+    "summary": "In alcuni approcci salutistici la frutta viene distinta per gruppi e consumata lontano dai pasti o per tipologia omogenea, ma queste pratiche vanno trattate con cautela.",
+    "group_examples": {
+      "acidic": ["ananas", "arance", "fragole", "kiwi", "limoni", "mandarini"],
+      "semi_acidic": ["amarene", "lamponi", "mele renette", "more", "ribes"],
+      "semi_sweet": ["albicocche", "ciliegie", "fichi", "pesche", "papaya", "nespole", "pere", "mele", "uva", "susine", "meloni", "angurie"],
+      "sweet": ["banana", "kaki", "datteri", "frutta essiccata"]
+    },
+    "guardrails": [
+      "Chef AI non deve presentare la classificazione della frutta o il tema della fermentazione digestiva come verita clinica universale.",
+      "Queste pratiche possono essere citate come preferenze organizzative o approcci personali, non come legge nutrizionale generale."
+    ]
+  },
+  "example_preparations": {
+    "summary": "Le ricette riportate sono utili come modelli di cucina vegetale semplice, casalinga e ad alta adattabilita.",
+    "recipes": [
+      {
+        "name": "patate dolci al forno speziate",
+        "logic": [
+          "La patata dolce si presta a cottura al forno con olio e spezie, puntando su caramellizzazione e speziatura calda.",
+          "Il risciacquo dopo il taglio puo aiutare a gestire parte dell'amido superficiale."
+        ]
+      },
+      {
+        "name": "barrette superenergetiche",
+        "logic": [
+          "Una base di banana, avena, frutta secca, uvetta e cioccolato genera barrette dense, energetiche e facili da porzionare.",
+          "Sono adatte come snack o riserva energetica, ma Chef AI deve ricordare che restano caloricamente concentrate."
+        ]
+      },
+      {
+        "name": "tiramisu fruttariano",
+        "logic": [
+          "Esempio di dessert senza cottura costruito con frutta fresca, datteri e polveri aromatiche come la carruba.",
+          "Va trattato come dessert a base frutta ispirato al tiramisu, non come equivalente tecnico del dolce classico."
+        ]
+      },
+      {
+        "name": "riso ai funghi e fiori di zucca",
+        "logic": [
+          "Combina una base di riso con funghi saltati e un uso estetico-funzionale dei fiori di zucca.",
+          "Chef AI deve saper distinguere questa preparazione da un risotto classico, perche qui il riso viene prima bollito e poi rifinito."
+        ]
+      }
+    ]
+  },
+  "practical_habits": {
+    "summary": "Alcuni consigli pratici ricorrenti in questi approcci riguardano ritmo dei pasti, moderazione di fritti e condimenti e valorizzazione del gusto naturale degli alimenti.",
+    "examples": [
+      "masticare con calma",
+      "ridurre fritture e condimenti eccessivi",
+      "limitare sale e zucchero aggiunti",
+      "evitare eccessi di caffe e alcol se non coerenti con il proprio obiettivo alimentare",
+      "non cenare troppo tardi quando si cerca leggerezza digestiva"
+    ],
+    "notes": [
+      "Anche queste pratiche vanno presentate come abitudini utili o scelte di stile, non come regole assolute valide per tutti."
+    ]
+  },
+  "chef_use": {
+    "when_relevant": [
+      "Quando l'utente cerca ricette vegetali integrali, poco raffinate o ispirate a uno stile plant-based casalingo.",
+      "Quando servono snack energetici, piatti semplici a base di cereali integrali e verdure o dessert di frutta senza cottura.",
+      "Quando bisogna costruire menu quotidiani essenziali con grande presenza di vegetali e ingredienti interi."
+    ],
+    "how_to_use": [
+      "Usare queste nozioni per generare ricette semplici, modulari e adattabili alle stagioni.",
+      "Valorizzare la combinazione tra parte cruda, cereali integrali, legumi e snack a base di frutta secca o avena.",
+      "Distinguere sempre tra ricetta ispirata e ricetta tradizionale quando i nomi evocano classici come il tiramisu."
+    ],
+    "guardrails": [
+      "Non presentare pratiche come detossificazione, combinazione della frutta o ordine crudo-cotto come verita scientifiche assolute.",
+      "Non far passare un'alimentazione esclusivamente vegetale come automaticamente completa senza attenzione alla pianificazione nutrizionale.",
+      "Non descrivere dessert o barrette energetiche come leggeri solo perche vegetali o naturali."
+    ]
+  }
+}

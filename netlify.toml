@@ -2,6 +2,17 @@
 publish = "."
 functions = "netlify/functions"
 
+[[headers]]
+for = "/*"
+
+	[headers.values]
+	X-Frame-Options = "DENY"
+	X-Content-Type-Options = "nosniff"
+	Referrer-Policy = "strict-origin-when-cross-origin"
+	Permissions-Policy = "camera=(self), microphone=(), geolocation=()"
+	Cross-Origin-Opener-Policy = "same-origin"
+	Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.jsdelivr.net/npm https://cdn.jsdelivr.net/npm/chart.js; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https://api.openai.com https://api.openai.com/v1 https://it.openfoodfacts.org; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'"
+
 [[redirects]]
 from = "/*"
 to = "/index.html"

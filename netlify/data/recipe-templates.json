@@ -1,0 +1,1809 @@
+[
+  {
+    "id": "R001",
+    "nome_ricetta": "Bowl di Riso Venere con Zucchine Scottate e Salmone",
+    "difficolta": "Semplice",
+    "tempo_prep_min": 25,
+    "allergeni_esclusi": ["Lattosio", "Glutine"],
+    "tecnica_cottura": "Bollitura per assorbimento e scottatura rapida a fiamma viva.",
+    "anti_spreco": "Non buttare la parte bianca delle zucchine vicino al picciolo: tagliala a julienne fine e usala cruda per dare croccantezza.",
+    "ingredienti_tabella": [
+      {"n": "Riso Venere (Nero)", "qty": 80, "k": 280, "p": 7.2, "c": 56, "g": 1.7},
+      {"n": "Zucchina scura", "qty": 150, "k": 24, "p": 1.8, "c": 4.6, "g": 0.4},
+      {"n": "Salmone (Atlantico)", "qty": 120, "k": 249, "p": 24, "c": 0, "g": 15.6},
+      {"n": "Olio Extravergine di Oliva", "qty": 10, "k": 89, "p": 0, "c": 0, "g": 9.9}
+    ],
+    "totale_piatto": {"k": 642, "p": 33, "c": 60.6, "g": 27.6},
+    "procedimento": [
+      "Cuoci il riso venere in abbondante acqua leggermente salata per circa 18 minuti.",
+      "Nel frattempo, taglia le zucchine a rondelle spesse e il salmone a cubetti.",
+      "Scalda una padella antiaderente: scotta le zucchine senza olio finche non hanno le classiche righe di brunitura, poi mettile da parte.",
+      "Nella stessa padella, scotta i cubetti di salmone per 2 minuti sfruttando il suo grasso naturale.",
+      "Scola il riso, unisci salmone e zucchine e condisci con l'olio a crudo."
+    ]
+  },
+  {
+    "id": "R002",
+    "nome_ricetta": "Crema di Lenticchie Rosse al Rosmarino con Pane di Segale Croccante",
+    "difficolta": "Semplice",
+    "tempo_prep_min": 20,
+    "allergeni_esclusi": ["Lattosio"],
+    "tecnica_cottura": "Stufatura dolce e tostatura al forno.",
+    "anti_spreco": "I rametti duri del rosmarino senza gli aghi possono essere messi nell'acqua di cottura delle lenticchie per infondere aroma e poi rimossi.",
+    "ingredienti_tabella": [
+      {"n": "Lenticchie fresche", "qty": 150, "k": 174, "p": 13.5, "c": 30.1, "g": 0.6},
+      {"n": "Pane di segale (Nero)", "qty": 50, "k": 115, "p": 3.7, "c": 22.5, "g": 0.7},
+      {"n": "Rosmarino secco", "qty": 2, "k": 6, "p": 0.1, "c": 1.2, "g": 0.3},
+      {"n": "Olio Extravergine di Oliva", "qty": 10, "k": 89, "p": 0, "c": 0, "g": 9.9}
+    ],
+    "totale_piatto": {"k": 384, "p": 17.3, "c": 53.8, "g": 11.5},
+    "procedimento": [
+      "Sciacqua le lenticchie rosse e mettile in pentola coperte da due dita d'acqua fredda, porta a bollore e cuoci per 15 minuti.",
+      "Aggiungi un pizzico di sale e il rosmarino solo a fine cottura, frullando grossolanamente con un minipimer.",
+      "Taglia il pane di segale a cubetti e tostalo in padella o in forno fino a renderlo croccante.",
+      "Servi la crema calda guarnita con i crostini e un filo d'olio EVO a crudo."
+    ]
+  },
+  {
+    "id": "R003",
+    "nome_ricetta": "Filetto di Orata in Crosta di Mandorle su Pure di Topinambur",
+    "difficolta": "Media",
+    "tempo_prep_min": 35,
+    "allergeni_esclusi": ["Glutine", "Lattosio"],
+    "tecnica_cottura": "Cottura al forno ventilato per la proteina, lessatura per i tuberi.",
+    "anti_spreco": "Lava bene il topinambur e cuocilo con la buccia: frullando tutto otterrai un pure piu rustico, ricco di fibre e inulina.",
+    "ingredienti_tabella": [
+      {"n": "Orata", "qty": 150, "k": 172, "p": 30, "c": 0, "g": 4.5},
+      {"n": "Topinambur", "qty": 200, "k": 146, "p": 4, "c": 34, "g": 0},
+      {"n": "Mandorle sgusciate", "qty": 20, "k": 120, "p": 4.2, "c": 1, "g": 10},
+      {"n": "Olio Extravergine di Oliva", "qty": 10, "k": 89, "p": 0, "c": 0, "g": 9.9}
+    ],
+    "totale_piatto": {"k": 527, "p": 38.2, "c": 35, "g": 24.4},
+    "procedimento": [
+      "Spazzola il topinambur sotto l'acqua, taglialo a cubetti e lessalo in acqua bollente per 20 minuti finche tenero. Frullalo con un cucchiaino d'olio, sale e pepe per ottenere un pure.",
+      "Trita grossolanamente le mandorle per creare una granella rustica.",
+      "Spennella il filetto di orata con un filo d'olio, ricoprilo con la granella di mandorle premendo bene per farla aderire.",
+      "Inforna l'orata a 190 C per 12-15 minuti finche la crosta non e dorata.",
+      "Servi il filetto croccante adagiato sul letto di pure caldo."
+    ]
+  },
+  {
+    "id": "R004",
+    "nome_ricetta": "Risotto all'Acqua di Pomodoro, Polvere di Capperi e Basilico",
+    "difficolta": "Chef",
+    "tempo_prep_min": 45,
+    "allergeni_esclusi": ["Lattosio", "Glutine", "Uova"],
+    "tecnica_cottura": "Tostatura a secco, mantecatura all'onda con emulsione vegetale.",
+    "anti_spreco": "I pomodori usati per fare l'acqua non si buttano: frullali, stendili su carta forno e falli essiccare a 60 C per creare cialde di pomodoro croccante.",
+    "ingredienti_tabella": [
+      {"n": "Riso Carnaroli", "qty": 80, "k": 276, "p": 5.6, "c": 62.4, "g": 0.4},
+      {"n": "Pomodoro da insalata", "qty": 300, "k": 54, "p": 2.7, "c": 11.7, "g": 0.6},
+      {"n": "Capperi sotto sale", "qty": 10, "k": 4, "p": 0.2, "c": 0.5, "g": 0},
+      {"n": "Basilico fresco", "qty": 10, "k": 2, "p": 0.3, "c": 0.2, "g": 0},
+      {"n": "Olio Extravergine di Oliva", "qty": 15, "k": 134, "p": 0, "c": 0, "g": 14.8}
+    ],
+    "totale_piatto": {"k": 470, "p": 8.8, "c": 74.8, "g": 15.8},
+    "procedimento": [
+      "Frulla i pomodori e mettili a scolare su un canovaccio sospeso su una ciotola in frigo per 12 ore: otterrai un'acqua di pomodoro trasparente e purissima. Scaldala.",
+      "Sciacqua bene i capperi dal sale, asciugali e tostali in padella finche non diventano secchi. Tritali in polvere.",
+      "Tosta il riso a secco in una casseruola larga finche i chicchi non sono roventi senza usare olio in questa fase per non sigillare gli amidi.",
+      "Porta a cottura il riso bagnando gradualmente con l'acqua di pomodoro calda.",
+      "A fuoco spento, aggiungi foglie di basilico spezzate a mano e manteca vigorosamente all'onda versando l'olio EVO a filo per creare un'emulsione cremosa.",
+      "Impiatta stendendo il risotto sul fondo e spolvera con la polvere di capperi."
+    ]
+  },
+  {
+    "id": "R005",
+    "nome_ricetta": "Terrina di Carne di Recupero con Crostini di Pane Raffermo",
+    "difficolta": "Media",
+    "tempo_prep_min": 80,
+    "allergeni_esclusi": [],
+    "tecnica_cottura": "Cottura dolce a bagnomaria in forno statico per mantenere umidita e struttura.",
+    "anti_spreco": "Il latte usato per ammollare il pane, se filtrato, puo diventare base per creme o vellutate; anche il pane avanzato torna in tavola sotto forma di crostini tostati.",
+    "ingredienti_tabella": [
+      {"n": "Pane raffermo", "qty": 30, "k": 80, "p": 2.6, "c": 15.0, "g": 1.0},
+      {"n": "Latte vaccino intero", "qty": 50, "k": 32, "p": 1.6, "c": 2.4, "g": 1.8},
+      {"n": "Petto di pollo", "qty": 100, "k": 110, "p": 23.0, "c": 0.0, "g": 1.5},
+      {"n": "Salumi misti avanzati", "qty": 200, "k": 520, "p": 32.0, "c": 2.0, "g": 42.0},
+      {"n": "Cipollotto fresco", "qty": 40, "k": 13, "p": 0.7, "c": 2.9, "g": 0.1},
+      {"n": "Uovo", "qty": 60, "k": 86, "p": 7.5, "c": 0.4, "g": 5.8}
+    ],
+    "totale_piatto": {"k": 841, "p": 67.4, "c": 22.7, "g": 52.2},
+    "procedimento": [
+      "Scalda il forno a 150 C in modalita statica e ammolla il pane raffermo nel latte.",
+      "Taglia a pezzi il petto di pollo e gli avanzi di salumi; affetta il cipollotto includendo la parte verde.",
+      "Trita nel robot le carni con il cipollotto, poi aggiungi il pane scolato e strizzato e l'uovo senza frullare troppo, cosi la massa mantiene struttura.",
+      "Non aggiungere sale: pollo e salumi portano gia sapidita. Imburra una cocotte con coperchio, riempila con il composto e pressa bene.",
+      "Sistema la cocotte in una teglia alta, versa acqua molto calda fino a circa un centimetro dal bordo e cuoci a bagnomaria per un'ora.",
+      "Lascia raffreddare la terrina direttamente nel suo bagno caldo residuo, poi servi con crostini di pane raffermo tostato."
+    ]
+  },
+  {
+    "id": "R006",
+    "nome_ricetta": "Biscotti di Ceci e Cioccolato di Recupero",
+    "difficolta": "Semplice",
+    "tempo_prep_min": 30,
+    "allergeni_esclusi": [],
+    "tecnica_cottura": "Impasto rapido e cottura in forno statico a temperatura moderata.",
+    "anti_spreco": "I ceci lessati avanzati e il cioccolato fondente in esubero possono trasformarsi in biscotti semplici; anche il cioccolato avanzato puo essere congelato e usato all'occorrenza.",
+    "ingredienti_tabella": [
+      {"n": "Ceci lessati avanzati", "qty": 50, "k": 82, "p": 4.5, "c": 13.7, "g": 1.3},
+      {"n": "Cioccolato fondente", "qty": 20, "k": 110, "p": 1.6, "c": 9.2, "g": 7.4},
+      {"n": "Zucchero di canna integrale", "qty": 25, "k": 96, "p": 0.0, "c": 24.8, "g": 0.0},
+      {"n": "Olio Extravergine di Oliva delicato", "qty": 12, "k": 106, "p": 0.0, "c": 0.0, "g": 11.9},
+      {"n": "Latte vaccino o bevanda vegetale", "qty": 50, "k": 28, "p": 1.5, "c": 2.4, "g": 1.4},
+      {"n": "Farina 00", "qty": 80, "k": 291, "p": 8.0, "c": 60.8, "g": 0.8},
+      {"n": "Lievito per dolci", "qty": 5, "k": 7, "p": 0.2, "c": 1.3, "g": 0.0}
+    ],
+    "totale_piatto": {"k": 720, "p": 15.8, "c": 112.2, "g": 22.8},
+    "procedimento": [
+      "Scalda il forno a 175 C in modalita statica e prepara una leccarda con carta forno bagnata e ben strizzata.",
+      "Sciacqua i ceci avanzati, asciugali e tritali grossolanamente insieme al cioccolato fondente.",
+      "Raccogli tutto in una ciotola e unisci zucchero di canna, pizzico di sale, olio, latte o bevanda vegetale, farina setacciata e lievito.",
+      "Mescola con un cucchiaio fino a ottenere un impasto corposo ma modellabile.",
+      "Con le mani leggermente inumidite forma palline appena schiacciate e disponile ben distanziate sulla teglia.",
+      "Cuoci per circa 20 minuti, poi lascia raffreddare completamente su una gratella prima di servire."
+    ],
+    "archetypes": ["snack-dessert"],
+    "knowledgeKeys": ["plantBasedRawPattern", "proteinPlanning"]
+  },
+  {
+    "id": "R007",
+    "nome_ricetta": "Focaccine di Verdure in Padella con Yogurt ed Erbe",
+    "difficolta": "Semplice",
+    "tempo_prep_min": 25,
+    "allergeni_esclusi": [],
+    "tecnica_cottura": "Impasto rapido con quota lattica e cottura dolce in padella coperta.",
+    "anti_spreco": "Le verdure grattugiate un po' appassite o non piu perfette sono ideali nell'impasto; se resta una focaccina, puo diventare base per un pranzo farcito il giorno dopo.",
+    "ingredienti_tabella": [
+      {"n": "Farina 00", "qty": 250, "k": 910, "p": 25, "c": 190, "g": 2.5},
+      {"n": "Yogurt bianco naturale", "qty": 100, "k": 63, "p": 3.8, "c": 4.7, "g": 3.3},
+      {"n": "Zucchina", "qty": 120, "k": 19, "p": 1.4, "c": 3.5, "g": 0.3},
+      {"n": "Carota", "qty": 80, "k": 33, "p": 0.7, "c": 7.7, "g": 0.2},
+      {"n": "Peperone rosso", "qty": 60, "k": 18, "p": 0.6, "c": 4.2, "g": 0.1},
+      {"n": "Parmigiano grattugiato", "qty": 20, "k": 80, "p": 7.2, "c": 0, "g": 5.8},
+      {"n": "Olio Extravergine di Oliva", "qty": 20, "k": 178, "p": 0, "c": 0, "g": 19.8}
+    ],
+    "totale_piatto": {"k": 1301, "p": 38.7, "c": 210.1, "g": 32.0},
+    "procedimento": [
+      "Mescola farina, lievito istantaneo e sale, poi unisci yogurt, acqua e olio fino a ottenere un impasto morbido ma non colloso.",
+      "Aggiungi zucchina e carota grattugiate ben strizzate, peperone a dadini piccoli, parmigiano ed erbe aromatiche.",
+      "Se l'impasto risulta troppo umido, correggi con poca farina alla volta: la resa dipende dall'acqua rilasciata dalle verdure.",
+      "Dividi in 6 pezzi, schiacciali a circa 1 centimetro di spessore e cuocili in padella antiaderente con poco olio e coperchio.",
+      "Cuoci a fuoco medio-basso 4-5 minuti per lato finche risultano dorate fuori e morbide al centro."
+    ],
+    "archetypes": ["flatbread"],
+    "knowledgeKeys": ["panVegetableFlatbreads", "vegetableScience", "yeastCivilization"]
+  },
+  {
+    "id": "R008",
+    "nome_ricetta": "Patate Dolci al Forno Speziate con Erbe",
+    "difficolta": "Semplice",
+    "tempo_prep_min": 50,
+    "allergeni_esclusi": ["Glutine", "Lattosio", "Uova"],
+    "tecnica_cottura": "Forno ventilato con speziatura in teglia e rosolatura finale.",
+    "anti_spreco": "Le bucce, se ben lavate, possono essere asciugate e tostate separatamente come chips rustiche; eventuali avanzi diventano ripieno per bowl o piadine del giorno dopo.",
+    "ingredienti_tabella": [
+      {"n": "Patata americana", "qty": 500, "k": 430, "p": 8.0, "c": 100.0, "g": 0.5},
+      {"n": "Olio Extravergine di Oliva", "qty": 18, "k": 160, "p": 0, "c": 0, "g": 17.8},
+      {"n": "Mix di spezie", "qty": 6, "k": 18, "p": 0.6, "c": 3.2, "g": 0.4}
+    ],
+    "totale_piatto": {"k": 608, "p": 8.6, "c": 103.2, "g": 18.7},
+    "procedimento": [
+      "Lava, sbuccia e taglia le patate dolci in spicchi o tocchetti regolari, poi risciacquale per eliminare l'eccesso di amido superficiale.",
+      "Condiscile in teglia con olio, sale e un mix di spezie ben distribuito in modo uniforme.",
+      "Disponile in un solo strato senza sovrapporle, cosi il forno asciuga la superficie e concentra meglio il sapore.",
+      "Cuoci a 190 C per circa 40 minuti, girando a meta cottura se serve una doratura piu omogenea.",
+      "Servi subito come contorno importante, base per bowl o snack salato speziato."
+    ],
+    "archetypes": ["oven-roast"],
+    "knowledgeKeys": ["vegetableScience", "plantBasedRawPattern"]
+  },
+  {
+    "id": "R009",
+    "nome_ricetta": "Barrette Energetiche di Avena, Banana e Frutta Secca",
+    "difficolta": "Semplice",
+    "tempo_prep_min": 30,
+    "allergeni_esclusi": [],
+    "tecnica_cottura": "Impasto compatto, pressatura in teglia e doppia cottura breve per asciugare senza indurire troppo.",
+    "anti_spreco": "Le banane molto mature qui lavorano meglio di quelle perfette; le briciole delle barrette possono diventare topping per yogurt o porridge.",
+    "ingredienti_tabella": [
+      {"n": "Banana matura", "qty": 360, "k": 320, "p": 4.0, "c": 82.0, "g": 1.1},
+      {"n": "Fiocchi d'avena piccoli", "qty": 260, "k": 980, "p": 42.0, "c": 156.0, "g": 18.0},
+      {"n": "Noci", "qty": 120, "k": 786, "p": 18.0, "c": 8.0, "g": 78.0},
+      {"n": "Mandorle", "qty": 160, "k": 928, "p": 34.0, "c": 14.0, "g": 80.0},
+      {"n": "Uvetta", "qty": 120, "k": 360, "p": 3.0, "c": 94.0, "g": 0.5},
+      {"n": "Cioccolato fondente", "qty": 100, "k": 550, "p": 8.0, "c": 46.0, "g": 37.0}
+    ],
+    "totale_piatto": {"k": 3924, "p": 109.0, "c": 400.0, "g": 214.6},
+    "procedimento": [
+      "Trita grossolanamente noci, mandorle e cioccolato, lasciando una parte irregolare per migliorare texture e morso.",
+      "Schiaccia o frulla le banane e amalgamale con avena, frutta secca, uvetta, cioccolato e un pizzico di vaniglia.",
+      "Stendi il composto in una teglia foderata con carta forno, compattandolo bene con una spatola o con il dorso di un cucchiaio.",
+      "Cuoci a 180 C per 10 minuti, poi abbassa a 170 C e prosegui per altri 15 minuti finche il blocco e stabile ma ancora morbido al cuore.",
+      "Lascia raffreddare completamente prima di tagliare in barrette e conserva in contenitore chiuso."
+    ],
+    "archetypes": ["snack-dessert"],
+    "knowledgeKeys": ["plantBasedRawPattern", "proteinPlanning"]
+  },
+  {
+    "id": "R010",
+    "nome_ricetta": "Bucatini all'Amatriciana Tradizionale",
+    "difficolta": "Media",
+    "tempo_prep_min": 20,
+    "allergeni_esclusi": [],
+    "tecnica_cottura": "Rosolatura controllata del guanciale, cottura del pomodoro nel suo grasso e salto finale della pasta nel sugo.",
+    "anti_spreco": "Il grasso aromatico rilasciato dal guanciale e la vera base del piatto: non va sprecato, ma dosato con precisione nel sugo senza aggiungere condimenti inutili.",
+    "ingredienti_tabella": [
+      {"n": "Bucatini", "qty": 200, "k": 710, "p": 25.0, "c": 144.0, "g": 2.8},
+      {"n": "Pomodori pelati", "qty": 250, "k": 65, "p": 3.0, "c": 12.0, "g": 0.5},
+      {"n": "Guanciale", "qty": 80, "k": 520, "p": 7.0, "c": 0.0, "g": 53.0},
+      {"n": "Pecorino Romano", "qty": 40, "k": 155, "p": 11.0, "c": 0.0, "g": 12.0},
+      {"n": "Vino bianco", "qty": 30, "k": 25, "p": 0.0, "c": 0.8, "g": 0.0},
+      {"n": "Peperoncino fresco", "qty": 4, "k": 1, "p": 0.0, "c": 0.2, "g": 0.0}
+    ],
+    "totale_piatto": {"k": 1476, "p": 46.0, "c": 157.0, "g": 68.3},
+    "procedimento": [
+      "Taglia il guanciale a listarelle e rosolalo finche e croccante; sfuma con il vino bianco e tienilo da parte al caldo.",
+      "Nella stessa padella usa il grasso rimasto per cuocere pomodoro e peperoncino per circa 10 minuti.",
+      "Lessa i bucatini in acqua salata e scolali al dente, tenendo da parte poca acqua di cottura.",
+      "Salta la pasta nel sugo, regola la consistenza con poca acqua di cottura se necessario e rimetti il guanciale.",
+      "A fuoco spento completa con pecorino romano e servi subito."
+    ],
+    "archetypes": ["pasta"],
+    "knowledgeKeys": ["amatricianaTraditional", "acidityPh"],
+    "tags": ["roma", "lazio", "bucatini", "guanciale", "pecorino"]
+  },
+  {
+    "id": "R011",
+    "nome_ricetta": "Quinoa Tiepida con Pollo, Zucchine e Carote Low FODMAP",
+    "difficolta": "Semplice",
+    "tempo_prep_min": 28,
+    "allergeni_esclusi": ["Lattosio"],
+    "tecnica_cottura": "Bollitura della quinoa e cottura separata, pulita e leggera di proteina e verdure per mantenere il piatto leggibile e digeribile.",
+    "anti_spreco": "Le zucchine e le carote avanzate possono essere tagliate fini e trasformate il giorno dopo in una frittata o in una base per un'insalata di riso fredda.",
+    "ingredienti_tabella": [
+      {"n": "Quinoa", "qty": 80, "k": 294, "p": 11.2, "c": 51.0, "g": 4.8},
+      {"n": "Petto di pollo", "qty": 140, "k": 154, "p": 32.0, "c": 0.0, "g": 2.1},
+      {"n": "Zucchina", "qty": 150, "k": 24, "p": 1.8, "c": 4.6, "g": 0.4},
+      {"n": "Carota", "qty": 100, "k": 41, "p": 0.9, "c": 9.6, "g": 0.2},
+      {"n": "Olio Extravergine di Oliva", "qty": 10, "k": 89, "p": 0, "c": 0, "g": 9.9},
+      {"n": "Succo di limone", "qty": 10, "k": 3, "p": 0.1, "c": 1.0, "g": 0.0}
+    ],
+    "totale_piatto": {"k": 605, "p": 46.0, "c": 66.2, "g": 17.4},
+    "procedimento": [
+      "Sciacqua la quinoa, poi cuocila in acqua leggermente salata finche risulta tenera ma sgranata.",
+      "Taglia pollo, zucchine e carote in pezzi regolari per una cottura uniforme e piu facile da digerire.",
+      "Cuoci prima il pollo in padella con poco olio, poi nella stessa padella salta brevemente zucchine e carote senza farle sfaldare.",
+      "Unisci quinoa, pollo e verdure e condisci con olio a crudo e poco succo di limone se ben tollerato.",
+      "Servi tiepido, mantenendo il piatto semplice e leggibile anche nelle consistenze."
+    ],
+    "archetypes": ["grain-bowl", "protein-main"],
+    "knowledgeKeys": ["lowFodmap", "proteinPlanning", "vegetableScience", "coldKitchen"]
+  },
+  {
+    "id": "R012",
+    "nome_ricetta": "Spaghetti al Pomodoro e Basilico",
+    "difficolta": "Semplice",
+    "tempo_prep_min": 20,
+    "allergeni_esclusi": [],
+    "tecnica_cottura": "Sugo breve con infusione dell'aglio nell'olio e salto finale della pasta con acqua di cottura.",
+    "anti_spreco": "Le foglie di basilico ammaccate o meno belle vanno bene a fine mantecatura; il sugo avanzato diventa base per polpette, uova in purgatorio o pane tostato il giorno dopo.",
+    "ingredienti_tabella": [
+      {"n": "Spaghetti", "qty": 200, "k": 710, "p": 25.0, "c": 144.0, "g": 2.8},
+      {"n": "Pomodori pelati San Marzano", "qty": 300, "k": 78, "p": 3.6, "c": 14.4, "g": 0.6},
+      {"n": "Olio Extravergine di Oliva", "qty": 30, "k": 267, "p": 0.0, "c": 0.0, "g": 29.7},
+      {"n": "Aglio", "qty": 3, "k": 4, "p": 0.2, "c": 1.0, "g": 0.0},
+      {"n": "Basilico fresco", "qty": 8, "k": 2, "p": 0.3, "c": 0.2, "g": 0.0}
+    ],
+    "totale_piatto": {"k": 1061, "p": 29.1, "c": 159.6, "g": 33.1},
+    "procedimento": [
+      "Schiaccia i pelati con una forchetta per ottenere una salsa rustica ma omogenea.",
+      "Scalda l'olio con l'aglio intero e rimuovilo non appena ha profumato il fondo senza scurirsi troppo.",
+      "Versa il pomodoro e cuoci a fuoco medio per 12-15 minuti finche perde la nota cruda ma resta vivo e brillante.",
+      "Lessa gli spaghetti in acqua salata e scolali 2 minuti prima del tempo indicato.",
+      "Salta la pasta nel sugo con un mestolo di acqua di cottura, poi spegni il fuoco e aggiungi basilico spezzato a mano e un filo d'olio a crudo."
+    ],
+    "archetypes": ["pasta"],
+    "knowledgeKeys": ["acidityPh", "vegetableScience"],
+    "tags": ["pomodoro", "basilico", "spaghetti", "classico", "sugo semplice"]
+  },
+  {
+    "id": "R013",
+    "nome_ricetta": "Tagliatelle al Ragù alla Bolognese",
+    "difficolta": "Chef",
+    "tempo_prep_min": 240,
+    "allergeni_esclusi": [],
+    "tecnica_cottura": "Rosolatura progressiva, deglassatura al vino e lunga cottura dolce con aggiunte controllate di brodo e latte.",
+    "anti_spreco": "Il ragù migliora spesso il giorno dopo e si presta a diventare ripieno per lasagne, pasta al forno o polenta; il soffritto puo includere anche piccole parti esterne di sedano e carota ben mondate.",
+    "ingredienti_tabella": [
+      {"n": "Tagliatelle all'uovo", "qty": 320, "k": 912, "p": 32.0, "c": 160.0, "g": 16.0},
+      {"n": "Macinato di manzo", "qty": 300, "k": 540, "p": 60.0, "c": 0.0, "g": 33.0},
+      {"n": "Pancetta di maiale", "qty": 150, "k": 590, "p": 21.0, "c": 0.0, "g": 54.0},
+      {"n": "Carota", "qty": 50, "k": 20, "p": 0.5, "c": 4.8, "g": 0.1},
+      {"n": "Sedano", "qty": 50, "k": 8, "p": 0.3, "c": 1.5, "g": 0.1},
+      {"n": "Cipolla", "qty": 50, "k": 20, "p": 0.6, "c": 4.6, "g": 0.1},
+      {"n": "Vino rosso secco", "qty": 100, "k": 83, "p": 0.1, "c": 2.6, "g": 0.0},
+      {"n": "Passata di pomodoro", "qty": 200, "k": 58, "p": 2.8, "c": 11.0, "g": 0.4},
+      {"n": "Latte intero", "qty": 100, "k": 64, "p": 3.3, "c": 4.8, "g": 3.6},
+      {"n": "Burro", "qty": 30, "k": 224, "p": 0.2, "c": 0.2, "g": 24.0}
+    ],
+    "totale_piatto": {"k": 2519, "p": 120.8, "c": 189.5, "g": 131.3},
+    "procedimento": [
+      "Rosola la pancetta in una casseruola pesante finche rilascia parte del grasso, poi unisci il burro e il soffritto tritato fine.",
+      "Fai appassire lentamente carota, sedano e cipolla, quindi aggiungi il manzo e sgranalo bene finche perde l'aspetto crudo.",
+      "Sfuma con il vino rosso e lascia evaporare la parte alcolica prima di unire passata e poco brodo.",
+      "Cuoci a fuoco bassissimo per ore, aggiungendo altro brodo solo quando serve a tenere il ragù umido ma non brodoso.",
+      "A meta cottura versa il latte per smorzare l'acidita del pomodoro, poi condisci le tagliatelle cotte al dente."
+    ],
+    "archetypes": ["pasta", "slow-cooked"],
+    "knowledgeKeys": ["acidityPh"],
+    "tags": ["bologna", "ragu", "tagliatelle", "cottura lenta", "tradizione"]
+  },
+  {
+    "id": "R014",
+    "nome_ricetta": "Spaghetti alla Carbonara",
+    "difficolta": "Media",
+    "tempo_prep_min": 20,
+    "allergeni_esclusi": [],
+    "tecnica_cottura": "Rosolatura del guanciale a freddo e cremosita ottenuta per calore residuo, senza strapazzare i tuorli.",
+    "anti_spreco": "Il grasso del guanciale e parte tecnica del piatto e non va scartato; il pecorino rimasto puo rifinire paste o verdure gratinate nei giorni successivi.",
+    "ingredienti_tabella": [
+      {"n": "Spaghetti", "qty": 200, "k": 710, "p": 25.0, "c": 144.0, "g": 2.8},
+      {"n": "Guanciale", "qty": 100, "k": 650, "p": 8.8, "c": 0.0, "g": 66.3},
+      {"n": "Tuorlo d'uovo", "qty": 80, "k": 258, "p": 12.8, "c": 2.8, "g": 21.6},
+      {"n": "Pecorino Romano DOP", "qty": 50, "k": 194, "p": 13.8, "c": 0.0, "g": 15.0},
+      {"n": "Pepe nero", "qty": 3, "k": 8, "p": 0.3, "c": 1.8, "g": 0.1}
+    ],
+    "totale_piatto": {"k": 1820, "p": 60.7, "c": 148.6, "g": 105.8},
+    "procedimento": [
+      "Taglia il guanciale a listarelle e mettilo in padella fredda, cosi il grasso si scioglie gradualmente prima che la parte magra secchi troppo.",
+      "Rosolalo finche il grasso diventa trasparente e la carne croccante, poi spegni il fuoco.",
+      "In una ciotola lavora i tuorli con il pecorino e il pepe fino a ottenere una crema densa.",
+      "Lessa gli spaghetti e trasferiscili nella padella del guanciale a fuoco spento con poca acqua di cottura per abbassare la temperatura.",
+      "Versa la crema di uova e mescola energicamente: il calore residuo deve creare una salsa lucida e cremosa, non una frittata."
+    ],
+    "archetypes": ["pasta", "egg-dish"],
+    "knowledgeKeys": ["eggCooking", "amatricianaTraditional"],
+    "tags": ["carbonara", "guanciale", "pecorino", "calore residuo", "roma"]
+  },
+  {
+    "id": "R015",
+    "nome_ricetta": "Risotto allo Zafferano alla Milanese",
+    "difficolta": "Media",
+    "tempo_prep_min": 28,
+    "allergeni_esclusi": [],
+    "tecnica_cottura": "Tostatura del riso, cottura per assorbimento con brodo e mantecatura finale all'onda con burro freddo e formaggio.",
+    "anti_spreco": "Il brodo filtrato avanzato puo diventare base per altre cotture di riso o vellutate; lo zafferano va sciolto bene per non disperderne il profumo in modo irregolare.",
+    "ingredienti_tabella": [
+      {"n": "Riso Carnaroli", "qty": 180, "k": 621, "p": 12.6, "c": 140.4, "g": 0.9},
+      {"n": "Midollo di bue", "qty": 20, "k": 154, "p": 1.4, "c": 0.0, "g": 16.0},
+      {"n": "Burro", "qty": 50, "k": 374, "p": 0.3, "c": 0.3, "g": 41.0},
+      {"n": "Cipolla bianca", "qty": 20, "k": 8, "p": 0.2, "c": 1.8, "g": 0.0},
+      {"n": "Vino bianco", "qty": 50, "k": 41, "p": 0.0, "c": 1.4, "g": 0.0},
+      {"n": "Brodo di carne", "qty": 700, "k": 70, "p": 7.0, "c": 2.1, "g": 2.1},
+      {"n": "Zafferano", "qty": 0.1, "k": 0, "p": 0.0, "c": 0.0, "g": 0.0},
+      {"n": "Parmigiano Reggiano", "qty": 40, "k": 160, "p": 14.0, "c": 0.0, "g": 11.2}
+    ],
+    "totale_piatto": {"k": 1428, "p": 35.5, "c": 146.0, "g": 71.2},
+    "procedimento": [
+      "Fai soffriggere dolcemente la cipolla con parte del burro e il midollo se lo usi, senza far prendere colore marcato.",
+      "Aggiungi il riso e tostalo finche i chicchi sono ben caldi e asciutti in superficie.",
+      "Sfuma con vino bianco, poi inizia a cuocere aggiungendo brodo bollente un mestolo alla volta.",
+      "A meta cottura sciogli lo zafferano in poco brodo e uniscilo al riso per distribuire colore e aroma in modo uniforme.",
+      "A cottura ultimata spegni il fuoco e manteca con burro freddissimo e parmigiano finche il risotto prende l'onda."
+    ],
+    "archetypes": ["risotto"],
+    "knowledgeKeys": ["techniques", "textureBalance"],
+    "tags": ["risotto", "zafferano", "milanese", "mantecatura", "tostatura"]
+  },
+  {
+    "id": "R016",
+    "nome_ricetta": "Lasagne alla Bolognese",
+    "difficolta": "Chef",
+    "tempo_prep_min": 90,
+    "allergeni_esclusi": [],
+    "tecnica_cottura": "Stratificazione regolare, pre-cottura controllata della sfoglia e cottura in forno fino a gratinatura superficiale.",
+    "anti_spreco": "Ragù e besciamella avanzati si recuperano facilmente in pasta al forno, crespelle o sformati; i ritagli di sfoglia possono finire in brodo o minestre rustiche.",
+    "ingredienti_tabella": [
+      {"n": "Sfoglia all'uovo verde", "qty": 500, "k": 1400, "p": 50.0, "c": 250.0, "g": 20.0},
+      {"n": "Ragu alla bolognese", "qty": 600, "k": 840, "p": 42.0, "c": 18.0, "g": 66.0},
+      {"n": "Besciamella", "qty": 500, "k": 540, "p": 15.0, "c": 36.0, "g": 38.0},
+      {"n": "Parmigiano Reggiano", "qty": 100, "k": 400, "p": 35.0, "c": 0.0, "g": 28.0},
+      {"n": "Burro", "qty": 15, "k": 112, "p": 0.1, "c": 0.1, "g": 12.0}
+    ],
+    "totale_piatto": {"k": 3292, "p": 142.1, "c": 304.1, "g": 164.0},
+    "procedimento": [
+      "Prepara la besciamella scaldando il latte e incorporandolo gradualmente al roux di burro e farina fino a ottenere una salsa liscia e vellutata.",
+      "Sbollenta le sfoglie per pochi secondi se necessario e asciugale bene su canovacci puliti.",
+      "Imburra la teglia e crea un velo iniziale di ragù e besciamella per proteggere il primo strato.",
+      "Alterna pasta, ragù, besciamella e parmigiano in strati regolari, senza eccedere con il ripieno in un solo punto.",
+      "Chiudi con abbondante parmigiano e fiocchetti di burro, poi cuoci a 180 C finche si forma una crosticina ben dorata."
+    ],
+    "archetypes": ["baked-pasta", "slow-cooked"],
+    "knowledgeKeys": ["textureBalance"],
+    "tags": ["lasagne", "bologna", "ragu", "besciamella", "forno"]
+  },
+  {
+    "id": "R017",
+    "nome_ricetta": "Melanzane alla Parmigiana",
+    "difficolta": "Media",
+    "tempo_prep_min": 70,
+    "allergeni_esclusi": [],
+    "tecnica_cottura": "Salatura delle melanzane, frittura controllata e stratificazione al forno con sugo e formaggio ben asciutto.",
+    "anti_spreco": "La mozzarella va ben asciugata per non allagare la teglia; il sugo avanzato puo essere usato per condire pane tostato o pasta corta il giorno seguente.",
+    "ingredienti_tabella": [
+      {"n": "Melanzane lunghe", "qty": 1000, "k": 250, "p": 10.0, "c": 58.0, "g": 1.5},
+      {"n": "Passata di pomodoro", "qty": 500, "k": 145, "p": 7.0, "c": 27.0, "g": 1.0},
+      {"n": "Fiordilatte o mozzarella", "qty": 300, "k": 750, "p": 54.0, "c": 9.0, "g": 57.0},
+      {"n": "Parmigiano Reggiano", "qty": 80, "k": 320, "p": 28.0, "c": 0.0, "g": 22.4},
+      {"n": "Farina", "qty": 40, "k": 146, "p": 4.0, "c": 30.0, "g": 0.4},
+      {"n": "Olio di semi di arachide", "qty": 80, "k": 707, "p": 0.0, "c": 0.0, "g": 80.0}
+    ],
+    "totale_piatto": {"k": 2318, "p": 103.0, "c": 124.0, "g": 162.3},
+    "procedimento": [
+      "Taglia le melanzane a fette regolari, salale e lasciale perdere parte dell'acqua prima di asciugarle bene.",
+      "Infarinale leggermente e friggile in olio di arachide ben caldo finche risultano dorate senza impregnarsi troppo di grasso.",
+      "Prepara intanto un sugo semplice di pomodoro con olio e basilico, lasciandolo abbastanza asciutto da reggere la stratificazione.",
+      "Asciuga bene la mozzarella e alterna in teglia sugo, melanzane, mozzarella, parmigiano e basilico.",
+      "Cuoci in forno a 200 C per 25-30 minuti finche la superficie e ben legata e il profumo del pomodoro si concentra."
+    ],
+    "archetypes": ["oven-roast", "vegetable-main"],
+    "knowledgeKeys": ["vegetableScience", "acidityPh"],
+    "tags": ["melanzane", "parmigiana", "sud", "frittura", "forno"]
+  },
+  {
+    "id": "R018",
+    "nome_ricetta": "Ossobuco alla Milanese con Gremolada",
+    "difficolta": "Chef",
+    "tempo_prep_min": 100,
+    "allergeni_esclusi": [],
+    "tecnica_cottura": "Rosolatura iniziale, brasatura dolce coperta e finitura fresca con gremolada all'ultimo momento.",
+    "anti_spreco": "Il fondo di cottura puo diventare salsa per il servizio; la gremolada va aggiunta solo alla fine per evitare di disperdere il suo profilo fresco e agrumato.",
+    "ingredienti_tabella": [
+      {"n": "Ossobuco di vitello", "qty": 600, "k": 930, "p": 102.0, "c": 0.0, "g": 57.0},
+      {"n": "Farina", "qty": 20, "k": 73, "p": 2.0, "c": 15.0, "g": 0.2},
+      {"n": "Vino bianco", "qty": 100, "k": 82, "p": 0.0, "c": 2.8, "g": 0.0},
+      {"n": "Brodo", "qty": 200, "k": 20, "p": 2.0, "c": 0.6, "g": 0.6},
+      {"n": "Burro", "qty": 30, "k": 224, "p": 0.2, "c": 0.2, "g": 24.0},
+      {"n": "Prezzemolo", "qty": 10, "k": 4, "p": 0.3, "c": 0.6, "g": 0.1},
+      {"n": "Aglio", "qty": 3, "k": 4, "p": 0.2, "c": 1.0, "g": 0.0},
+      {"n": "Scorza di limone", "qty": 4, "k": 2, "p": 0.0, "c": 0.7, "g": 0.0}
+    ],
+    "totale_piatto": {"k": 1339, "p": 106.7, "c": 20.9, "g": 81.9},
+    "procedimento": [
+      "Incidi la membrana esterna degli ossibuchi, infarinali leggermente e rosolali nel burro da entrambi i lati.",
+      "Sfuma con il vino bianco e lascia evaporare la parte alcolica prima di aggiungere il brodo.",
+      "Cuoci coperto a fuoco dolce per circa 90 minuti, girando gli ossibuchi solo se serve e mantenendo il fondo vivo ma non acquoso.",
+      "Prepara la gremolada tritando finemente prezzemolo, aglio e scorza di limone.",
+      "Aggiungi la gremolada solo pochi minuti prima del servizio per dare contrasto fresco e aromatico alla lunga cottura."
+    ],
+    "archetypes": ["protein-main", "slow-cooked"],
+    "knowledgeKeys": ["textureBalance", "ingredientSafety"],
+    "tags": ["ossobuco", "milanese", "gremolada", "brasato", "vitello"]
+  },
+  {
+    "id": "R019",
+    "nome_ricetta": "Pollo alla Cacciatora",
+    "difficolta": "Media",
+    "tempo_prep_min": 60,
+    "allergeni_esclusi": ["Lattosio"],
+    "tecnica_cottura": "Rosolatura della pelle, fondo aromatico con verdure e cottura coperta nel pomodoro con olive e vino.",
+    "anti_spreco": "Il fondo di cottura e ottimo anche il giorno dopo su pane grigliato o polenta; le ossa e le parti meno nobili del pollo possono contribuire a brodi e fondi leggeri.",
+    "ingredienti_tabella": [
+      {"n": "Pollo a pezzi", "qty": 1000, "k": 1650, "p": 200.0, "c": 0.0, "g": 92.0},
+      {"n": "Cipolla rossa", "qty": 80, "k": 32, "p": 0.9, "c": 7.4, "g": 0.1},
+      {"n": "Carota", "qty": 70, "k": 29, "p": 0.6, "c": 6.7, "g": 0.1},
+      {"n": "Sedano", "qty": 70, "k": 11, "p": 0.5, "c": 2.2, "g": 0.1},
+      {"n": "Olive taggiasche", "qty": 50, "k": 78, "p": 0.5, "c": 2.0, "g": 8.0},
+      {"n": "Vino rosso", "qty": 150, "k": 124, "p": 0.1, "c": 3.9, "g": 0.0},
+      {"n": "Pomodori pelati", "qty": 300, "k": 78, "p": 3.6, "c": 14.4, "g": 0.6},
+      {"n": "Olio Extravergine di Oliva", "qty": 20, "k": 178, "p": 0.0, "c": 0.0, "g": 19.8}
+    ],
+    "totale_piatto": {"k": 2180, "p": 206.2, "c": 36.6, "g": 120.7},
+    "procedimento": [
+      "Rosola il pollo con poco olio finche la pelle prende un colore deciso e il fondo si arricchisce di succhi.",
+      "Aggiungi il trito di cipolla, carota e sedano con aglio e rosmarino, facendolo appassire senza bruciare gli aromi.",
+      "Sfuma con il vino rosso, poi unisci pomodori e olive taggiasche.",
+      "Cuoci con coperchio a fuoco medio-dolce per 40-45 minuti, girando i pezzi solo quando serve e controllando la densita del sugo.",
+      "Servi con il suo fondo ben ristretto e profumato, che deve essere rustico ma leggibile."
+    ],
+    "archetypes": ["protein-main", "slow-cooked"],
+    "knowledgeKeys": ["proteinPlanning", "vegetableScience", "ingredientSafety"],
+    "tags": ["pollo", "cacciatora", "rustico", "pomodoro", "olive"]
+  },
+  {
+    "id": "R020",
+    "nome_ricetta": "Tiramisu Classico",
+    "difficolta": "Media",
+    "tempo_prep_min": 270,
+    "allergeni_esclusi": [],
+    "tecnica_cottura": "Montata separata di tuorli e albumi, crema al mascarpone e stratificazione con savoiardi inzuppati velocemente.",
+    "anti_spreco": "Il cacao va spolverato solo alla fine per evitare che assorba umidita; eventuale crema avanzata puo farcire bicchierini o coppette monoporzione.",
+    "ingredienti_tabella": [
+      {"n": "Savoiardi", "qty": 300, "k": 1170, "p": 27.0, "c": 240.0, "g": 12.0},
+      {"n": "Mascarpone", "qty": 500, "k": 2160, "p": 20.0, "c": 20.0, "g": 225.0},
+      {"n": "Uova fresche", "qty": 240, "k": 344, "p": 30.0, "c": 2.4, "g": 23.2},
+      {"n": "Zucchero", "qty": 100, "k": 387, "p": 0.0, "c": 100.0, "g": 0.0},
+      {"n": "Caffe espresso", "qty": 300, "k": 6, "p": 0.8, "c": 0.0, "g": 0.0},
+      {"n": "Cacao amaro", "qty": 10, "k": 23, "p": 2.0, "c": 1.4, "g": 1.4}
+    ],
+    "totale_piatto": {"k": 4090, "p": 79.8, "c": 363.8, "g": 261.6},
+    "procedimento": [
+      "Separa i tuorli dagli albumi e monta i tuorli con lo zucchero finche diventano chiari e spumosi.",
+      "Incorpora il mascarpone ai tuorli montati lavorando la crema fino a renderla liscia e uniforme.",
+      "Monta gli albumi a neve ferma e incorporali delicatamente dal basso verso l'alto per non smontare la struttura.",
+      "Inzuppa rapidamente i savoiardi nel caffe non zuccherato e crea strati alterni di biscotti e crema.",
+      "Lascia riposare in frigorifero per almeno 4 ore e spolvera il cacao amaro solo prima di servire."
+    ],
+    "archetypes": ["snack-dessert", "egg-dish"],
+    "knowledgeKeys": ["eggStorage", "eggCooking"],
+    "tags": ["tiramisu", "dessert", "mascarpone", "uova", "caffe"]
+  },
+  {
+    "id": "R031",
+    "nome_ricetta": "Filetto di Orata in Crosta di Patate e Zafferano",
+    "difficolta": "Chef",
+    "tempo_prep_min": 22,
+    "allergeni_esclusi": ["Glutine", "Lattosio"],
+    "tecnica_cottura": "Sbianchitura delle patate allo zafferano e doppia cottura in padella, prima sulla crosta e poi sul lato pelle.",
+    "anti_spreco": "Le rifilature di patata possono diventare chips sottili o base per una crema veloce; l'acqua allo zafferano puo profumare altre verdure o un piccolo fondo.",
+    "ingredienti_tabella": [
+      {"n": "Filetto di orata", "qty": 180, "k": 206, "p": 36.0, "c": 0.0, "g": 5.4},
+      {"n": "Patate", "qty": 80, "k": 61, "p": 1.6, "c": 13.6, "g": 0.1},
+      {"n": "Olio Extravergine di Oliva", "qty": 20, "k": 178, "p": 0.0, "c": 0.0, "g": 19.8},
+      {"n": "Zafferano in pistilli", "qty": 0.1, "k": 0, "p": 0.0, "c": 0.0, "g": 0.0}
+    ],
+    "totale_piatto": {"k": 445, "p": 37.6, "c": 13.6, "g": 25.3},
+    "procedimento": [
+      "Taglia le patate a mandolina molto sottile e sbianchiscile per pochi secondi in acqua profumata allo zafferano.",
+      "Asciugale perfettamente e disponile sul filetto come una nappatura compatta, leggermente sovrapposta.",
+      "Scalda una padella antiaderente e cuoci il pesce dal lato patate a calore moderato finche la crosta prende struttura e colore.",
+      "Gira con delicatezza e completa la cottura sul lato pelle per pochi minuti, mantenendo il pesce succoso."
+    ],
+    "archetypes": ["protein-main"],
+    "knowledgeKeys": ["vegetableScience", "techniques", "textureBalance", "ingredientSafety"],
+    "tags": ["orata", "patate", "zafferano", "mare", "premium"]
+  },
+  {
+    "id": "R032",
+    "nome_ricetta": "Risotto ai Frutti di Mare con Mantecatura all'Olio",
+    "difficolta": "Chef",
+    "tempo_prep_min": 20,
+    "allergeni_esclusi": ["Lattosio"],
+    "tecnica_cottura": "Tostatura classica e mantecatura all'onda con olio EVO freddissimo al posto del burro.",
+    "anti_spreco": "Gusci e teste dei crostacei non vanno buttati: sono la base della bisque che porta il gusto principale del piatto.",
+    "ingredienti_tabella": [
+      {"n": "Riso Riserva San Massimo", "qty": 80, "k": 276, "p": 5.6, "c": 62.4, "g": 0.4},
+      {"n": "Bisque di crostacei", "qty": 300, "k": 60, "p": 6.0, "c": 4.0, "g": 2.5},
+      {"n": "Calamari e gamberi", "qty": 60, "k": 52, "p": 11.0, "c": 0.6, "g": 0.6},
+      {"n": "Olio Extravergine di Oliva", "qty": 15, "k": 134, "p": 0.0, "c": 0.0, "g": 14.8}
+    ],
+    "totale_piatto": {"k": 522, "p": 22.6, "c": 67.0, "g": 18.3},
+    "procedimento": [
+      "Tosta il riso per circa 3 minuti finche il chicco e ben caldo e pronto a ricevere il liquido.",
+      "Porta a cottura aggiungendo bisque calda poco alla volta, mescolando solo quanto basta.",
+      "A parte cuoci molto rapidamente calamari e gamberi per tenerli teneri e non gommosi.",
+      "A fine cottura manteca vigorosamente con olio EVO freddissimo per ottenere un'onda lucida e pulita, poi unisci i frutti di mare."
+    ],
+    "archetypes": ["risotto"],
+    "knowledgeKeys": ["techniques", "textureBalance", "ingredientSafety"],
+    "tags": ["risotto", "frutti di mare", "olio", "mare", "premium"]
+  },
+  {
+    "id": "R033",
+    "nome_ricetta": "Scaloppine al Marsala e Funghi Porcini",
+    "difficolta": "Media",
+    "tempo_prep_min": 18,
+    "allergeni_esclusi": ["Lattosio"],
+    "tecnica_cottura": "Rosolatura veloce, deglassatura al Marsala e legatura finale con amido di mais e brodo.",
+    "anti_spreco": "Se resta salsa, usala per nappare patate lesse o una polenta morbida; i gambi teneri dei porcini possono finire nella stessa riduzione.",
+    "ingredienti_tabella": [
+      {"n": "Noce di vitello", "qty": 150, "k": 225, "p": 31.5, "c": 0.0, "g": 10.5},
+      {"n": "Porcini freschi", "qty": 100, "k": 28, "p": 3.0, "c": 4.5, "g": 0.3},
+      {"n": "Marsala Superiore", "qty": 40, "k": 72, "p": 0.0, "c": 5.0, "g": 0.0},
+      {"n": "Amido di mais", "qty": 5, "k": 18, "p": 0.0, "c": 4.3, "g": 0.0},
+      {"n": "Brodo di carne", "qty": 50, "k": 5, "p": 0.5, "c": 0.2, "g": 0.2}
+    ],
+    "totale_piatto": {"k": 348, "p": 35.0, "c": 14.0, "g": 11.0},
+    "procedimento": [
+      "Passa leggermente la carne nell'amido di mais e rosolala in olio caldo senza affollare la padella.",
+      "Toglila appena colorita e usa la stessa padella per cuocere i porcini a fiamma viva.",
+      "Sfuma con Marsala, aggiungi il brodo e lascia che il fondo si leghi senza bisogno di burro.",
+      "Rimetti la carne solo per pochi istanti, nappandola con la salsa cremosa."
+    ],
+    "archetypes": ["protein-main"],
+    "knowledgeKeys": ["vegetableScience", "techniques", "textureBalance"],
+    "tags": ["scaloppine", "marsala", "porcini", "vitello"]
+  },
+  {
+    "id": "R034",
+    "nome_ricetta": "Spigola al Sale con Erbe Aromatiche",
+    "difficolta": "Chef",
+    "tempo_prep_min": 35,
+    "allergeni_esclusi": ["Glutine", "Lattosio"],
+    "tecnica_cottura": "Crosta di sale con albumi ed erbe, cottura in forno e apertura al tavolo o a vista.",
+    "anti_spreco": "Le erbe aromatiche usate nella crosta profumano il pesce senza bisogno di salse pesanti; lische e testa possono poi diventare base per un fumetto leggero.",
+    "ingredienti_tabella": [
+      {"n": "Spigola intera", "qty": 600, "k": 582, "p": 120.0, "c": 0.0, "g": 10.0},
+      {"n": "Sale grosso", "qty": 1000, "k": 0, "p": 0.0, "c": 0.0, "g": 0.0},
+      {"n": "Albumi d'uovo", "qty": 60, "k": 31, "p": 6.6, "c": 0.4, "g": 0.0},
+      {"n": "Erbe aromatiche", "qty": 10, "k": 3, "p": 0.2, "c": 0.5, "g": 0.1}
+    ],
+    "totale_piatto": {"k": 616, "p": 126.8, "c": 0.9, "g": 10.1},
+    "procedimento": [
+      "Mescola sale grosso, albumi ed erbe fino a ottenere una massa umida e modellabile.",
+      "Forma una base in teglia, adagia la spigola e coprila con il resto del composto compattando bene.",
+      "Cuoci in forno statico a 200 C per circa 25 minuti finche la crosta e asciutta e compatta.",
+      "Rompi la crosta e sfiletta il pesce appena prima del servizio, mantenendo polpa umida e profumata."
+    ],
+    "archetypes": ["protein-main"],
+    "knowledgeKeys": ["techniques", "ingredientSafety"],
+    "tags": ["spigola", "sale", "forno", "mare", "premium"]
+  },
+  {
+    "id": "R035",
+    "nome_ricetta": "Pasta con le Sarde",
+    "difficolta": "Chef",
+    "tempo_prep_min": 30,
+    "allergeni_esclusi": [],
+    "tecnica_cottura": "Bollitura del finocchietto, cottura della pasta nella sua acqua e condimento rapido con sarde, pinoli e uvetta.",
+    "anti_spreco": "L'acqua del finocchietto e parte dell'identita del piatto e non va buttata; i gambi piu teneri vanno tritati nel condimento.",
+    "ingredienti_tabella": [
+      {"n": "Bucatini", "qty": 90, "k": 320, "p": 11.3, "c": 64.8, "g": 1.3},
+      {"n": "Sarde fresche", "qty": 60, "k": 104, "p": 12.0, "c": 0.0, "g": 6.2},
+      {"n": "Finocchietto selvatico", "qty": 40, "k": 12, "p": 1.2, "c": 1.8, "g": 0.2},
+      {"n": "Pinoli", "qty": 10, "k": 67, "p": 1.3, "c": 1.3, "g": 6.8},
+      {"n": "Uvetta", "qty": 10, "k": 30, "p": 0.3, "c": 8.0, "g": 0.0},
+      {"n": "Zafferano", "qty": 0.1, "k": 0, "p": 0.0, "c": 0.0, "g": 0.0}
+    ],
+    "totale_piatto": {"k": 533, "p": 26.1, "c": 75.9, "g": 14.5},
+    "procedimento": [
+      "Lessa il finocchietto in acqua salata e tieni da parte sia l'erba cotta sia l'acqua di cottura.",
+      "Nella stessa acqua cuoci i bucatini, cosi la pasta assorbe gia parte del profumo vegetale del piatto.",
+      "Cuoci rapidamente le sarde pulite con il finocchietto tritato, pinoli, uvetta e una punta di zafferano.",
+      "Salta la pasta nel condimento aggiungendo poca acqua di cottura per legare il tutto."
+    ],
+    "archetypes": ["pasta"],
+    "knowledgeKeys": ["techniques", "textureBalance", "ingredientSafety"],
+    "tags": ["sicilia", "sarde", "finocchietto", "tradizione"]
+  },
+  {
+    "id": "R036",
+    "nome_ricetta": "Roast Beef all'Inglese con Salsa Gravy",
+    "difficolta": "Chef",
+    "tempo_prep_min": 80,
+    "allergeni_esclusi": ["Lattosio"],
+    "tecnica_cottura": "Rosolatura iniziale e cottura a bassa temperatura fino a cuore rosato, con gravy ricavata dal fondo e dal fondo bruno.",
+    "anti_spreco": "I succhi di taglio e il fondo della teglia sono parte della salsa e non vanno dispersi; gli avanzi freddi diventano ottimi sandwich o insalate di carne.",
+    "ingredienti_tabella": [
+      {"n": "Controfiletto di manzo", "qty": 1000, "k": 1700, "p": 210.0, "c": 0.0, "g": 92.0},
+      {"n": "Senape in grani", "qty": 20, "k": 32, "p": 1.8, "c": 2.4, "g": 2.0},
+      {"n": "Fondo bruno", "qty": 200, "k": 50, "p": 5.0, "c": 2.0, "g": 2.0}
+    ],
+    "totale_piatto": {"k": 1782, "p": 216.8, "c": 4.4, "g": 96.0},
+    "procedimento": [
+      "Massaggia la carne con senape in grani e sale, poi rosolala rapidamente per fissare la superficie.",
+      "Trasferiscila in forno o in cottura controllata fino a raggiungere circa 52 C al cuore.",
+      "Lasciala riposare a lungo prima di affettarla, raccogliendo tutti i succhi che rilascia.",
+      "Riduci il fondo bruno con i succhi di riposo per ottenere una gravy essenziale e pulita."
+    ],
+    "archetypes": ["protein-main"],
+    "knowledgeKeys": ["techniques", "ingredientSafety", "textureBalance"],
+    "tags": ["roast beef", "manzo", "bassa temperatura", "gravy"]
+  },
+  {
+    "id": "R037",
+    "nome_ricetta": "Guazzetto di Moscardini alla Luciana",
+    "difficolta": "Media",
+    "tempo_prep_min": 55,
+    "allergeni_esclusi": ["Glutine", "Lattosio"],
+    "tecnica_cottura": "Cottura dolce e chiusa del mollusco nel proprio liquido con pomodorini, olive e capperi.",
+    "anti_spreco": "Qui il liquido di cottura e parte essenziale del piatto e non va fatto evaporare troppo; il guazzetto avanzato e perfetto per una scarpetta o per condire pane tostato.",
+    "ingredienti_tabella": [
+      {"n": "Moscardini", "qty": 400, "k": 300, "p": 56.0, "c": 6.0, "g": 4.0},
+      {"n": "Pomodorini del Piennolo", "qty": 150, "k": 27, "p": 1.4, "c": 5.8, "g": 0.3},
+      {"n": "Olive nere", "qty": 20, "k": 35, "p": 0.2, "c": 1.0, "g": 3.6},
+      {"n": "Capperi", "qty": 10, "k": 2, "p": 0.2, "c": 0.3, "g": 0.0}
+    ],
+    "totale_piatto": {"k": 364, "p": 57.8, "c": 13.1, "g": 7.9},
+    "procedimento": [
+      "Riunisci in coccio moscardini puliti, pomodorini, olive e capperi senza aggiungere troppo liquido esterno.",
+      "Chiudi il recipiente e cuoci dolcemente per circa 45 minuti, lasciando che i moscardini rilascino il loro succo.",
+      "Controlla solo verso la fine la densita del fondo, che deve restare concentrato ma non asciutto.",
+      "Servi ben caldo con il suo guazzetto."
+    ],
+    "archetypes": ["protein-main", "slow-cooked"],
+    "knowledgeKeys": ["ingredientSafety", "acidityPh"],
+    "tags": ["moscardini", "luciana", "napoli", "coccio", "mare"]
+  },
+  {
+    "id": "R038",
+    "nome_ricetta": "Pollo al Curry e Latte di Cocco",
+    "difficolta": "Semplice",
+    "tempo_prep_min": 30,
+    "allergeni_esclusi": ["Lattosio"],
+    "tecnica_cottura": "Rosolatura leggera del pollo, tostatura breve del curry e cottura di servizio nel latte di cocco con riso basmati a parte.",
+    "anti_spreco": "La salsa al curry si presta bene a recuperare verdure cotte del giorno prima; il riso avanzato puo essere saltato il giorno dopo con la stessa base aromatica.",
+    "ingredienti_tabella": [
+      {"n": "Petto di pollo", "qty": 200, "k": 220, "p": 46.0, "c": 0.0, "g": 3.0},
+      {"n": "Latte di cocco", "qty": 100, "k": 190, "p": 1.8, "c": 3.0, "g": 19.0},
+      {"n": "Curry dolce", "qty": 5, "k": 16, "p": 0.6, "c": 2.8, "g": 0.4},
+      {"n": "Riso Basmati", "qty": 60, "k": 210, "p": 4.5, "c": 46.0, "g": 0.4}
+    ],
+    "totale_piatto": {"k": 636, "p": 52.9, "c": 51.8, "g": 22.8},
+    "procedimento": [
+      "Cuoci il riso basmati a parte e tienilo sgranato.",
+      "Rosola rapidamente il pollo a cubi in poco olio, poi aggiungi il curry e tostalo solo per pochi secondi.",
+      "Versa il latte di cocco e lascia restringere finche la salsa diventa lucida e avvolgente.",
+      "Servi il pollo con la sua salsa accanto al riso basmati."
+    ],
+    "archetypes": ["protein-main", "grain-bowl"],
+    "knowledgeKeys": ["proteinPlanning", "textureBalance"],
+    "tags": ["pollo", "curry", "latte di cocco", "fusion"]
+  },
+  {
+    "id": "R039",
+    "nome_ricetta": "Carpaccio di Manzo con Tartufo Nero",
+    "difficolta": "Chef",
+    "tempo_prep_min": 12,
+    "allergeni_esclusi": ["Glutine", "Lattosio"],
+    "tecnica_cottura": "Preparazione a crudo con taglio sottile, condimento minimo e gestione della temperatura di servizio.",
+    "anti_spreco": "Il tartufo va usato all'ultimo per non disperdere aroma; le rifilature del manzo non vanno sprecate ma destinate a tartare o ripieni cotti in sicurezza.",
+    "ingredienti_tabella": [
+      {"n": "Girello di manzo", "qty": 100, "k": 140, "p": 22.0, "c": 0.0, "g": 5.0},
+      {"n": "Tartufo nero", "qty": 10, "k": 5, "p": 0.5, "c": 0.7, "g": 0.1},
+      {"n": "Olio di nocciola", "qty": 10, "k": 89, "p": 0.0, "c": 0.0, "g": 9.9}
+    ],
+    "totale_piatto": {"k": 234, "p": 22.5, "c": 0.7, "g": 15.0},
+    "procedimento": [
+      "Raffredda bene il girello per facilitare un taglio sottilissimo e regolare.",
+      "Disponi le fette su piatto freddo senza sovrapporle troppo.",
+      "Condisci con poco olio di nocciola e sale solo poco prima del servizio.",
+      "Affetta il tartufo al momento sopra la carne per preservarne il profumo."
+    ],
+    "archetypes": ["protein-main"],
+    "knowledgeKeys": ["coldKitchen", "ingredientSafety", "textureBalance"],
+    "tags": ["carpaccio", "manzo", "tartufo", "crudo", "premium"]
+  },
+  {
+    "id": "R040",
+    "nome_ricetta": "Sorbetto al Limone e Salvia",
+    "difficolta": "Media",
+    "tempo_prep_min": 40,
+    "allergeni_esclusi": ["Glutine", "Lattosio"],
+    "tecnica_cottura": "Preparazione di uno sciroppo aromatico, bilanciamento acido-dolce e alleggerimento con albume montato.",
+    "anti_spreco": "Le bucce del limone non trattato possono essere usate per infusione o zeste; la salvia va dosata con misura per non coprire l'acidita del dessert.",
+    "ingredienti_tabella": [
+      {"n": "Acqua", "qty": 250, "k": 0, "p": 0.0, "c": 0.0, "g": 0.0},
+      {"n": "Zucchero", "qty": 200, "k": 774, "p": 0.0, "c": 200.0, "g": 0.0},
+      {"n": "Succo di limone", "qty": 200, "k": 44, "p": 0.7, "c": 13.8, "g": 0.2},
+      {"n": "Salvia", "qty": 3, "k": 1, "p": 0.1, "c": 0.2, "g": 0.0},
+      {"n": "Albume", "qty": 30, "k": 16, "p": 3.3, "c": 0.2, "g": 0.0}
+    ],
+    "totale_piatto": {"k": 835, "p": 4.1, "c": 214.2, "g": 0.2},
+    "procedimento": [
+      "Prepara uno sciroppo con acqua e zucchero, profumandolo brevemente con la salvia.",
+      "Lascia raffreddare e unisci il succo di limone filtrato.",
+      "Incorpora l'albume montato quando la base e ben fredda per alleggerire la tessitura del sorbetto.",
+      "Manteca o congela lavorando la massa piu volte per ottenere una grana fine."
+    ],
+    "archetypes": ["snack-dessert"],
+    "knowledgeKeys": ["acidityPh", "eggCooking", "textureBalance"],
+    "tags": ["sorbetto", "limone", "salvia", "dessert"]
+  },
+  {
+    "id": "R041",
+    "nome_ricetta": "Gnocchi di Ricotta Senza Glutine con Burro e Salvia",
+    "difficolta": "Media",
+    "tempo_prep_min": 20,
+    "allergeni_esclusi": ["Glutine"],
+    "tecnica_cottura": "Impasto rapido con farine naturalmente senza glutine e cottura breve in acqua sobbollente.",
+    "anti_spreco": "L'impasto va lavorato il minimo per non richiedere altra farina; gli gnocchi avanzati si possono ripassare in padella il giorno dopo.",
+    "ingredienti_tabella": [
+      {"n": "Ricotta vaccina", "qty": 150, "k": 219, "p": 12.0, "c": 4.5, "g": 16.5},
+      {"n": "Farina di riso", "qty": 40, "k": 146, "p": 2.8, "c": 32.0, "g": 0.4},
+      {"n": "Fecola di patate", "qty": 20, "k": 70, "p": 0.1, "c": 17.0, "g": 0.0},
+      {"n": "Burro", "qty": 15, "k": 108, "p": 0.1, "c": 0.1, "g": 12.0},
+      {"n": "Salvia", "qty": 2, "k": 1, "p": 0.1, "c": 0.1, "g": 0.0}
+    ],
+    "totale_piatto": {"k": 544, "p": 15.1, "c": 53.7, "g": 28.9},
+    "procedimento": [
+      "Mescola ricotta ben scolata, farine e poco sale fino a ottenere un impasto morbido ma gestibile.",
+      "Forma cordoni e ricava gnocchi piccoli, spolverando solo il necessario.",
+      "Cuocili in acqua appena fremita e scolali non appena salgono a galla.",
+      "Saltali rapidamente nel burro profumato con salvia."
+    ],
+    "archetypes": ["pasta"],
+    "knowledgeKeys": ["glutenFree", "textureBalance"],
+    "tags": ["gluten free", "gnocchi", "ricotta", "salvia"]
+  },
+  {
+    "id": "R042",
+    "nome_ricetta": "Polenta Morbida con Funghi e Taleggio",
+    "difficolta": "Semplice",
+    "tempo_prep_min": 35,
+    "allergeni_esclusi": ["Glutine"],
+    "tecnica_cottura": "Cottura lenta della polenta e completamento con funghi rosolati separatamente per preservarne struttura e aroma.",
+    "anti_spreco": "La polenta avanzata rassoda e puo essere grigliata il giorno dopo; i gambi dei funghi ben puliti arricchiscono il soffritto.",
+    "ingredienti_tabella": [
+      {"n": "Farina di mais", "qty": 80, "k": 290, "p": 6.0, "c": 62.0, "g": 2.0},
+      {"n": "Funghi misti", "qty": 120, "k": 32, "p": 4.0, "c": 4.0, "g": 0.5},
+      {"n": "Taleggio", "qty": 40, "k": 126, "p": 7.6, "c": 0.4, "g": 10.4},
+      {"n": "Olio Extravergine di Oliva", "qty": 10, "k": 89, "p": 0.0, "c": 0.0, "g": 9.9}
+    ],
+    "totale_piatto": {"k": 537, "p": 17.6, "c": 66.4, "g": 22.8},
+    "procedimento": [
+      "Cuoci la polenta in acqua salata mescolando con costanza finche diventa cremosa.",
+      "Rosola i funghi a parte a fiamma vivace per concentrare il sapore senza lessarli.",
+      "Unisci il taleggio alla polenta calda per farlo fondere in modo uniforme.",
+      "Servi con i funghi sopra e poco olio a crudo."
+    ],
+    "archetypes": ["comfort-bake", "vegetable-main"],
+    "knowledgeKeys": ["glutenFree", "vegetableScience", "textureBalance"],
+    "tags": ["gluten free", "polenta", "funghi", "taleggio"]
+  },
+  {
+    "id": "R043",
+    "nome_ricetta": "Risotto alla Zucca e Rosmarino",
+    "difficolta": "Media",
+    "tempo_prep_min": 28,
+    "allergeni_esclusi": ["Glutine"],
+    "tecnica_cottura": "Tostatura del riso e uso della zucca in doppia consistenza: crema e cubetti arrostiti.",
+    "anti_spreco": "La buccia della zucca, se edibile e ben pulita, puo essere arrostita fino a diventare croccante e usata come garnish.",
+    "ingredienti_tabella": [
+      {"n": "Riso Carnaroli", "qty": 80, "k": 280, "p": 5.8, "c": 63.0, "g": 0.5},
+      {"n": "Zucca delica", "qty": 180, "k": 47, "p": 1.8, "c": 10.5, "g": 0.2},
+      {"n": "Parmigiano Reggiano", "qty": 20, "k": 80, "p": 7.2, "c": 0.0, "g": 5.8},
+      {"n": "Olio Extravergine di Oliva", "qty": 12, "k": 107, "p": 0.0, "c": 0.0, "g": 11.9}
+    ],
+    "totale_piatto": {"k": 514, "p": 14.8, "c": 73.5, "g": 18.4},
+    "procedimento": [
+      "Arrostisci una parte della zucca a cubetti con poco olio e rosmarino.",
+      "Cuoci il resto in brodo e frullalo in crema liscia.",
+      "Tosta il riso, cuocilo con brodo e incorpora la crema di zucca durante la cottura.",
+      "Manteca con parmigiano e olio, poi completa con i cubetti arrostiti."
+    ],
+    "archetypes": ["risotto"],
+    "knowledgeKeys": ["glutenFree", "vegetableScience", "textureBalance"],
+    "tags": ["gluten free", "risotto", "zucca", "rosmarino"]
+  },
+  {
+    "id": "R044",
+    "nome_ricetta": "Tortino di Patate e Salmone",
+    "difficolta": "Media",
+    "tempo_prep_min": 40,
+    "allergeni_esclusi": ["Glutine"],
+    "tecnica_cottura": "Assemblaggio a strati con patate precotte e cottura finale in forno fino a struttura compatta e superficie dorata.",
+    "anti_spreco": "Le patate lessate avanzate sono perfette per questa preparazione; il salmone gia cotto puo essere recuperato in sfogliette evitando sprechi.",
+    "ingredienti_tabella": [
+      {"n": "Patate", "qty": 250, "k": 190, "p": 5.0, "c": 42.5, "g": 0.3},
+      {"n": "Salmone fresco", "qty": 120, "k": 247, "p": 24.0, "c": 0.0, "g": 16.0},
+      {"n": "Panna fresca", "qty": 40, "k": 134, "p": 0.8, "c": 1.2, "g": 14.0},
+      {"n": "Erba cipollina", "qty": 5, "k": 2, "p": 0.2, "c": 0.2, "g": 0.0}
+    ],
+    "totale_piatto": {"k": 573, "p": 30.0, "c": 43.9, "g": 30.3},
+    "procedimento": [
+      "Taglia le patate gia lessate a fette regolari.",
+      "Disponile a strati con il salmone e poca panna profumata all'erba cipollina.",
+      "Compatta bene il tortino nello stampo per evitare che si sfaldi al taglio.",
+      "Inforna finche la superficie e leggermente dorata e l'interno ben legato."
+    ],
+    "archetypes": ["comfort-bake", "protein-main"],
+    "knowledgeKeys": ["glutenFree", "ingredientSafety", "textureBalance"],
+    "tags": ["gluten free", "tortino", "patate", "salmone"]
+  },
+  {
+    "id": "R045",
+    "nome_ricetta": "Torta Tenerina Senza Farina",
+    "difficolta": "Media",
+    "tempo_prep_min": 35,
+    "allergeni_esclusi": ["Glutine"],
+    "tecnica_cottura": "Montata di uova e zucchero con cioccolato e burro fusi, cottura breve per lasciare il cuore umido.",
+    "anti_spreco": "Gli albumi e i tuorli vanno pesati con precisione per la struttura; i ritagli si possono servire con yogurt o frutta invece di essere scartati.",
+    "ingredienti_tabella": [
+      {"n": "Cioccolato fondente", "qty": 120, "k": 648, "p": 9.0, "c": 55.0, "g": 42.0},
+      {"n": "Burro", "qty": 80, "k": 574, "p": 0.6, "c": 0.6, "g": 64.0},
+      {"n": "Uova", "qty": 100, "k": 143, "p": 12.6, "c": 1.1, "g": 9.5},
+      {"n": "Zucchero", "qty": 80, "k": 310, "p": 0.0, "c": 80.0, "g": 0.0}
+    ],
+    "totale_piatto": {"k": 1675, "p": 22.2, "c": 136.7, "g": 115.5},
+    "procedimento": [
+      "Sciogli cioccolato e burro a bagnomaria o in modo controllato.",
+      "Monta le uova con lo zucchero senza incorporare aria eccessiva.",
+      "Unisci i composti con movimenti regolari per ottenere una massa liscia e lucida.",
+      "Cuoci per un tempo breve in modo che il centro resti fondente."
+    ],
+    "archetypes": ["snack-dessert"],
+    "knowledgeKeys": ["glutenFree", "eggCooking", "textureBalance"],
+    "tags": ["gluten free", "torta", "cioccolato", "dessert"]
+  },
+  {
+    "id": "R046",
+    "nome_ricetta": "Burger di Ceci e Barbabietola",
+    "difficolta": "Semplice",
+    "tempo_prep_min": 25,
+    "allergeni_esclusi": ["Lattosio"],
+    "tecnica_cottura": "Impasto vegetale compatto e cottura in padella o forno per asciugare bene la superficie senza seccare l'interno.",
+    "anti_spreco": "Ceci gia cotti e barbabietola avanzata sono perfetti per questa preparazione; la polpa avanzata puo diventare polpette piu piccole.",
+    "ingredienti_tabella": [
+      {"n": "Ceci cotti", "qty": 150, "k": 246, "p": 13.4, "c": 40.8, "g": 3.9},
+      {"n": "Barbabietola cotta", "qty": 80, "k": 34, "p": 1.3, "c": 7.8, "g": 0.1},
+      {"n": "Fiocchi d'avena", "qty": 20, "k": 74, "p": 2.6, "c": 12.0, "g": 1.4},
+      {"n": "Tahina", "qty": 15, "k": 89, "p": 2.6, "c": 3.2, "g": 7.9}
+    ],
+    "totale_piatto": {"k": 443, "p": 19.9, "c": 63.8, "g": 13.3},
+    "procedimento": [
+      "Frulla grossolanamente ceci e barbabietola senza ridurli a purea completamente liscia.",
+      "Aggiungi avena e tahina finche l'impasto diventa modellabile.",
+      "Forma i burger e lasciali rassodare qualche minuto.",
+      "Cuocili in padella antiaderente o in forno finche si forma una crosticina uniforme."
+    ],
+    "archetypes": ["protein-main", "vegetable-main"],
+    "knowledgeKeys": ["veganPatterns", "proteinPlanning", "textureBalance"],
+    "tags": ["vegan", "burger", "ceci", "barbabietola"]
+  },
+  {
+    "id": "R047",
+    "nome_ricetta": "Curry di Lenticchie Rosse e Spinaci",
+    "difficolta": "Semplice",
+    "tempo_prep_min": 30,
+    "allergeni_esclusi": ["Glutine", "Lattosio"],
+    "tecnica_cottura": "Cottura umida breve delle lenticchie rosse con spezie e finitura con spinaci freschi a calore residuo.",
+    "anti_spreco": "Gli spinaci possono essere sostituiti da altre foglie verdi gia disponibili; il curry avanzato migliora il giorno dopo e puo diventare condimento per cereali.",
+    "ingredienti_tabella": [
+      {"n": "Lenticchie rosse decorticate", "qty": 80, "k": 274, "p": 20.8, "c": 45.6, "g": 1.4},
+      {"n": "Spinaci freschi", "qty": 80, "k": 18, "p": 2.3, "c": 1.4, "g": 0.3},
+      {"n": "Latte di cocco", "qty": 100, "k": 190, "p": 1.8, "c": 3.0, "g": 19.0},
+      {"n": "Curry", "qty": 5, "k": 16, "p": 0.6, "c": 2.8, "g": 0.4}
+    ],
+    "totale_piatto": {"k": 498, "p": 25.5, "c": 52.8, "g": 21.1},
+    "procedimento": [
+      "Sciacqua le lenticchie e cuocile con acqua o brodo leggero e curry.",
+      "Quando iniziano a disfarsi, aggiungi il latte di cocco e lascia addensare la preparazione.",
+      "A fuoco spento incorpora gli spinaci per farli appassire senza perdere troppo colore.",
+      "Regola la densita finale in modo che resti cremosa ma non liquida."
+    ],
+    "archetypes": ["protein-main", "vegetable-main"],
+    "knowledgeKeys": ["veganPatterns", "proteinPlanning", "textureBalance"],
+    "tags": ["vegan", "curry", "lenticchie", "spinaci"]
+  },
+  {
+    "id": "R048",
+    "nome_ricetta": "Pasta Integrale con Crema di Melanzane e Noci",
+    "difficolta": "Semplice",
+    "tempo_prep_min": 25,
+    "allergeni_esclusi": ["Lattosio"],
+    "tecnica_cottura": "Melanzane arrostite e frullate in crema rustica, poi legate con acqua di cottura della pasta.",
+    "anti_spreco": "Le melanzane molto mature sono ideali per una crema piu intensa; le noci vanno tostate appena per valorizzarle senza amaro.",
+    "ingredienti_tabella": [
+      {"n": "Pasta integrale", "qty": 90, "k": 315, "p": 12.6, "c": 60.0, "g": 2.3},
+      {"n": "Melanzane", "qty": 180, "k": 43, "p": 1.8, "c": 10.2, "g": 0.4},
+      {"n": "Noci", "qty": 20, "k": 131, "p": 3.0, "c": 1.2, "g": 13.0},
+      {"n": "Olio Extravergine di Oliva", "qty": 10, "k": 89, "p": 0.0, "c": 0.0, "g": 9.9}
+    ],
+    "totale_piatto": {"k": 578, "p": 17.4, "c": 71.4, "g": 25.6},
+    "procedimento": [
+      "Arrostisci le melanzane finche la polpa e molto morbida e leggermente affumicata.",
+      "Frullale con parte delle noci e poco olio fino a ottenere una crema non completamente liscia.",
+      "Cuoci la pasta e usa un po' della sua acqua per allungare e legare il condimento.",
+      "Completa con le noci restanti tritate grossolanamente."
+    ],
+    "archetypes": ["pasta", "vegetable-main"],
+    "knowledgeKeys": ["veganPatterns", "vegetableScience", "textureBalance"],
+    "tags": ["vegan", "pasta", "melanzane", "noci"]
+  },
+  {
+    "id": "R049",
+    "nome_ricetta": "Tofu Croccante con Verdure e Salsa di Sesamo",
+    "difficolta": "Semplice",
+    "tempo_prep_min": 22,
+    "allergeni_esclusi": ["Glutine", "Lattosio"],
+    "tecnica_cottura": "Pressatura del tofu, rosolatura ad alta temperatura e finitura con salsa al sesamo e lime.",
+    "anti_spreco": "Le verdure possono seguire la stagionalita o recuperare avanzi gia cotti; la pressatura del tofu e essenziale per evitare una consistenza acquosa.",
+    "ingredienti_tabella": [
+      {"n": "Tofu compatto", "qty": 180, "k": 216, "p": 23.4, "c": 3.4, "g": 12.0},
+      {"n": "Verdure miste", "qty": 180, "k": 54, "p": 2.8, "c": 10.0, "g": 0.6},
+      {"n": "Tahina", "qty": 20, "k": 119, "p": 3.5, "c": 4.3, "g": 10.6},
+      {"n": "Succo di lime", "qty": 15, "k": 4, "p": 0.1, "c": 1.3, "g": 0.0}
+    ],
+    "totale_piatto": {"k": 393, "p": 29.8, "c": 19.0, "g": 23.2},
+    "procedimento": [
+      "Pressa il tofu e taglialo a cubi regolari.",
+      "Rosolalo in padella molto calda finche tutti i lati diventano ben dorati.",
+      "Cuoci le verdure separatamente lasciandole ancora vive e croccanti.",
+      "Condisci con una salsa di tahina, lime e poca acqua per ottenere una consistenza fluida."
+    ],
+    "archetypes": ["protein-main", "grain-bowl", "vegetable-main"],
+    "knowledgeKeys": ["veganPatterns", "proteinPlanning", "textureBalance"],
+    "tags": ["vegan", "tofu", "sesamo", "verdure"]
+  },
+  {
+    "id": "R050",
+    "nome_ricetta": "Mousse al Cioccolato con Acquafaba",
+    "difficolta": "Media",
+    "tempo_prep_min": 20,
+    "allergeni_esclusi": ["Glutine", "Lattosio"],
+    "tecnica_cottura": "Montata di acquafaba e incorporazione controllata del cioccolato fuso per preservare volume e setosita.",
+    "anti_spreco": "L'acqua dei ceci, spesso scartata, qui diventa l'ingrediente tecnico principale; il cioccolato va raffreddato quel tanto che basta per non smontare la massa.",
+    "ingredienti_tabella": [
+      {"n": "Acquafaba", "qty": 120, "k": 20, "p": 1.0, "c": 3.0, "g": 0.0},
+      {"n": "Cioccolato fondente", "qty": 100, "k": 540, "p": 7.5, "c": 46.0, "g": 35.0},
+      {"n": "Zucchero", "qty": 20, "k": 77, "p": 0.0, "c": 20.0, "g": 0.0}
+    ],
+    "totale_piatto": {"k": 637, "p": 8.5, "c": 69.0, "g": 35.0},
+    "procedimento": [
+      "Monta l'acquafaba con lo zucchero fino a ottenere una massa stabile e lucida.",
+      "Sciogli il cioccolato e lascialo intiepidire leggermente.",
+      "Incorpora prima una piccola parte della montata nel cioccolato per alleggerirlo, poi aggiungi il resto con movimenti delicati.",
+      "Lascia rassodare in frigorifero prima del servizio."
+    ],
+    "archetypes": ["snack-dessert"],
+    "knowledgeKeys": ["veganPatterns", "textureBalance", "substitutions"],
+    "tags": ["vegan", "mousse", "cioccolato", "acquafaba"]
+  },
+  {
+    "id": "R051",
+    "nome_ricetta": "Insalata del Casaro",
+    "difficolta": "Semplice",
+    "tempo_prep_min": 10,
+    "allergeni_esclusi": [],
+    "tecnica_cottura": "Assemblaggio a freddo con taglio sottile della pera e dressing emulsionato miele-olio per bilanciare grasso e sapidita del pecorino.",
+    "anti_spreco": "Le bucce della pera, se ben pulite, possono profumare acqua o tisane; il pecorino avanzato si puo usare in scaglie su verdure al forno o zuppe.",
+    "ingredienti_tabella": [
+      {"n": "Misticanza", "qty": 80, "k": 16, "p": 1.2, "c": 2.0, "g": 0.3},
+      {"n": "Pecorino Toscano DOP", "qty": 40, "k": 155, "p": 11.0, "c": 0.8, "g": 12.0},
+      {"n": "Pera Abate", "qty": 60, "k": 34, "p": 0.2, "c": 9.0, "g": 0.1},
+      {"n": "Noci", "qty": 20, "k": 131, "p": 3.0, "c": 1.2, "g": 13.0},
+      {"n": "Miele di castagno", "qty": 10, "k": 30, "p": 0.0, "c": 8.2, "g": 0.0},
+      {"n": "Olio Extravergine di Oliva", "qty": 15, "k": 134, "p": 0.0, "c": 0.0, "g": 14.8}
+    ],
+    "totale_piatto": {"k": 500, "p": 15.4, "c": 21.2, "g": 40.2},
+    "procedimento": [
+      "Affetta la pera molto sottile con una mandolina o un coltello ben affilato.",
+      "Disponi misticanza, pera e noci in modo arioso senza comprimere le foglie.",
+      "Emulsiona olio e miele fino a ottenere un dressing lucido e stabile.",
+      "Completa con scaglie di pecorino all'ultimo per preservarne struttura e profumo."
+    ],
+    "archetypes": ["cold-kitchen", "salad", "vegetable-main"],
+    "knowledgeKeys": ["coldKitchen", "textureBalance"],
+    "tags": ["insalata", "pecorino", "pera", "noci", "freddo"]
+  },
+  {
+    "id": "R052",
+    "nome_ricetta": "Caprese Evoluta",
+    "difficolta": "Semplice",
+    "tempo_prep_min": 5,
+    "allergeni_esclusi": ["Glutine"],
+    "tecnica_cottura": "Taglio regolare e montaggio alternato per controllare succosita del pomodoro e cremosita della bufala senza rompere la struttura.",
+    "anti_spreco": "Il liquido del pomodoro puo entrare nel dressing o nel pesto avanzato; la mozzarella scolata bene evita acqua in eccesso nel piatto.",
+    "ingredienti_tabella": [
+      {"n": "Pomodoro Cuore di Bue", "qty": 150, "k": 27, "p": 1.3, "c": 5.8, "g": 0.3},
+      {"n": "Mozzarella di Bufala Campana", "qty": 125, "k": 360, "p": 22.0, "c": 2.0, "g": 30.0},
+      {"n": "Pesto leggero al basilico", "qty": 20, "k": 90, "p": 1.6, "c": 1.8, "g": 8.0},
+      {"n": "Pinoli tostati", "qty": 5, "k": 34, "p": 0.7, "c": 0.7, "g": 3.4}
+    ],
+    "totale_piatto": {"k": 511, "p": 25.6, "c": 10.3, "g": 41.7},
+    "procedimento": [
+      "Taglia pomodoro e mozzarella a fette regolari di circa 1 centimetro.",
+      "Alterna le fette a cerchio o in linea mantenendo il piatto ben ordinato.",
+      "Aggiungi gocce di pesto solo in punti mirati per non coprire gli altri sapori.",
+      "Completa con pinoli tostati e sale in fiocchi appena prima del servizio."
+    ],
+    "archetypes": ["cold-kitchen", "salad", "vegetable-main"],
+    "knowledgeKeys": ["coldKitchen", "vegetableScience", "textureBalance"],
+    "tags": ["caprese", "bufala", "pomodoro", "basilico", "freddo"]
+  },
+  {
+    "id": "R053",
+    "nome_ricetta": "Greca Santorini Style",
+    "difficolta": "Semplice",
+    "tempo_prep_min": 10,
+    "allergeni_esclusi": ["Glutine"],
+    "tecnica_cottura": "Assemblaggio a freddo con cipolla trattata in acqua ghiacciata per ridurre aggressivita e aumentare croccantezza.",
+    "anti_spreco": "La salamoia di olive e feta puo diventare parte del condimento; le estremita di cetriolo e pomodoro possono arricchire una salsa fredda o un centrifugato salato.",
+    "ingredienti_tabella": [
+      {"n": "Cetrioli", "qty": 100, "k": 14, "p": 0.7, "c": 3.0, "g": 0.1},
+      {"n": "Pomodori ciliegino", "qty": 100, "k": 18, "p": 0.9, "c": 3.9, "g": 0.2},
+      {"n": "Feta greca", "qty": 60, "k": 159, "p": 8.4, "c": 2.5, "g": 12.6},
+      {"n": "Olive Kalamata", "qty": 30, "k": 69, "p": 0.6, "c": 1.8, "g": 6.6},
+      {"n": "Cipolla rossa di Tropea", "qty": 20, "k": 8, "p": 0.2, "c": 1.9, "g": 0.0}
+    ],
+    "totale_piatto": {"k": 268, "p": 10.8, "c": 13.1, "g": 19.5},
+    "procedimento": [
+      "Taglia cetrioli e pomodori in pezzi netti e regolari.",
+      "Affetta la cipolla a piuma e lasciala in acqua ghiacciata per alcuni minuti.",
+      "Assembla le verdure senza mescolare troppo per non rompere i pomodori.",
+      "Sbriciola la feta sopra e completa con olive e origano secco."
+    ],
+    "archetypes": ["cold-kitchen", "salad", "vegetable-main"],
+    "knowledgeKeys": ["coldKitchen", "vegetableScience", "textureBalance"],
+    "tags": ["greca", "feta", "olive", "cetriolo", "pomodoro"]
+  },
+  {
+    "id": "R054",
+    "nome_ricetta": "Spinacina Fragole e Caprino",
+    "difficolta": "Semplice",
+    "tempo_prep_min": 12,
+    "allergeni_esclusi": ["Glutine"],
+    "tecnica_cottura": "Assemblaggio a freddo con tostatura breve delle mandorle e uso dell'aceto balsamico in riduzione per controllare dolcezza e acidita.",
+    "anti_spreco": "I gambi delle fragole possono aromatizzare acqua o sciroppi; il caprino avanzato si lavora facilmente in crema per crostini o verdure crude.",
+    "ingredienti_tabella": [
+      {"n": "Spinaci novelli", "qty": 70, "k": 16, "p": 2.0, "c": 1.2, "g": 0.3},
+      {"n": "Fragole fresche", "qty": 50, "k": 16, "p": 0.4, "c": 3.8, "g": 0.1},
+      {"n": "Formaggio caprino morbido", "qty": 50, "k": 135, "p": 8.5, "c": 1.2, "g": 10.8},
+      {"n": "Mandorle a lamelle", "qty": 15, "k": 87, "p": 3.2, "c": 1.5, "g": 7.5},
+      {"n": "Aceto balsamico ridotto", "qty": 10, "k": 22, "p": 0.1, "c": 4.7, "g": 0.0}
+    ],
+    "totale_piatto": {"k": 276, "p": 14.2, "c": 12.4, "g": 18.7},
+    "procedimento": [
+      "Tosta le mandorle pochi minuti finche diventano fragranti ma non scure.",
+      "Disponi gli spinaci ben asciutti alla base del piatto.",
+      "Aggiungi fragole a quarti e fiocchi di caprino distribuiti in modo uniforme.",
+      "Completa con le mandorle e poche gocce di balsamico ridotto."
+    ],
+    "archetypes": ["cold-kitchen", "salad", "vegetable-main"],
+    "knowledgeKeys": ["coldKitchen", "textureBalance"],
+    "tags": ["spinaci", "fragole", "caprino", "mandorle", "freddo"]
+  },
+  {
+    "id": "R055",
+    "nome_ricetta": "L Egiziana di Fave e Pecorino",
+    "difficolta": "Semplice",
+    "tempo_prep_min": 15,
+    "allergeni_esclusi": ["Glutine"],
+    "tecnica_cottura": "Sbollentatura breve e scamiciatura delle fave per pulire la texture, poi assemblaggio a freddo con menta e limone.",
+    "anti_spreco": "Le pellicine delle fave e l'acqua di sbollentatura possono entrare in un brodo vegetale; la lattuga piu esterna puo essere usata tritata in minestre o ripieni.",
+    "ingredienti_tabella": [
+      {"n": "Fave fresche sgusciate", "qty": 100, "k": 88, "p": 7.6, "c": 12.7, "g": 0.7},
+      {"n": "Pecorino Romano", "qty": 40, "k": 155, "p": 11.0, "c": 0.0, "g": 12.0},
+      {"n": "Lattuga romana", "qty": 80, "k": 14, "p": 1.0, "c": 2.4, "g": 0.2},
+      {"n": "Menta fresca", "qty": 5, "k": 2, "p": 0.1, "c": 0.3, "g": 0.0},
+      {"n": "Succo di limone", "qty": 10, "k": 3, "p": 0.1, "c": 1.0, "g": 0.0}
+    ],
+    "totale_piatto": {"k": 262, "p": 19.8, "c": 16.4, "g": 12.9},
+    "procedimento": [
+      "Sbollenta le fave per circa 2 minuti e raffreddale subito.",
+      "Elimina la pellicina esterna per ottenere una consistenza piu fine e digeribile.",
+      "Unisci fave, lattuga e menta spezzata a mano.",
+      "Condisci con limone e completa con il pecorino grattugiato o in scaglie."
+    ],
+    "archetypes": ["cold-kitchen", "salad", "vegetable-main"],
+    "knowledgeKeys": ["coldKitchen", "vegetableScience", "textureBalance"],
+    "tags": ["fave", "pecorino", "menta", "lattuga", "primavera"]
+  },
+  {
+    "id": "R056",
+    "nome_ricetta": "Salad Halloumi e Zucchine",
+    "difficolta": "Semplice",
+    "tempo_prep_min": 15,
+    "allergeni_esclusi": ["Glutine"],
+    "tecnica_cottura": "Grigliatura rapida di zucchine e halloumi per ottenere contrasto tra parte vegetale succosa e formaggio sapido e dorato.",
+    "anti_spreco": "Le zucchine gia grigliate del giorno prima qui funzionano bene; l'halloumi va cotto solo al momento per non perdere elasticita e doratura.",
+    "ingredienti_tabella": [
+      {"n": "Halloumi", "qty": 80, "k": 256, "p": 16.0, "c": 1.6, "g": 20.8},
+      {"n": "Zucchine grigliate", "qty": 100, "k": 18, "p": 1.4, "c": 3.2, "g": 0.3},
+      {"n": "Rucola", "qty": 40, "k": 10, "p": 1.0, "c": 1.0, "g": 0.3},
+      {"n": "Semi di sesamo", "qty": 5, "k": 29, "p": 1.0, "c": 1.2, "g": 2.5}
+    ],
+    "totale_piatto": {"k": 313, "p": 19.4, "c": 7.0, "g": 23.9},
+    "procedimento": [
+      "Griglia le zucchine e tienile appena tiepide o fredde.",
+      "Cuoci l'halloumi su piastra molto calda finche si formano segni netti di doratura.",
+      "Disponi rucola e zucchine come base del piatto.",
+      "Aggiungi il formaggio ancora caldo e completa con semi di sesamo."
+    ],
+    "archetypes": ["salad", "vegetable-main", "protein-main"],
+    "knowledgeKeys": ["coldKitchen", "vegetableScience", "textureBalance"],
+    "tags": ["halloumi", "zucchine", "rucola", "sesamo", "insalata"]
+  },
+  {
+    "id": "R057",
+    "nome_ricetta": "Uovo Mollet e Asparagi",
+    "difficolta": "Semplice",
+    "tempo_prep_min": 10,
+    "allergeni_esclusi": ["Glutine"],
+    "tecnica_cottura": "Cottura mollet dell'uovo per 6 minuti e assemblaggio su base verde con asparagi al vapore ancora compatti.",
+    "anti_spreco": "I gambi piu coriacei degli asparagi possono diventare crema o brodo; l'uovo va raffreddato e sgusciato con cura per non perdere il tuorlo fondente.",
+    "ingredienti_tabella": [
+      {"n": "Asparagi cotti al vapore", "qty": 120, "k": 24, "p": 2.6, "c": 4.4, "g": 0.2},
+      {"n": "Uovo biologico", "qty": 60, "k": 86, "p": 7.5, "c": 0.4, "g": 5.8},
+      {"n": "Valeriana", "qty": 50, "k": 11, "p": 1.0, "c": 1.3, "g": 0.4},
+      {"n": "Grana Padano", "qty": 20, "k": 78, "p": 6.6, "c": 0.0, "g": 5.6}
+    ],
+    "totale_piatto": {"k": 199, "p": 17.7, "c": 6.1, "g": 12.0},
+    "procedimento": [
+      "Cuoci l'uovo in acqua bollente per circa 6 minuti.",
+      "Raffreddalo rapidamente solo quanto basta per poterlo sgusciare senza romperlo.",
+      "Disponi asparagi e valeriana nel piatto mantenendo gli asparagi interi o in tagli lunghi.",
+      "Apri l'uovo sopra il letto verde e completa con scaglie di grana."
+    ],
+    "archetypes": ["salad", "egg-dish", "cold-kitchen"],
+    "knowledgeKeys": ["coldKitchen", "eggCooking", "ingredientSafety"],
+    "tags": ["uovo mollet", "asparagi", "valeriana", "grana", "insalata"]
+  },
+  {
+    "id": "R058",
+    "nome_ricetta": "Insalata di Rinforzo Veg",
+    "difficolta": "Semplice",
+    "tempo_prep_min": 20,
+    "allergeni_esclusi": ["Glutine", "Lattosio"],
+    "tecnica_cottura": "Cottura del cavolfiore al morso e assemblaggio a freddo con componente acetica ben distribuita per rendere il piatto piu vivo e stabile.",
+    "anti_spreco": "I gambi e le foglie del cavolfiore possono essere cotti insieme o usati in zuppe; il liquido dei sottaceti puo rinforzare la vinaigrette senza sprechi.",
+    "ingredienti_tabella": [
+      {"n": "Cavolfiore bollito", "qty": 150, "k": 34, "p": 2.7, "c": 6.9, "g": 0.4},
+      {"n": "Sottaceti misti", "qty": 50, "k": 18, "p": 0.5, "c": 3.8, "g": 0.1},
+      {"n": "Olive verdi", "qty": 30, "k": 44, "p": 0.3, "c": 1.1, "g": 4.5},
+      {"n": "Olio Extravergine di Oliva", "qty": 10, "k": 89, "p": 0.0, "c": 0.0, "g": 9.9},
+      {"n": "Aceto di vino", "qty": 10, "k": 2, "p": 0.0, "c": 0.1, "g": 0.0}
+    ],
+    "totale_piatto": {"k": 187, "p": 3.5, "c": 11.9, "g": 14.9},
+    "procedimento": [
+      "Cuoci il cavolfiore finche e tenero ma ancora compatto, poi raffreddalo bene.",
+      "Taglialo in pezzi regolari e uniscilo ai sottaceti scolati.",
+      "Aggiungi olive e condisci con olio e aceto dosati con precisione.",
+      "Lascia riposare qualche minuto prima di servire per far integrare la parte acida."
+    ],
+    "archetypes": ["cold-kitchen", "salad", "vegetable-main"],
+    "knowledgeKeys": ["coldKitchen", "acidityPh", "vegetableScience"],
+    "tags": ["insalata di rinforzo", "vegano", "cavolfiore", "sottaceti"]
+  },
+  {
+    "id": "R059",
+    "nome_ricetta": "Belga Gorgonzola e Mele",
+    "difficolta": "Semplice",
+    "tempo_prep_min": 8,
+    "allergeni_esclusi": ["Glutine"],
+    "tecnica_cottura": "Montaggio a freddo in barchette per separare bene la parte croccante amarognola dalla crema di gorgonzola e dalla nota fresca della mela.",
+    "anti_spreco": "Le foglie esterne meno belle della belga si possono stufare; la crema di gorgonzola avanzata puo condire pasta corta o verdure al forno.",
+    "ingredienti_tabella": [
+      {"n": "Insalata belga", "qty": 100, "k": 17, "p": 1.2, "c": 3.4, "g": 0.2},
+      {"n": "Gorgonzola piccante", "qty": 40, "k": 126, "p": 7.6, "c": 0.0, "g": 10.8},
+      {"n": "Mela Stark", "qty": 60, "k": 31, "p": 0.2, "c": 8.4, "g": 0.1},
+      {"n": "Noci", "qty": 15, "k": 98, "p": 2.2, "c": 0.9, "g": 9.8}
+    ],
+    "totale_piatto": {"k": 272, "p": 11.2, "c": 12.7, "g": 20.9},
+    "procedimento": [
+      "Separa le foglie di belga mantenendole integre come piccoli contenitori.",
+      "Lavora il gorgonzola fino a renderlo cremoso ma non liquido.",
+      "Farcisci ogni foglia con poca crema e aggiungi dadini di mela.",
+      "Completa con noci spezzate grossolanamente per un contrasto netto di consistenze."
+    ],
+    "archetypes": ["cold-kitchen", "salad", "vegetable-main"],
+    "knowledgeKeys": ["coldKitchen", "textureBalance"],
+    "tags": ["belga", "gorgonzola", "mela", "noci", "finger salad"]
+  },
+  {
+    "id": "R060",
+    "nome_ricetta": "Burrata e Pomodorini Confit",
+    "difficolta": "Semplice",
+    "tempo_prep_min": 5,
+    "allergeni_esclusi": [],
+    "tecnica_cottura": "Assemblaggio a contrasto termico con burrata a temperatura controllata e pomodorini confit serviti tiepidi per aumentare intensita aromatica.",
+    "anti_spreco": "L'olio e il fondo dei pomodorini confit sono un condimento prezioso da non buttare; il pane avanzato puo essere tostato e trasformato in crostini.",
+    "ingredienti_tabella": [
+      {"n": "Burrata", "qty": 125, "k": 335, "p": 10.0, "c": 3.0, "g": 31.0},
+      {"n": "Pomodorini confit", "qty": 100, "k": 60, "p": 1.5, "c": 8.5, "g": 2.5},
+      {"n": "Crostini di pane", "qty": 20, "k": 82, "p": 2.5, "c": 15.0, "g": 1.2},
+      {"n": "Basilico", "qty": 3, "k": 1, "p": 0.1, "c": 0.1, "g": 0.0}
+    ],
+    "totale_piatto": {"k": 478, "p": 14.1, "c": 26.6, "g": 34.7},
+    "procedimento": [
+      "Porta la burrata a una temperatura di servizio fresca ma non gelata.",
+      "Disponila al centro del piatto senza romperla troppo presto.",
+      "Circondala con i pomodorini confit ancora tiepidi e con il loro fondo.",
+      "Completa con basilico e crostini per aggiungere parte croccante."
+    ],
+    "archetypes": ["cold-kitchen", "salad", "vegetable-main"],
+    "knowledgeKeys": ["coldKitchen", "vegetableScience", "textureBalance"],
+    "tags": ["burrata", "pomodorini confit", "basilico", "estate", "insalata"]
+  },
+  {
+    "id": "R061",
+    "nome_ricetta": "Quinoa e Avocado L Energia",
+    "difficolta": "Semplice",
+    "tempo_prep_min": 15,
+    "allergeni_esclusi": ["Glutine", "Lattosio"],
+    "tecnica_cottura": "Assemblaggio a freddo con avocado acidulato subito al lime per limitare ossidazione e mantenere il boccone pulito.",
+    "anti_spreco": "La quinoa avanzata e perfetta per questa preparazione; le bucce di avocado e i pomodorini piu maturi possono entrare in altre basi vegetali o salse.",
+    "ingredienti_tabella": [
+      {"n": "Quinoa cotta", "qty": 120, "k": 144, "p": 5.3, "c": 25.5, "g": 2.3},
+      {"n": "Avocado", "qty": 80, "k": 128, "p": 1.6, "c": 6.8, "g": 11.8},
+      {"n": "Pomodorini", "qty": 50, "k": 9, "p": 0.5, "c": 2.0, "g": 0.1},
+      {"n": "Succo di lime", "qty": 15, "k": 4, "p": 0.1, "c": 1.3, "g": 0.0},
+      {"n": "Coriandolo fresco", "qty": 5, "k": 1, "p": 0.1, "c": 0.1, "g": 0.0}
+    ],
+    "totale_piatto": {"k": 286, "p": 7.6, "c": 35.7, "g": 14.2},
+    "procedimento": [
+      "Raffredda la quinoa dopo la cottura per mantenerla sgranata.",
+      "Taglia l'avocado a cubi e bagnalo subito con il lime.",
+      "Unisci pomodorini e quinoa senza schiacciare l'avocado.",
+      "Completa con coriandolo tritato e servi subito o appena fredda."
+    ],
+    "archetypes": ["cold-kitchen", "salad", "grain-bowl", "vegetable-main"],
+    "knowledgeKeys": ["coldKitchen", "plantBasedRawPattern", "textureBalance"],
+    "tags": ["vegan", "quinoa", "avocado", "lime", "insalata"]
+  },
+  {
+    "id": "R062",
+    "nome_ricetta": "Ceci Zenzero e Carote",
+    "difficolta": "Semplice",
+    "tempo_prep_min": 10,
+    "allergeni_esclusi": ["Glutine", "Lattosio"],
+    "tecnica_cottura": "Assemblaggio a freddo con marinatura breve delle carote per profumarle e ammorbidirne leggermente la fibra.",
+    "anti_spreco": "I ceci cotti avanzati sono ideali qui; le bucce delle carote ben pulite possono arricchire brodi vegetali o estratti salati.",
+    "ingredienti_tabella": [
+      {"n": "Ceci cotti", "qty": 150, "k": 246, "p": 13.4, "c": 40.8, "g": 3.9},
+      {"n": "Carote", "qty": 100, "k": 41, "p": 0.9, "c": 9.6, "g": 0.2},
+      {"n": "Zenzero fresco", "qty": 5, "k": 4, "p": 0.1, "c": 0.9, "g": 0.0},
+      {"n": "Semi di girasole", "qty": 10, "k": 58, "p": 2.1, "c": 2.0, "g": 5.1}
+    ],
+    "totale_piatto": {"k": 349, "p": 16.5, "c": 53.3, "g": 9.2},
+    "procedimento": [
+      "Taglia le carote a julienne fine e condiscile con zenzero e poco olio.",
+      "Lasciale riposare qualche minuto per farle insaporire.",
+      "Unisci i ceci ben scolati e mescola senza schiacciarli.",
+      "Completa con semi di girasole per dare croccantezza e parte grassa."
+    ],
+    "archetypes": ["cold-kitchen", "salad", "protein-main", "vegetable-main"],
+    "knowledgeKeys": ["coldKitchen", "proteinPlanning", "textureBalance"],
+    "tags": ["vegan", "ceci", "carote", "zenzero", "proteico"]
+  },
+  {
+    "id": "R063",
+    "nome_ricetta": "Tofu Affumicato e Radicchio",
+    "difficolta": "Semplice",
+    "tempo_prep_min": 10,
+    "allergeni_esclusi": ["Glutine", "Lattosio"],
+    "tecnica_cottura": "Scottata rapida del tofu per concentrare aroma affumicato e lasciare il radicchio crudo, tonico e croccante.",
+    "anti_spreco": "Il radicchio esterno si puo stufare in un'altra preparazione; il tofu avanzato si puo reimpiegare in bowl o padellate rapide.",
+    "ingredienti_tabella": [
+      {"n": "Tofu affumicato", "qty": 80, "k": 112, "p": 13.0, "c": 2.0, "g": 5.6},
+      {"n": "Radicchio tardivo", "qty": 100, "k": 23, "p": 1.4, "c": 4.5, "g": 0.3},
+      {"n": "Pinoli", "qty": 10, "k": 67, "p": 1.3, "c": 1.3, "g": 6.8},
+      {"n": "Aceto di mele", "qty": 10, "k": 2, "p": 0.0, "c": 0.1, "g": 0.0}
+    ],
+    "totale_piatto": {"k": 204, "p": 15.7, "c": 7.9, "g": 12.7},
+    "procedimento": [
+      "Taglia il tofu a cubi e scottalo brevemente in padella per asciugare la superficie.",
+      "Taglia il radicchio in segmenti o listarelle mantenendo croccantezza.",
+      "Unisci tofu e radicchio solo all'ultimo per non afflosciare la verdura.",
+      "Completa con pinoli e una punta di aceto di mele."
+    ],
+    "archetypes": ["cold-kitchen", "salad", "protein-main", "vegetable-main"],
+    "knowledgeKeys": ["coldKitchen", "proteinPlanning", "textureBalance"],
+    "tags": ["vegan", "tofu affumicato", "radicchio", "pinoli"]
+  },
+  {
+    "id": "R064",
+    "nome_ricetta": "Kale e Tahina",
+    "difficolta": "Semplice",
+    "tempo_prep_min": 10,
+    "allergeni_esclusi": ["Glutine", "Lattosio"],
+    "tecnica_cottura": "Massaggio del kale con sale e olio per rompere leggermente la fibra, poi condimento con crema di tahina e limone.",
+    "anti_spreco": "I gambi piu duri del kale possono entrare in zuppe o soffritti; la salsa di tahina avanzata e utile su altri ortaggi crudi o arrostiti.",
+    "ingredienti_tabella": [
+      {"n": "Cavolo riccio", "qty": 100, "k": 49, "p": 4.3, "c": 8.8, "g": 0.9},
+      {"n": "Tahina", "qty": 20, "k": 119, "p": 3.5, "c": 4.3, "g": 10.6},
+      {"n": "Succo di limone", "qty": 10, "k": 3, "p": 0.1, "c": 1.0, "g": 0.0},
+      {"n": "Lievito alimentare in scaglie", "qty": 5, "k": 18, "p": 2.5, "c": 1.2, "g": 0.2}
+    ],
+    "totale_piatto": {"k": 189, "p": 10.4, "c": 15.3, "g": 11.7},
+    "procedimento": [
+      "Pulisci il kale eliminando le coste piu coriacee.",
+      "Massaggialo con poco olio e sale per alcuni minuti.",
+      "Prepara una salsa con tahina, limone e poca acqua per renderla fluida.",
+      "Condisci il kale e completa con lievito alimentare in scaglie."
+    ],
+    "archetypes": ["cold-kitchen", "salad", "vegetable-main"],
+    "knowledgeKeys": ["coldKitchen", "plantBasedRawPattern", "textureBalance"],
+    "tags": ["vegan", "kale", "tahina", "limone", "superfood"]
+  },
+  {
+    "id": "R065",
+    "nome_ricetta": "Bulgur e Melograno",
+    "difficolta": "Semplice",
+    "tempo_prep_min": 15,
+    "allergeni_esclusi": ["Lattosio"],
+    "tecnica_cottura": "Assemblaggio a freddo con cereale gia cotto e aromi freschi per valorizzare la spinta acida e croccante del melograno.",
+    "anti_spreco": "Il bulgur avanzato del giorno prima e ideale; le bucce e membrane del melograno non si usano nel piatto ma possono profumare infusi o compost.",
+    "ingredienti_tabella": [
+      {"n": "Bulgur cotto", "qty": 120, "k": 100, "p": 3.2, "c": 22.0, "g": 0.3},
+      {"n": "Chicchi di melograno", "qty": 40, "k": 33, "p": 0.6, "c": 7.4, "g": 0.4},
+      {"n": "Prezzemolo tritato", "qty": 20, "k": 7, "p": 0.6, "c": 1.3, "g": 0.2},
+      {"n": "Cipollotto", "qty": 10, "k": 3, "p": 0.1, "c": 0.7, "g": 0.0}
+    ],
+    "totale_piatto": {"k": 143, "p": 4.5, "c": 31.4, "g": 0.9},
+    "procedimento": [
+      "Raffredda bene il bulgur e sgranalo con una forchetta.",
+      "Unisci prezzemolo e cipollotto tritati molto fini.",
+      "Aggiungi i chicchi di melograno solo alla fine per mantenerli integri.",
+      "Condisci con poco olio e servi ben fresco."
+    ],
+    "archetypes": ["cold-kitchen", "salad", "grain-bowl"],
+    "knowledgeKeys": ["coldKitchen", "textureBalance"],
+    "tags": ["bulgur", "melograno", "prezzemolo", "tabbouleh style"]
+  },
+  {
+    "id": "R066",
+    "nome_ricetta": "Lenticchie Beluga e Patate Dolci",
+    "difficolta": "Semplice",
+    "tempo_prep_min": 30,
+    "allergeni_esclusi": ["Glutine", "Lattosio"],
+    "tecnica_cottura": "Patate dolci arrostite e lenticchie cotte separatamente per mantenere leggibile il contrasto tra parte cremosa e parte soda.",
+    "anti_spreco": "Le patate dolci avanzate si riciclano facilmente in bowl o puree; le lenticchie cotte in piu diventano base pronta per altri piatti freddi.",
+    "ingredienti_tabella": [
+      {"n": "Lenticchie nere", "qty": 100, "k": 114, "p": 9.0, "c": 20.0, "g": 0.4},
+      {"n": "Patate dolci arrosto", "qty": 100, "k": 86, "p": 1.6, "c": 20.1, "g": 0.1},
+      {"n": "Rucola", "qty": 30, "k": 8, "p": 0.8, "c": 1.1, "g": 0.2}
+    ],
+    "totale_piatto": {"k": 208, "p": 11.4, "c": 41.2, "g": 0.7},
+    "procedimento": [
+      "Arrostisci la patata dolce a cubi finche e dorata ai bordi.",
+      "Cuoci le lenticchie senza sfaldarle e raffreddale bene.",
+      "Assembla rucola, lenticchie e patata dolce mantenendo i cubi integri.",
+      "Condisci con poco olio e una punta acida se gradita."
+    ],
+    "archetypes": ["cold-kitchen", "salad", "grain-bowl", "protein-main", "vegetable-main"],
+    "knowledgeKeys": ["coldKitchen", "proteinPlanning", "vegetableScience"],
+    "tags": ["vegan", "lenticchie beluga", "patata dolce", "rucola"]
+  },
+  {
+    "id": "R067",
+    "nome_ricetta": "Insalata di Edamame e Wakame",
+    "difficolta": "Semplice",
+    "tempo_prep_min": 10,
+    "allergeni_esclusi": ["Glutine", "Lattosio"],
+    "tecnica_cottura": "Reidratazione dell'alga e assemblaggio a freddo con edamame cotti e condimento essenziale a base di soia e sesamo.",
+    "anti_spreco": "L'acqua di reidratazione del wakame non va usata nel piatto ma puo aiutare brodi vegetali; l'edamame cotto in piu si conserva bene per altre bowl.",
+    "ingredienti_tabella": [
+      {"n": "Edamame sgusciati", "qty": 100, "k": 122, "p": 11.9, "c": 8.9, "g": 5.2},
+      {"n": "Alga Wakame reidratata", "qty": 30, "k": 14, "p": 0.9, "c": 2.7, "g": 0.2},
+      {"n": "Semi di sesamo nero", "qty": 2, "k": 12, "p": 0.4, "c": 0.5, "g": 1.0},
+      {"n": "Salsa di soia", "qty": 5, "k": 3, "p": 0.4, "c": 0.3, "g": 0.0}
+    ],
+    "totale_piatto": {"k": 151, "p": 13.6, "c": 12.4, "g": 6.4},
+    "procedimento": [
+      "Reidrata il wakame e scolalo molto bene per evitare eccesso di acqua.",
+      "Cuoci o rigenera l'edamame e raffreddalo.",
+      "Unisci i due elementi mantenendo il condimento leggero.",
+      "Completa con semi di sesamo nero e poche gocce di salsa di soia."
+    ],
+    "archetypes": ["cold-kitchen", "salad", "protein-main", "vegetable-main"],
+    "knowledgeKeys": ["coldKitchen", "proteinPlanning", "plantBasedRawPattern"],
+    "tags": ["vegan", "edamame", "wakame", "sesamo", "asiatica"]
+  },
+  {
+    "id": "R068",
+    "nome_ricetta": "Farro Zucchine e Menta",
+    "difficolta": "Semplice",
+    "tempo_prep_min": 20,
+    "allergeni_esclusi": ["Lattosio"],
+    "tecnica_cottura": "Assemblaggio con farro cotto e zucchine crude a nastro per avere una parte cereale soda e una vegetale fresca e succosa.",
+    "anti_spreco": "Le zucchine piu grandi si prestano bene al taglio a nastro; il farro cotto in eccesso e base utile per schiscette e insalate successive.",
+    "ingredienti_tabella": [
+      {"n": "Farro perlato cotto", "qty": 100, "k": 123, "p": 4.3, "c": 26.0, "g": 0.8},
+      {"n": "Zucchine crude", "qty": 80, "k": 14, "p": 1.0, "c": 2.5, "g": 0.2},
+      {"n": "Menta fresca", "qty": 5, "k": 2, "p": 0.1, "c": 0.3, "g": 0.0},
+      {"n": "Mandorle", "qty": 10, "k": 58, "p": 2.1, "c": 2.0, "g": 5.0}
+    ],
+    "totale_piatto": {"k": 197, "p": 7.5, "c": 30.8, "g": 6.0},
+    "procedimento": [
+      "Cuoci il farro e raffreddalo bene.",
+      "Ricava dalle zucchine dei nastri sottili con un pelapatate.",
+      "Unisci farro, zucchine e menta senza comprimere il composto.",
+      "Completa con mandorle tritate grossolanamente per il contrasto finale."
+    ],
+    "archetypes": ["cold-kitchen", "salad", "grain-bowl", "vegetable-main"],
+    "knowledgeKeys": ["coldKitchen", "vegetableScience", "textureBalance"],
+    "tags": ["farro", "zucchine", "menta", "mandorle", "insalata"]
+  },
+  {
+    "id": "R069",
+    "nome_ricetta": "Barbabietola e Rafano",
+    "difficolta": "Semplice",
+    "tempo_prep_min": 5,
+    "allergeni_esclusi": ["Glutine", "Lattosio"],
+    "tecnica_cottura": "Assemblaggio a freddo con taglio netto della barbabietola e uso calibrato del rafano per spingere piccantezza e freschezza.",
+    "anti_spreco": "La barbabietola precotta avanzata qui funziona molto bene; i ritagli di mela possono entrare in estratti o altre insalate rapide.",
+    "ingredienti_tabella": [
+      {"n": "Barbabietola precotta", "qty": 150, "k": 64, "p": 2.4, "c": 14.0, "g": 0.2},
+      {"n": "Crema di rafano vegan", "qty": 10, "k": 18, "p": 0.2, "c": 2.0, "g": 1.0},
+      {"n": "Mela verde", "qty": 50, "k": 26, "p": 0.1, "c": 7.0, "g": 0.1},
+      {"n": "Aneto", "qty": 3, "k": 1, "p": 0.1, "c": 0.2, "g": 0.0}
+    ],
+    "totale_piatto": {"k": 109, "p": 2.8, "c": 23.2, "g": 1.3},
+    "procedimento": [
+      "Taglia la barbabietola a spicchi o cubi regolari.",
+      "Affetta la mela molto sottile per mantenere freschezza e acidita.",
+      "Distribuisci poca crema di rafano in modo omogeneo senza coprire tutto il piatto.",
+      "Completa con aneto fresco appena tritato."
+    ],
+    "archetypes": ["cold-kitchen", "salad", "vegetable-main"],
+    "knowledgeKeys": ["coldKitchen", "vegetableScience", "textureBalance"],
+    "tags": ["vegan", "barbabietola", "rafano", "mela verde"]
+  },
+  {
+    "id": "R070",
+    "nome_ricetta": "Tempeh e Fagiolini",
+    "difficolta": "Semplice",
+    "tempo_prep_min": 15,
+    "allergeni_esclusi": ["Glutine", "Lattosio"],
+    "tecnica_cottura": "Scottata del tempeh e assemblaggio con fagiolini lessi e salsa alla senape antica per dare struttura e spinta aromatica.",
+    "anti_spreco": "I fagiolini gia cotti sono perfetti per questa insalata; il tempeh avanzato puo essere reimpiegato in bowl, panini o wok veloci.",
+    "ingredienti_tabella": [
+      {"n": "Tempeh grigliato", "qty": 80, "k": 154, "p": 15.0, "c": 7.2, "g": 7.6},
+      {"n": "Fagiolini lessi", "qty": 120, "k": 37, "p": 2.2, "c": 8.4, "g": 0.2},
+      {"n": "Senape antica", "qty": 10, "k": 18, "p": 1.0, "c": 1.2, "g": 1.0}
+    ],
+    "totale_piatto": {"k": 209, "p": 18.2, "c": 16.8, "g": 8.8},
+    "procedimento": [
+      "Scottare o grigliare il tempeh finche la superficie e ben asciutta e dorata.",
+      "Raffredda i fagiolini dopo la cottura per fissarne colore e consistenza.",
+      "Taglia il tempeh in pezzi regolari e uniscilo ai fagiolini.",
+      "Condisci con senape antica ben distribuita."
+    ],
+    "archetypes": ["cold-kitchen", "salad", "protein-main", "vegetable-main"],
+    "knowledgeKeys": ["coldKitchen", "proteinPlanning", "textureBalance"],
+    "tags": ["vegan", "tempeh", "fagiolini", "senape", "proteico"]
+  },
+  {
+    "id": "R071",
+    "nome_ricetta": "Caesar Salad",
+    "difficolta": "Media",
+    "tempo_prep_min": 20,
+    "allergeni_esclusi": [],
+    "tecnica_cottura": "Condimento separato della lattuga con salsa Caesar e inserimento finale di pollo caldo e crostini per mantenere contrasto termico e croccantezza.",
+    "anti_spreco": "Il pollo grigliato avanzato e perfetto per questa ricetta; la lattuga meno bella puo entrare nella salsa o in altre basi crude, mentre il pane del giorno prima diventa crostino.",
+    "ingredienti_tabella": [
+      {"n": "Lattuga romana", "qty": 100, "k": 17, "p": 1.2, "c": 3.3, "g": 0.3},
+      {"n": "Petto di pollo grigliato", "qty": 120, "k": 132, "p": 27.6, "c": 0.0, "g": 1.8},
+      {"n": "Crostini di pane al burro", "qty": 30, "k": 130, "p": 3.5, "c": 20.0, "g": 4.5},
+      {"n": "Salsa Caesar", "qty": 30, "k": 155, "p": 2.5, "c": 1.5, "g": 15.0},
+      {"n": "Scaglie di Parmigiano", "qty": 15, "k": 60, "p": 5.4, "c": 0.0, "g": 4.4}
+    ],
+    "totale_piatto": {"k": 494, "p": 40.2, "c": 24.8, "g": 26.0},
+    "procedimento": [
+      "Prepara o rigenera il pollo in modo che resti caldo e succoso.",
+      "Condisci la lattuga con la salsa senza eccedere per non appesantire il piatto.",
+      "Aggiungi il pollo caldo e i crostini solo all'ultimo momento.",
+      "Completa con scaglie di parmigiano e servi subito."
+    ],
+    "archetypes": ["salad", "protein-main", "cold-kitchen"],
+    "knowledgeKeys": ["coldKitchen", "proteinPlanning", "eggCooking", "textureBalance"],
+    "tags": ["caesar", "pollo", "parmigiano", "crostini", "insalata"]
+  },
+  {
+    "id": "R072",
+    "nome_ricetta": "Nicoise",
+    "difficolta": "Media",
+    "tempo_prep_min": 25,
+    "allergeni_esclusi": ["Lattosio"],
+    "tecnica_cottura": "Assemblaggio a elementi separati per mantenere identita gustative e diverse consistenze senza impastare il piatto.",
+    "anti_spreco": "Patate e fagiolini lessi avanzati funzionano molto bene; il tonno e le acciughe vanno dosati con precisione per non spingere troppo la sapidita.",
+    "ingredienti_tabella": [
+      {"n": "Tonno sott olio", "qty": 80, "k": 160, "p": 20.0, "c": 0.0, "g": 8.5},
+      {"n": "Uovo sodo", "qty": 60, "k": 86, "p": 7.5, "c": 0.4, "g": 5.8},
+      {"n": "Fagiolini", "qty": 50, "k": 15, "p": 0.9, "c": 3.5, "g": 0.1},
+      {"n": "Patate lesse", "qty": 60, "k": 46, "p": 1.2, "c": 10.2, "g": 0.1},
+      {"n": "Acciughe", "qty": 15, "k": 32, "p": 4.4, "c": 0.0, "g": 1.8},
+      {"n": "Olive taggiasche", "qty": 20, "k": 40, "p": 0.3, "c": 1.0, "g": 4.0}
+    ],
+    "totale_piatto": {"k": 379, "p": 34.3, "c": 15.1, "g": 20.3},
+    "procedimento": [
+      "Cuoci o rigenera fagiolini, patate e uovo mantenendo ogni elemento ben definito.",
+      "Disponi gli ingredienti per settori o in modo ordinato senza mescolare troppo.",
+      "Aggiungi tonno, acciughe e olive distribuendo bene la componente sapida.",
+      "Condisci alla fine con una vinaigrette leggera o solo olio e limone."
+    ],
+    "archetypes": ["salad", "protein-main", "cold-kitchen"],
+    "knowledgeKeys": ["coldKitchen", "eggCooking", "ingredientSafety", "textureBalance"],
+    "tags": ["nicoise", "tonno", "uovo", "acciughe", "fagiolini"]
+  },
+  {
+    "id": "R073",
+    "nome_ricetta": "Salad di Gamberi e Papaya",
+    "difficolta": "Media",
+    "tempo_prep_min": 15,
+    "allergeni_esclusi": ["Glutine", "Lattosio"],
+    "tecnica_cottura": "Gamberi al vapore o appena cotti e assemblaggio con papaya non troppo matura per controllare dolcezza, succosita e morso.",
+    "anti_spreco": "La papaya molto matura e meno indicata qui ma puo essere usata in smoothie; i gusci dei gamberi possono diventare base per un fumetto leggero.",
+    "ingredienti_tabella": [
+      {"n": "Gamberi cotti al vapore", "qty": 100, "k": 99, "p": 24.0, "c": 0.2, "g": 0.3},
+      {"n": "Papaya", "qty": 80, "k": 34, "p": 0.5, "c": 8.6, "g": 0.2},
+      {"n": "Peperoncino fresco", "qty": 2, "k": 1, "p": 0.0, "c": 0.2, "g": 0.0},
+      {"n": "Succo di lime", "qty": 10, "k": 3, "p": 0.1, "c": 1.0, "g": 0.0},
+      {"n": "Arachidi tostate", "qty": 10, "k": 57, "p": 2.6, "c": 1.7, "g": 4.9}
+    ],
+    "totale_piatto": {"k": 194, "p": 27.2, "c": 11.7, "g": 5.4},
+    "procedimento": [
+      "Taglia la papaya in pezzi regolari evitando frutti troppo maturi e molli.",
+      "Cuoci o rigenera delicatamente i gamberi senza indurirli.",
+      "Unisci papaya e gamberi con lime e peperoncino dosato con attenzione.",
+      "Completa con arachidi tostate per il contrasto croccante."
+    ],
+    "archetypes": ["salad", "protein-main", "cold-kitchen"],
+    "knowledgeKeys": ["coldKitchen", "ingredientSafety", "textureBalance"],
+    "tags": ["gamberi", "papaya", "lime", "arachidi", "insalata"]
+  },
+  {
+    "id": "R074",
+    "nome_ricetta": "Bresaola Rucola e Grana",
+    "difficolta": "Semplice",
+    "tempo_prep_min": 5,
+    "allergeni_esclusi": ["Glutine"],
+    "tecnica_cottura": "Assemblaggio a freddo con fettine distese senza sovrapposizione e condimento essenziale per preservare la leggibilita del piatto.",
+    "anti_spreco": "La bresaola va tolta dal freddo poco prima del servizio; la rucola avanzata puo finire in pesto o saltata brevemente in padella.",
+    "ingredienti_tabella": [
+      {"n": "Bresaola della Valtellina", "qty": 80, "k": 121, "p": 25.0, "c": 0.0, "g": 2.0},
+      {"n": "Rucola", "qty": 40, "k": 10, "p": 1.0, "c": 1.0, "g": 0.3},
+      {"n": "Grana Padano", "qty": 30, "k": 117, "p": 9.9, "c": 0.0, "g": 8.4},
+      {"n": "Olio Extravergine di Oliva", "qty": 10, "k": 89, "p": 0.0, "c": 0.0, "g": 9.9},
+      {"n": "Succo di limone", "qty": 10, "k": 3, "p": 0.1, "c": 1.0, "g": 0.0}
+    ],
+    "totale_piatto": {"k": 340, "p": 36.0, "c": 2.0, "g": 20.6},
+    "procedimento": [
+      "Disponi la bresaola in fette ampie senza piegarla troppo.",
+      "Aggiungi la rucola solo al centro o in piccoli ciuffi per non coprire tutto.",
+      "Completa con scaglie di grana ben sottili.",
+      "Condisci con poco olio e limone appena prima del servizio."
+    ],
+    "archetypes": ["salad", "protein-main", "cold-kitchen"],
+    "knowledgeKeys": ["coldKitchen", "proteinPlanning", "textureBalance"],
+    "tags": ["bresaola", "rucola", "grana", "classico italiano"]
+  },
+  {
+    "id": "R075",
+    "nome_ricetta": "Insalata di Polpo e Patate",
+    "difficolta": "Media",
+    "tempo_prep_min": 40,
+    "allergeni_esclusi": ["Glutine", "Lattosio"],
+    "tecnica_cottura": "Polpo cotto e raffreddato correttamente, poi assemblato con patate tiepide o fredde per ottenere equilibrio tra succosita marina e parte amidacea.",
+    "anti_spreco": "L'acqua di cottura del polpo puo profumare brodi o risotti; le patate lessate avanzate qui sono perfette se non troppo acquose.",
+    "ingredienti_tabella": [
+      {"n": "Polpo bollito", "qty": 150, "k": 124, "p": 22.0, "c": 2.0, "g": 2.0},
+      {"n": "Patate lesse", "qty": 150, "k": 114, "p": 3.0, "c": 25.5, "g": 0.2},
+      {"n": "Olive nere", "qty": 20, "k": 35, "p": 0.2, "c": 1.0, "g": 3.6},
+      {"n": "Prezzemolo", "qty": 5, "k": 2, "p": 0.2, "c": 0.3, "g": 0.0},
+      {"n": "Olio Extravergine di Oliva", "qty": 10, "k": 89, "p": 0.0, "c": 0.0, "g": 9.9}
+    ],
+    "totale_piatto": {"k": 364, "p": 25.4, "c": 28.8, "g": 15.7},
+    "procedimento": [
+      "Cuoci il polpo finche e tenero, poi lascialo raffreddare nel suo liquido se possibile.",
+      "Taglia il polpo in pezzi regolari e le patate in cubi compatti.",
+      "Assembla i due elementi senza schiacciare la patata.",
+      "Completa con olive, prezzemolo e olio a crudo."
+    ],
+    "archetypes": ["salad", "protein-main", "cold-kitchen"],
+    "knowledgeKeys": ["coldKitchen", "ingredientSafety", "textureBalance"],
+    "tags": ["polpo", "patate", "olive nere", "mare", "insalata"]
+  },
+  {
+    "id": "R076",
+    "nome_ricetta": "Cobb Salad",
+    "difficolta": "Media",
+    "tempo_prep_min": 20,
+    "allergeni_esclusi": [],
+    "tecnica_cottura": "Assemblaggio per file separate per valorizzare ingredienti molto diversi tra loro senza confondere consistenze e sapori.",
+    "anti_spreco": "Pollo, uova e bacon avanzati da altre preparazioni sono perfetti qui; il dressing va dosato con attenzione per non appesantire troppo il piatto.",
+    "ingredienti_tabella": [
+      {"n": "Lattuga", "qty": 80, "k": 13, "p": 0.9, "c": 2.1, "g": 0.2},
+      {"n": "Bacon croccante", "qty": 30, "k": 162, "p": 11.0, "c": 0.3, "g": 12.5},
+      {"n": "Pollo", "qty": 50, "k": 55, "p": 11.5, "c": 0.0, "g": 0.8},
+      {"n": "Avocado", "qty": 40, "k": 64, "p": 0.8, "c": 3.4, "g": 5.9},
+      {"n": "Uovo sodo", "qty": 60, "k": 86, "p": 7.5, "c": 0.4, "g": 5.8},
+      {"n": "Roquefort", "qty": 20, "k": 74, "p": 4.2, "c": 0.4, "g": 6.2}
+    ],
+    "totale_piatto": {"k": 454, "p": 35.9, "c": 6.6, "g": 31.4},
+    "procedimento": [
+      "Prepara tutti gli elementi in anticipo e raffredda quelli cotti se necessario.",
+      "Disponili per file o per settori mantenendo riconoscibile ogni ingrediente.",
+      "Taglia avocado e uovo solo poco prima del servizio.",
+      "Aggiungi il formaggio erborinato come ultimo elemento per dosarne meglio l'impatto."
+    ],
+    "archetypes": ["salad", "protein-main", "cold-kitchen"],
+    "knowledgeKeys": ["coldKitchen", "eggCooking", "proteinPlanning", "textureBalance"],
+    "tags": ["cobb", "bacon", "pollo", "uovo", "avocado"]
+  },
+  {
+    "id": "R077",
+    "nome_ricetta": "Salmone Affumicato e Finocchi",
+    "difficolta": "Semplice",
+    "tempo_prep_min": 10,
+    "allergeni_esclusi": ["Glutine", "Lattosio"],
+    "tecnica_cottura": "Assemblaggio a freddo con finocchio affettato finissimo e agrume pelato a vivo per alleggerire il grasso e la sapidita del salmone.",
+    "anti_spreco": "Le barbe del finocchio e le bucce dell'arancia possono profumare oli o tisane; il salmone va tenuto freddo ma servito non gelato.",
+    "ingredienti_tabella": [
+      {"n": "Salmone affumicato", "qty": 80, "k": 150, "p": 18.0, "c": 0.0, "g": 8.0},
+      {"n": "Finocchio", "qty": 120, "k": 19, "p": 1.0, "c": 4.3, "g": 0.2},
+      {"n": "Arancia", "qty": 40, "k": 19, "p": 0.3, "c": 4.7, "g": 0.0},
+      {"n": "Aneto", "qty": 3, "k": 1, "p": 0.1, "c": 0.2, "g": 0.0},
+      {"n": "Pepe rosa", "qty": 1, "k": 3, "p": 0.1, "c": 0.6, "g": 0.1}
+    ],
+    "totale_piatto": {"k": 192, "p": 19.5, "c": 9.8, "g": 8.3},
+    "procedimento": [
+      "Affetta il finocchio molto sottile e lascialo ben croccante.",
+      "Pela a vivo l'arancia evitando membrane troppo spesse.",
+      "Disponi il salmone in fette morbide senza compattarlo.",
+      "Completa con finocchio, aneto, arancia e un tocco di pepe rosa."
+    ],
+    "archetypes": ["salad", "protein-main", "cold-kitchen"],
+    "knowledgeKeys": ["coldKitchen", "ingredientSafety", "textureBalance"],
+    "tags": ["salmone affumicato", "finocchio", "arancia", "aneto"]
+  },
+  {
+    "id": "R078",
+    "nome_ricetta": "Roast Beef e Ravanelli",
+    "difficolta": "Semplice",
+    "tempo_prep_min": 10,
+    "allergeni_esclusi": ["Glutine"],
+    "tecnica_cottura": "Assemblaggio a freddo con carne affettata sottile e ravanelli croccanti, legati da una salsa alla senape ben calibrata.",
+    "anti_spreco": "Il roast beef avanzato e perfetto in questa formula; le foglie tenere dei ravanelli possono essere frullate in salse verdi o pestati rustici.",
+    "ingredienti_tabella": [
+      {"n": "Roast beef affettato", "qty": 100, "k": 170, "p": 27.0, "c": 0.0, "g": 6.0},
+      {"n": "Ravanelli", "qty": 40, "k": 6, "p": 0.3, "c": 1.3, "g": 0.1},
+      {"n": "Misticanza", "qty": 50, "k": 10, "p": 0.8, "c": 1.3, "g": 0.2},
+      {"n": "Salsa alla senape", "qty": 15, "k": 35, "p": 0.8, "c": 1.5, "g": 2.8}
+    ],
+    "totale_piatto": {"k": 221, "p": 28.9, "c": 4.1, "g": 9.1},
+    "procedimento": [
+      "Disponi la misticanza come base leggera del piatto.",
+      "Appoggia il roast beef in fette sottili senza comprimerlo.",
+      "Aggiungi ravanelli affettati fini per una nota fresca e pungente.",
+      "Condisci con poca salsa alla senape distribuendola in punti precisi."
+    ],
+    "archetypes": ["salad", "protein-main", "cold-kitchen"],
+    "knowledgeKeys": ["coldKitchen", "proteinPlanning", "textureBalance"],
+    "tags": ["roast beef", "ravanelli", "senape", "misticanza"]
+  },
+  {
+    "id": "R079",
+    "nome_ricetta": "Insalata di Mare Espressa",
+    "difficolta": "Media",
+    "tempo_prep_min": 15,
+    "allergeni_esclusi": ["Glutine", "Lattosio"],
+    "tecnica_cottura": "Saltata rapida di calamari e gamberi e condimento con citronette al prezzemolo per mantenere il mare nitido e non gommoso.",
+    "anti_spreco": "I ritagli di sedano e carota possono finire nella citronette o in un brodo; i frutti di mare vanno cotti il minimo indispensabile per non seccarsi.",
+    "ingredienti_tabella": [
+      {"n": "Calamari e gamberi", "qty": 150, "k": 130, "p": 25.0, "c": 2.0, "g": 2.0},
+      {"n": "Sedano", "qty": 40, "k": 6, "p": 0.3, "c": 1.2, "g": 0.1},
+      {"n": "Carote", "qty": 30, "k": 12, "p": 0.3, "c": 2.8, "g": 0.1},
+      {"n": "Citronette al prezzemolo", "qty": 15, "k": 55, "p": 0.1, "c": 1.2, "g": 5.5}
+    ],
+    "totale_piatto": {"k": 203, "p": 25.7, "c": 7.2, "g": 7.7},
+    "procedimento": [
+      "Salta calamari e gamberi per un tempo molto breve e raffreddali appena.",
+      "Taglia sedano e carota in pezzi sottili e regolari.",
+      "Assembla i frutti di mare con le verdure mantenendo il piatto leggero.",
+      "Completa con citronette al prezzemolo ben emulsionata."
+    ],
+    "archetypes": ["salad", "protein-main", "cold-kitchen"],
+    "knowledgeKeys": ["coldKitchen", "ingredientSafety", "textureBalance"],
+    "tags": ["mare", "calamari", "gamberi", "sedano", "carote"]
+  },
+  {
+    "id": "R080",
+    "nome_ricetta": "Anatra Arancia e Noci",
+    "difficolta": "Media",
+    "tempo_prep_min": 15,
+    "allergeni_esclusi": ["Glutine"],
+    "tecnica_cottura": "Assemblaggio a freddo o tiepido con petto d'anatra affumicato o appena scottato, alleggerito da valeriana, agrume e frutta secca.",
+    "anti_spreco": "Le scorze d'arancia possono entrare in un dressing o in un sale aromatico; il grasso dell'anatra va dosato con attenzione per non appesantire la composizione.",
+    "ingredienti_tabella": [
+      {"n": "Petto d anatra affumicato", "qty": 80, "k": 200, "p": 18.0, "c": 0.0, "g": 14.0},
+      {"n": "Valeriana", "qty": 50, "k": 11, "p": 1.0, "c": 1.3, "g": 0.4},
+      {"n": "Arancia a vivo", "qty": 50, "k": 24, "p": 0.4, "c": 6.0, "g": 0.1},
+      {"n": "Noci", "qty": 15, "k": 98, "p": 2.2, "c": 0.9, "g": 9.8}
+    ],
+    "totale_piatto": {"k": 333, "p": 21.6, "c": 8.2, "g": 24.3},
+    "procedimento": [
+      "Affetta finemente l'anatra mantenendola morbida e non troppo fredda.",
+      "Disponi la valeriana come base leggera.",
+      "Aggiungi gli spicchi di arancia pelati a vivo e le noci spezzate.",
+      "Completa con l'anatra in superficie e servi subito."
+    ],
+    "archetypes": ["salad", "protein-main", "cold-kitchen"],
+    "knowledgeKeys": ["coldKitchen", "proteinPlanning", "textureBalance"],
+    "tags": ["anatra", "arancia", "noci", "valeriana", "insalata"]
+  }
+]

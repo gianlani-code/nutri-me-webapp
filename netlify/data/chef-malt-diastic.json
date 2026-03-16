@@ -1,0 +1,93 @@
+{
+  "version": "1.0",
+  "category": "malto-e-potere-diastasico",
+  "overview": {
+    "summary": "Il malto deriva da cariossidi germinate di cereali come orzo, frumento, segale o sorgo. Quando e diastasico contiene enzimi amilolitici capaci di idrolizzare l'amido, oltre a zuccheri, aminoacidi, oligopeptidi, vitamine e composti aromatici utili nei prodotti da forno e nella birrificazione.",
+    "key_value": [
+      "Apporta zuccheri fermentabili e sostanze utili all'attivita di lieviti e batteri lattici.",
+      "Fornisce enzimi che trasformano amido e in parte altre macromolecole in composti piu semplici.",
+      "Contribuisce ad aroma, colore della crosta e shelf life dei prodotti da forno."
+    ]
+  },
+  "malt_process": {
+    "summary": "La maltazione consiste nel far germinare i chicchi mantenuti umidi e poi interrompere la germinazione tramite essiccazione, stabilizzando il prodotto.",
+    "steps": [
+      "I cereali vengono bagnati e mantenuti umidi fino all'avvio della germinazione.",
+      "Durante il risveglio metabolico si attivano enzimi che idrolizzano amido e proteine in molecole piu piccole.",
+      "La germinazione viene fermata con essiccazione ad aria.",
+      "Se l'essiccazione avviene a temperature elevate, gli enzimi possono denaturare e il malto perde potere diastasico pur mantenendo zuccheri e aromi."
+    ]
+  },
+  "forms": {
+    "summary": "Il malto puo essere usato in forme diverse a seconda dell'applicazione tecnica.",
+    "types": [
+      "chicco maltato, tipico della birrificazione",
+      "farina di malto ottenuta dalla macinazione del cereale maltato",
+      "sciroppo di malto ottenuto come estratto concentrato",
+      "estratto di malto in polvere"
+    ]
+  },
+  "diastatic_activity": {
+    "summary": "Diastasico significa che il malto possiede attivita enzimatica amilolitica, cioe capacita di scindere l'amido in zuccheri piu semplici.",
+    "history": [
+      "Il potere amilolitico del malto d'orzo fu descritto da Anselme Payen e Jean-Francois Persoz nel 1833.",
+      "Il termine diastasi, da cui deriva il suffisso -asi degli enzimi, fu coniato per descrivere la separazione del glucosio dall'amido.",
+      "Oggi si usa piu spesso il termine amilasi per indicare questi enzimi."
+    ],
+    "measurements": [
+      "Nel bakery il potere diastasico puo essere espresso in Unita Pollak (PU).",
+      "In birrificazione sono diffuse anche le unita Windisch-Kolbach e i gradi Lintner."
+    ]
+  },
+  "enzymes": {
+    "summary": "L'effetto del malto diastasico dipende dall'azione combinata di diversi enzimi amilolitici.",
+    "key_points": [
+      "Le beta-amilasi agiscono dalle estremita non riducenti di amilosio e amilopectina liberando soprattutto maltosio.",
+      "Le alfa-amilasi spezzano i legami interni delle catene di amido.",
+      "Gli enzimi deramificanti agiscono sui punti di ramificazione dell'amilopectina.",
+      "Il risultato complessivo e la produzione di glucosio, maltosio, maltotriosio e destrine."
+    ]
+  },
+  "baking_use": {
+    "summary": "Nei prodotti da forno il malto diastasico sostiene fermentazione, volume, colore e conservazione, soprattutto nei grandi lievitati e negli impasti con farine forti ma povere di attivita enzimatica.",
+    "effects": [
+      "Fornisce zuccheri prontamente fermentabili a lieviti e batteri lattici.",
+      "Rende disponibili nuovi zuccheri a partire dall'amido della farina durante la maturazione dell'impasto.",
+      "Favorisce sviluppo del volume e migliore spinta fermentativa.",
+      "Aiuta la doratura della crosta grazie al maggiore supporto alla reazione di Maillard.",
+      "Contribuisce a una shelf life migliore trattenendo umidita nel prodotto finito."
+    ],
+    "use_cases": [
+      "panettone",
+      "pandoro",
+      "colomba",
+      "altri grandi lievitati",
+      "panificazione con farine forti o poco enzimatiche"
+    ]
+  },
+  "substitution_logic": {
+    "summary": "Sostituire il malto diastasico con saccarosio o miele non e equivalente, perche non si sostituisce l'intera funzione tecnologica del malto.",
+    "key_points": [
+      "Zucchero e miele apportano dolcezza e in parte fermentescibilita, ma non replicano l'attivita enzimatica del malto diastasico.",
+      "I lieviti devono adattarsi a zuccheri diversi, con possibile rallentamento della fermentazione.",
+      "Quando manca il malto diastasico, puo cambiare non solo la velocita fermentativa ma anche volume, colorazione e struttura finale."
+    ]
+  },
+  "chef_use": {
+    "when_relevant": [
+      "Quando Chef AI propone grandi lievitati, panificazione, impasti indiretti o gestioni avanzate della fermentazione.",
+      "Quando serve distinguere tra malto diastasico e malto non diastasico.",
+      "Quando l'utente pensa di sostituire il malto con zucchero, miele o altri dolcificanti."
+    ],
+    "how_to_use": [
+      "Spiegare sempre se il malto viene usato per nutrire i microrganismi, per fornire enzimi, per aroma o per colore della crosta.",
+      "Distinguere chiaramente la funzione del malto diastasico da quella di un semplice dolcificante.",
+      "Richiamare la differenza tra potere enzimatico e sola presenza di zuccheri o aromi."
+    ],
+    "guardrails": [
+      "Non trattare tutti i malti come equivalenti: l'essiccazione e il tipo di prodotto cambiano molto il comportamento tecnologico.",
+      "Non promettere che il malto migliori sempre un impasto: il suo uso dipende da farina, fermentazione e obiettivo del prodotto.",
+      "Non ridurre il malto a un aroma o a una dolcificazione se nel contesto la funzione decisiva e enzimatica."
+    ]
+  }
+}

@@ -1,0 +1,132 @@
+{
+  "version": "1.0",
+  "category": "scienza-delle-verdure",
+  "overview": {
+    "summary": "La gestione tecnica delle verdure cambia sapore, consistenza, resa aromatica e perdita di nutrienti. Taglio, temperatura, metodo di cottura e trattamento preliminare non sono dettagli secondari ma leve decisive del risultato finale.",
+    "principles": [
+      "Molti ortaggi rendono meglio con tecniche che limitano dispersione di sapore e composti solubili nell'acqua.",
+      "Il taglio influenza velocita di cottura, rilascio di aromi e reazioni enzimatiche.",
+      "Il metodo corretto dipende dalla struttura del vegetale: stelo, punta, foglia, polpa, buccia e semi non reagiscono allo stesso modo."
+    ]
+  },
+  "practical_kitchen_rules": {
+    "summary": "Alcuni gesti comuni in cucina hanno conseguenze precise e misurabili sul risultato.",
+    "rules": [
+      "I pomodori maturi in genere non danno il meglio in frigorifero, che puo penalizzare aroma e tessitura.",
+      "Lessare gli asparagi in molta acqua disperde composti aromatici: meglio trattare separatamente steli e punte, ad esempio microonde o vapore per gli steli e salto rapido per le punte.",
+      "Aglio e cipolla cambiano intensita e profilo aromatico a seconda che siano affettati, tritati, schiacciati o grattugiati.",
+      "Le patate non vanno pensate tutte allo stesso modo: partire da acqua fredda o bollente porta a risultati diversi in base all'obiettivo finale.",
+      "Le melanzane possono beneficiare di salatura preliminare prima della frittura, non tanto per togliere ipotetico amaro quanto per agire su acqua libera e comportamento in cottura.",
+      "Per alcune fritture vegetali l'olio extravergine non e sempre la scelta piu efficiente o neutra."
+    ]
+  },
+  "microwave_use": {
+    "summary": "Il microonde non serve solo a scaldare: puo essere uno strumento preciso per cuocere ortaggi rapidamente limitando diluizione del sapore e tempi morti.",
+    "when_useful": [
+      "per cuocere steli o parti dense prima di una finitura rapida in padella o forno",
+      "per ridurre la perdita di composti idrosolubili rispetto alla lessatura",
+      "per velocizzare preparazioni domestiche con maggiore controllo della tessitura"
+    ],
+    "guardrails": [
+      "Il microonde non sostituisce sempre la rosolatura: spesso funziona meglio come primo stadio seguito da una finitura secca.",
+      "Va dosato in base a massa, umidita e geometria del vegetale."
+    ]
+  },
+  "cutting_and_aroma_release": {
+    "summary": "Nei vegetali aromatici il taglio modifica la quantita di cellule rotte e quindi l'intensita delle trasformazioni enzimatiche e della percezione aromatica.",
+    "examples": [
+      "Aglio grattugiato o pestato sviluppa aromi piu intensi e aggressivi rispetto ad aglio affettato grossolanamente.",
+      "Cipolla tritata finemente rilascia piu composti e si comporta diversamente in dolcezza, rapidita di cottura e fusione nella salsa rispetto a tagli piu grandi."
+    ]
+  },
+  "potato_logic": {
+    "summary": "Le patate rispondono in modo diverso a seconda del profilo termico iniziale e del risultato desiderato.",
+    "key_points": [
+      "Partire da acqua fredda favorisce una cottura piu progressiva e uniforme dell'interno.",
+      "L'avvio in acqua gia bollente puo essere utile in altri contesti, ma non e equivalente.",
+      "Per patate arrosto eccellenti contano pretrattamento, gelatinizzazione superficiale, asciugatura e corretta gestione del grasso."
+    ]
+  },
+  "eggplant_frying": {
+    "summary": "La salatura preliminare della melanzana puo migliorare la frittura soprattutto agendo su acqua, struttura e comportamento della superficie in cottura.",
+    "key_points": [
+      "La motivazione pratica non va ridotta al mito del togliere l'amaro.",
+      "Gestire l'umidita aiuta la resa della frittura e il rapporto tra interno morbido e superficie cotta."
+    ]
+  },
+  "pumpkin_taxonomy": {
+    "summary": "In cucina chiamiamo zucche prodotti anche molto diversi tra loro. Distinguere le specie aiuta a prevedere tessitura, dolcezza, colore e resa culinaria.",
+    "species": [
+      {
+        "name": "Cucurbita pepo",
+        "notes": [
+          "Specie molto diffusa e adattabile, include zucchine, cocozelle e varie zucche dai frutti di forme e colori molto diversi.",
+          "La polpa non e sempre intensamente arancione come in altre specie."
+        ]
+      },
+      {
+        "name": "Cucurbita maxima",
+        "notes": [
+          "Specie nota per frutti molto grandi e per varieta gastronomicamente apprezzate come Delica, Marina di Chioggia e Mantovana.",
+          "Spesso adatta a cotture al forno e preparazioni in cui servono dolcezza e polpa densa."
+        ]
+      },
+      {
+        "name": "Cucurbita moschata",
+        "notes": [
+          "Specie molto apprezzata gastronomicamente, include Butternut, Violina e Lunga di Napoli.",
+          "Ha odore muschiato ed e rilevante anche come fonte di provitamina A."
+        ]
+      },
+      {
+        "name": "Cucurbita argyrosperma",
+        "notes": [
+          "Meno diffusa e generalmente meno apprezzata per qualita gastronomiche della polpa."
+        ]
+      },
+      {
+        "name": "Cucurbita ficifolia",
+        "notes": [
+          "Piu fibrosa, con sapore piu blando e adattabilita agronomica ridotta."
+        ]
+      }
+    ]
+  },
+  "historical_pumpkin_note": {
+    "summary": "La zucca dei Romani non coincideva con le principali specie del genere Cucurbita che usiamo oggi.",
+    "key_points": [
+      "Lagenaria siceraria, la cosiddetta zucca a fiasco o bottiglia, era gia nota nel mondo antico.",
+      "I frutti maturi potevano essere essiccati e usati come contenitori, mentre quelli giovani erano commestibili."
+    ]
+  },
+  "pumpkin_best_use": {
+    "summary": "Per molte zucche la cottura al forno e la tecnica piu efficace per concentrare sapore e controllare l'umidita senza diluire la polpa.",
+    "key_points": [
+      "Il forno e spesso preferibile alla lessatura se la zucca deve essere mangiata da sola o usata in gnocchi, vellutate, torte o ripieni.",
+      "Tagli uniformi aiutano a evitare parti bruciate e cotture disomogenee.",
+      "La rosolatura superficiale aggiunge complessita aromatica e migliora la percezione della dolcezza."
+    ],
+    "basic_method": [
+      "Tagliare la zucca in pezzi uniformi, eliminare semi e disporla su teglia con poco olio.",
+      "Condire e cuocere a temperatura moderata, girando quando inizia la colorazione.",
+      "Usare la zucca arrostita come preparazione finale o come base per lavorazioni successive."
+    ]
+  },
+  "chef_use": {
+    "when_relevant": [
+      "Quando Chef AI lavora con ortaggi e deve scegliere tra bollitura, forno, vapore, salto, microonde o frittura.",
+      "Quando una ricetta dipende da controllo dell'umidita, intensita aromatica o differenze tra parti dello stesso ortaggio.",
+      "Quando si propongono ricette con zucca, zucchine, asparagi, melanzane, patate, pomodori, aglio o cipolla."
+    ],
+    "how_to_use": [
+      "Tradurre le informazioni scientifiche in scelte operative semplici e motivate.",
+      "Distinguere specie, parte del vegetale e obiettivo della preparazione invece di usare regole universali.",
+      "Usare il forno per la zucca quando serve concentrazione di sapore e minore dispersione d'acqua."
+    ],
+    "guardrails": [
+      "Non trasformare consigli pratici in dogmi assoluti: la tecnica dipende dal risultato cercato.",
+      "Non trattare tutte le zucche come identiche in dolcezza, fibra e tenuta.",
+      "Quando si citano scelte di olio o frittura, privilegiare il ragionamento tecnico e non slogan generici."
+    ]
+  }
+}

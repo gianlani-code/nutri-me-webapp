@@ -1,0 +1,130 @@
+{
+  "version": "1.0",
+  "category": "uova-cottura-e-tecniche",
+  "overview": {
+    "summary": "La cottura delle uova dipende da tempo, temperatura, presenza o meno del guscio, mezzo di cottura e grado di coagulazione desiderato di albume e tuorlo. Piccole differenze di metodo producono risultati molto diversi in consistenza, maneggevolezza e sicurezza.",
+    "core_logic": [
+      "Albume e tuorlo non coagulano allo stesso modo e non reagiscono in modo identico al calore.",
+      "La tecnica va scelta in base al risultato cercato: fluido, cremoso, appena rappreso o completamente rassodato.",
+      "Nel lavoro con l'uovo conta sia la tecnica di cottura sia l'igiene nella gestione del crudo."
+    ]
+  },
+  "boiling_methods": {
+    "summary": "Le cotture in acqua permettono di graduare con precisione il rapporto tra albume rappreso e tuorlo morbido o sodo.",
+    "techniques": [
+      {
+        "name": "uovo sodo",
+        "method": "Partire da uovo in acqua fredda coperta, portare a bollore e proseguire la cottura fino a rassodamento completo.",
+        "result": "Albume e tuorlo completamente coagulati.",
+        "notes": [
+          "Sale e una piccola quota di aceto possono aiutare a gestire eventuali crepe e fuoriuscite di albume.",
+          "Il raffreddamento dopo la cottura facilita la sgusciatura e blocca l'ulteriore cottura."
+        ]
+      },
+      {
+        "name": "uovo alla coque",
+        "method": "Immergere l'uovo in acqua gia bollente per un tempo molto breve.",
+        "result": "Albume appena rappreso e tuorlo ancora fluido.",
+        "notes": [
+          "Serve precisione sui tempi e una gestione delicata dell'immersione per evitare rotture del guscio."
+        ]
+      },
+      {
+        "name": "uovo bazzotto",
+        "method": "Cuocere l'uovo in acqua bollente per un tempo intermedio rispetto alla coque e al sodo.",
+        "result": "Albume ben formato e tuorlo ancora morbido o cremoso.",
+        "notes": [
+          "E una tecnica utile quando si vuole una maggiore tenuta dell'albume senza perdere la fluidita o cremosita del tuorlo."
+        ]
+      },
+      {
+        "name": "uovo in camicia",
+        "method": "Sgusciare l'uovo in acqua molto calda, prossima al bollore, preferibilmente con vortice moderato per compattare l'albume attorno al tuorlo.",
+        "result": "Albume esterno rappreso e interno ancora tenero, con tuorlo fluido.",
+        "notes": [
+          "L'acqua non deve sobbollire in modo aggressivo altrimenti l'uovo si lacera.",
+          "Eliminare eventuali filamenti in eccesso migliora la finitura del piatto."
+        ]
+      }
+    ]
+  },
+  "pan_methods": {
+    "summary": "La padella consente cotture rapide e grande controllo sulla texture finale, soprattutto in frittate, strapazzate e uova al tegamino.",
+    "techniques": [
+      {
+        "name": "frittata",
+        "method": "Sbattere le uova con moderazione, condire e cuocere in padella calda con grasso adeguato, girando o ripiegando quando la struttura si stabilizza.",
+        "result": "Preparazione coesa e uniforme, piu o meno asciutta a seconda della cottura.",
+        "notes": [
+          "Una battitura eccessiva modifica struttura e incorporazione d'aria.",
+          "Ingredienti aggiunti vanno spesso pre-cotti o ben gestiti per non rilasciare acqua eccessiva."
+        ]
+      },
+      {
+        "name": "uova strapazzate",
+        "method": "Cuocere in padella o casseruola con grasso e mescolamento continuo, fermando la cottura quando la massa e ancora morbida e cremosa.",
+        "result": "Texture cremosa, soffice o piu compatta a seconda di calore e intensita di mescolamento.",
+        "notes": [
+          "Il punto critico e fermarsi prima che secchino troppo, sfruttando il calore residuo."
+        ]
+      },
+      {
+        "name": "uovo al tegamino",
+        "method": "Cuocere l'uovo aperto direttamente in padella o tegamino con una piccola quantita di grasso, mantenendo integro il tuorlo.",
+        "result": "Albume rappreso con tuorlo fluido o semiliquido, a seconda del tempo di esposizione al calore.",
+        "notes": [
+          "Una fiamma troppo aggressiva indurisce o scurisce eccessivamente la base dell'albume.",
+          "Il controllo del grasso e del calore cambia molto la finitura."
+        ]
+      }
+    ]
+  },
+  "oven_methods": {
+    "summary": "Il forno e utile per cotture piu dolci, stabili o rifinite, specialmente in recipienti individuali o a bagnomaria.",
+    "techniques": [
+      {
+        "name": "uovo in cocotte",
+        "method": "Cuocere l'uovo in piccolo contenitore imburrato fino a rassodare l'albume mantenendo il tuorlo morbido.",
+        "result": "Preparazione morbida e delicata, adatta a servizio individuale.",
+        "notes": [
+          "Funziona bene con panna, formaggi, erbe o verdure gia gestite separatamente."
+        ]
+      },
+      {
+        "name": "uovo al forno a bagnomaria",
+        "method": "Cuocere il recipiente con l'uovo dentro un bagno maria in forno per rendere il trasferimento di calore piu dolce e regolare.",
+        "result": "Coagulazione piu uniforme e minore aggressivita termica rispetto a una cottura secca diretta.",
+        "notes": [
+          "Il bagno maria aiuta a controllare meglio il risultato quando si cerca una texture cremosa o raffinata."
+        ]
+      }
+    ]
+  },
+  "safety_practices": {
+    "summary": "La sicurezza nell'uso delle uova dipende da pulizia delle mani, gestione del guscio, lavaggio degli utensili e prevenzione delle contaminazioni crociate.",
+    "key_points": [
+      "Lavare bene le mani dopo il contatto con guscio e uovo crudo.",
+      "Eliminare subito i gusci e non lasciarli sui piani di lavoro.",
+      "Lavare subito utensili, contenitori e superfici entrati in contatto con l'uovo crudo.",
+      "Non riutilizzare posate o strumenti sporchi di uovo crudo per assaggiare o servire.",
+      "Conservare le uova in frigorifero e trattare con maggiore prudenza ricette con uova crude o poco cotte."
+    ]
+  },
+  "chef_use": {
+    "when_relevant": [
+      "Quando Chef AI deve suggerire la tecnica di cottura dell'uovo piu adatta a un piatto o a una texture desiderata.",
+      "Quando l'utente chiede differenze tra sodo, coque, bazzotto, camicia, strapazzato, cocotte o tegamino.",
+      "Quando una ricetta a base d'uovo richiede istruzioni semplici ma affidabili su sicurezza e manipolazione."
+    ],
+    "how_to_use": [
+      "Tradurre sempre tempi e tecniche in texture attese: fluido, cremoso, morbido, rassodato.",
+      "Collegare il metodo al piatto finale, non dare istruzioni isolate senza contesto d'uso.",
+      "Affiancare le tecniche di cottura con le cautele igieniche quando il rischio microbiologico e rilevante."
+    ],
+    "guardrails": [
+      "Non trattare tempi e temperature come universali assoluti: dimensione dell'uovo, temperatura iniziale e intensita del calore cambiano il risultato.",
+      "Non presentare una tecnica come migliore in assoluto: dipende dall'effetto cercato nel piatto.",
+      "Quando si consigliano cotture molto brevi o tuorli fluidi, ricordare il tema della sicurezza per categorie fragili o preparazioni sensibili."
+    ]
+  }
+}

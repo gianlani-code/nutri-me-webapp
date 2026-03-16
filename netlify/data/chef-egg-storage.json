@@ -1,0 +1,77 @@
+{
+  "version": "1.0",
+  "category": "uova-conservazione-e-sicurezza",
+  "overview": {
+    "summary": "Le uova richiedono una lettura tecnica diversa da molti altri alimenti: nella filiera europea spesso non vengono refrigerate prima della vendita per evitare sbalzi termici e condensa sul guscio, ma a casa e opportuno conservarle in frigorifero per preservarne qualita e limitare la proliferazione di eventuali contaminanti interni.",
+    "core_principle": [
+      "Nel punto vendita europeo le uova di categoria A sono generalmente tenute fuori dal frigo per mantenere una temperatura il piu possibile costante.",
+      "Dopo l'acquisto e opportuno conservarle in frigorifero fino al consumo.",
+      "Il punto chiave non e solo dove si trovano al supermercato, ma come viene gestita la temperatura lungo tutta la filiera."
+    ]
+  },
+  "eu_logic": {
+    "summary": "La normativa europea evita di norma la refrigerazione pre-vendita per ridurre il rischio che il passaggio da freddo a temperatura ambiente generi condensa sul guscio.",
+    "key_points": [
+      "La condensa sul guscio puo favorire la proliferazione di batteri e il loro possibile ingresso nell'uovo.",
+      "Per questo la filiera cerca di evitare sbalzi termici e di mantenere condizioni piu costanti possibili fino alla vendita al consumatore finale.",
+      "Le uova di categoria A destinate al consumatore non devono subire normali trattamenti di conservazione e non sono generalmente refrigerate sotto i 5 gradi prima della vendita."
+    ]
+  },
+  "home_storage": {
+    "summary": "Una volta arrivate a casa, le uova vanno preferibilmente conservate in frigorifero per rallentare il decadimento qualitativo e contenere la crescita di eventuali batteri presenti.",
+    "key_points": [
+      "In frigorifero l'uovo mantiene meglio la freschezza rispetto alla temperatura ambiente.",
+      "Se una contaminazione da Salmonella e gia presente all'interno, il freddo ne rallenta la proliferazione.",
+      "La refrigerazione domestica e quindi una misura prudenziale utile, diversa dal ragionamento normativo sulla vendita."
+    ]
+  },
+  "freshness_and_law": {
+    "summary": "La normativa europea fissa per le uova un termine minimo di conservazione e regole specifiche sulla vendita al dettaglio.",
+    "key_points": [
+      "Il termine minimo di conservazione e fissato a 28 giorni dalla deposizione.",
+      "I punti vendita devono ritirare le uova dal commercio alcuni giorni prima della scadenza destinata al consumatore finale.",
+      "Un uovo fresco integro puo conservarsi anche a temperatura ambiente per un certo periodo, ma questo non significa che tale pratica sia la migliore in ambito domestico per qualita e sicurezza."
+    ]
+  },
+  "salmonella_reality": {
+    "summary": "La Salmonella non e un rischio confinato solo alla superficie del guscio: puo essere presente anche all'interno dell'uovo gia dalla sua formazione.",
+    "key_points": [
+      "Il guscio e una barriera importante, ma non esclude ogni rischio microbiologico.",
+      "La refrigerazione limita la proliferazione del batterio.",
+      "La cottura corretta dell'uovo contribuisce all'inattivazione del patogeno."
+    ]
+  },
+  "shell_and_cuticle": {
+    "summary": "Guscio e cuticola costituiscono una protezione naturale contro contaminazione batterica e perdita di umidita.",
+    "key_points": [
+      "Lavare o pulire le uova puo danneggiare la cuticola protettiva.",
+      "Il danneggiamento della barriera superficiale aumenta il rischio di contaminazione e di perdita d'acqua.",
+      "Se un uovo viene lavato in casa, andrebbe cotto subito e non rimesso semplicemente in conservazione come se nulla fosse."
+    ]
+  },
+  "eu_vs_usa": {
+    "summary": "Le differenze tra Europa e Stati Uniti dipendono da due strategie diverse di gestione del rischio microbiologico.",
+    "key_points": [
+      "Nel modello europeo si evita in generale il lavaggio industriale delle uova di categoria A per preservare la cuticola e si riducono gli sbalzi termici pre-vendita.",
+      "Nel modello statunitense le uova vengono sanificate e lavate poco dopo la deposizione, ma questo rimuove anche la protezione naturale del guscio.",
+      "Una volta rimossa la cuticola, la refrigerazione continua diventa indispensabile lungo la filiera commerciale."
+    ]
+  },
+  "chef_use": {
+    "when_relevant": [
+      "Quando Chef AI propone preparazioni con uova crude, poco cotte o da conservare per alcuni giorni.",
+      "Quando l'utente chiede se tenere le uova in frigo o fuori.",
+      "Quando serve spiegare il motivo per cui le uova in Europa sono vendute spesso a temperatura ambiente ma a casa conviene refrigerarle."
+    ],
+    "how_to_use": [
+      "Tradurre sempre la norma in pratica domestica: vendita a temperatura ambiente non significa conservazione domestica ideale fuori frigo.",
+      "Richiamare guscio, cuticola, condensa e proliferazione batterica come elementi collegati tra loro.",
+      "Contestualizzare il rischio soprattutto quando la ricetta prevede tuorli poco cotti, creme, maionesi o dessert."
+    ],
+    "guardrails": [
+      "Non presentare l'uovo a temperatura ambiente come sempre pericoloso o sempre sicuro: conta il tempo, l'integrita del guscio, la filiera e l'uso previsto.",
+      "Non confondere freschezza qualitativa e sicurezza microbiologica: sono correlate ma non identiche.",
+      "Non suggerire il lavaggio preventivo delle uova come pratica standard di conservazione domestica."
+    ]
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "version": "1.0",
+  "category": "amatriciana-tradizionale",
+  "overview": {
+    "summary": "L'amatriciana tradizionale e una preparazione codificata della cucina di Amatrice e del Lazio, basata su equilibrio tra guanciale, pomodoro, pecorino e pasta, con una tecnica che valorizza il grasso del guanciale senza appesantire il sugo.",
+    "reference": [
+      "Il disciplinare della Amatriciana Tradizionale e stato pubblicato nella Gazzetta Ufficiale dell'8 aprile 2020, Serie generale n. 93.",
+      "La formula tradizionale ammette guanciale, pecorino, pomodoro, peperoncino e facoltativamente un goccio di vino bianco per sgrassare il fondo.",
+      "Aglio e cipolla non fanno parte della codifica tradizionale."
+    ]
+  },
+  "identity": {
+    "summary": "Il carattere dell'amatriciana dipende dalla qualita del guanciale, dalla gestione del suo grasso, dalla sapidita del pecorino e dalla capacita del pomodoro di legare il tutto senza coprire la componente animale.",
+    "key_points": [
+      "Il guanciale e l'ingrediente strutturale e aromatico centrale.",
+      "Il pecorino contribuisce sapidita, intensita e finitura cremosa se ben gestito.",
+      "Il pomodoro deve costruire il sugo senza snaturare l'identita del piatto.",
+      "Il peperoncino e una nota di sostegno, non l'elemento dominante."
+    ]
+  },
+  "allowed_and_excluded": {
+    "summary": "Chef AI deve saper distinguere tra elementi tradizionalmente ammessi e variazioni moderne o domestiche.",
+    "allowed": [
+      "guanciale preferibilmente amatriciano",
+      "pecorino, preferibilmente amatriciano o Pecorino Romano DOP del Lazio",
+      "pomodori pelati o freschi adeguatamente trattati",
+      "peperoncino",
+      "pepe",
+      "sale quanto basta",
+      "un piccolo uso di vino bianco per sfumare o sgrassare",
+      "una minima quantita di olio solo se necessaria alla partenza tecnica"
+    ],
+    "excluded_in_traditional_version": [
+      "aglio",
+      "cipolla"
+    ]
+  },
+  "pasta_formats": {
+    "summary": "Il formato storico di riferimento e lo spaghetto, ma nella tradizione laziale sono diffusi anche bucatini e rigatoni.",
+    "formats": [
+      "spaghetti come riferimento originario",
+      "bucatini come formato molto diffuso",
+      "rigatoni come altra forma tradizionalmente praticata"
+    ]
+  },
+  "technique": {
+    "summary": "La tecnica classica punta a estrarre e usare il grasso del guanciale come base del sugo, mantenendone al contempo una parte carnosa e leggermente croccante.",
+    "steps": [
+      "Tagliare il guanciale in bastoncini o listarelle regolari.",
+      "Rosolarlo in tegame finche il grasso si scioglie e la parte magra prende colore senza diventare eccessivamente secca.",
+      "Se previsto, sfumare leggermente con vino bianco per pulire e alleggerire il fondo.",
+      "Cuocere il pomodoro nel grasso aromatico del guanciale con peperoncino e regolazione misurata del sale.",
+      "Reintrodurre il guanciale nel sugo nella fase finale per mantenerne struttura e presenza gustativa.",
+      "Saltare la pasta al dente nel condimento e completare con pecorino e pepe."
+    ]
+  },
+  "timing_and_balance": {
+    "summary": "Il punto tecnico dell'amatriciana e il bilanciamento tra parte grassa, acidita del pomodoro, sapidita del formaggio e tenuta della pasta.",
+    "key_points": [
+      "Il guanciale non deve diventare rigido o amarognolo per eccesso di asciugatura.",
+      "Il pomodoro va cotto abbastanza da perdere crudezza ma senza ridursi a salsa anonima e pesante.",
+      "Il pecorino va aggiunto in modo da completare il piatto senza creare masse compatte o eccessiva salatura.",
+      "La pasta deve arrivare al condimento ben al dente per assorbire il sugo senza cedere."
+    ]
+  },
+  "service": {
+    "summary": "L'amatriciana va servita subito, quando contrasto tra succulenza del sugo, guanciale e formaggio e ancora pienamente leggibile.",
+    "key_points": [
+      "La mantecatura finale va fatta con rapidita.",
+      "Il servizio immediato evita che il sugo asciughi troppo o che il formaggio si compatti."
+    ]
+  },
+  "variations": {
+    "summary": "Esistono reinterpretazioni e applicazioni ad altri piatti, ma Chef AI deve distinguerle chiaramente dalla versione tradizionale codificata.",
+    "examples": [
+      "lasagne ispirate all'amatriciana",
+      "timballi amatriciani",
+      "versioni domestiche con aglio o cipolla, da etichettare come varianti non canoniche"
+    ]
+  },
+  "chef_use": {
+    "when_relevant": [
+      "Quando Chef AI propone o spiega l'amatriciana tradizionale.",
+      "Quando l'utente chiede differenze tra versione ufficiale e versioni casalinghe.",
+      "Quando si vogliono creare piatti ispirati all'amatriciana senza confonderli con la ricetta codificata."
+    ],
+    "how_to_use": [
+      "Se il contesto e tradizionale, esplicitare che aglio e cipolla non sono previsti.",
+      "Se il contesto e creativo, distinguere chiaramente tra ispirazione amatriciana e ricetta ufficiale.",
+      "Usare il concetto di bilanciamento tra grasso del guanciale, acidita del pomodoro e pecorino come chiave tecnica del piatto."
+    ],
+    "guardrails": [
+      "Non presentare varianti con ingredienti estranei come se fossero la formula tradizionale ufficiale.",
+      "Non ridurre l'amatriciana a semplice pasta al pomodoro con pancetta o bacon: il guanciale e parte identitaria del piatto.",
+      "Non sovraccaricare il condimento con aromi che coprano il carattere essenziale della preparazione."
+    ]
+  }
+}

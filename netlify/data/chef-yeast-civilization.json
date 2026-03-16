@@ -1,0 +1,82 @@
+{
+  "version": "1.0",
+  "category": "lievito-e-civilta",
+  "focus": "Saccharomyces cerevisiae come compagno storico dell'uomo nella vinificazione, panificazione e produzione della birra, con implicazioni antropologiche, storiche e tecniche.",
+  "core_identity": {
+    "summary": "Saccharomyces cerevisiae e un lievito fondamentale per molte attivita umane e rappresenta uno dei casi piu rilevanti di coevoluzione tra pratica alimentare e microrganismi.",
+    "key_points": [
+      "E impiegato in panificazione, vinificazione, birrificazione e distillazione.",
+      "E uno dei microrganismi eucarioti piu studiati in biologia molecolare.",
+      "Puo svilupparsi in condizioni aerobiche e anaerobiche, ma il suo ruolo alimentare e soprattutto legato ai processi fermentativi.",
+      "I ceppi usati da pane, vino, birra e distillati non sono sempre interscambiabili e spesso sono stati selezionati per funzioni specifiche."
+    ]
+  },
+  "anthropology": {
+    "summary": "Il rapporto tra Homo sapiens e S. cerevisiae non e solo tecnico ma culturale: il lievito ha accompagnato la nascita di produzioni centrali nella vita sociale, simbolica ed economica delle comunita umane.",
+    "themes": [
+      "Il lievito e presente ogni giorno nel pane, nel vino, nella birra e in molte preparazioni cotte o fermentate.",
+      "La sua storia si intreccia con agricoltura, stoccaggio delle scorte, nascita dei villaggi permanenti e prime tecnologie alimentari complesse.",
+      "La coevoluzione si manifesta nel fatto che le pratiche umane hanno selezionato nel tempo ceppi sempre piu adatti agli usi alimentari."
+    ]
+  },
+  "historical_arc": {
+    "summary": "Le evidenze archeologiche e storiche suggeriscono che vino, birra e pane siano stati tra i principali veicoli della lunga familiarita umana con il lievito.",
+    "milestones": [
+      "Le piu antiche evidenze di vinificazione risalgono al Neolitico, circa 7400-7000 anni fa.",
+      "Nel Vicino Oriente e nell'area della Mezzaluna fertile emergono insieme villaggi stabili, cerealicoltura, viticoltura e pratiche di trasformazione come macerazione, fermentazione, cottura e speziatura.",
+      "Tracce archeochimiche in giare e anfore mostrano che vino e birra venivano gia prodotti e conservati su scala non occasionale.",
+      "Il ritrovamento di DNA antico affine a S. cerevisiae in giare storiche rafforza l'idea di una relazione molto antica tra lievito e societa umana."
+    ]
+  },
+  "bread_beer_wine_link": {
+    "summary": "La storia del lievito suggerisce un collegamento stretto tra fermentazione del frutto, fermentazione dei cereali e nascita di starter trasferiti da un processo all'altro.",
+    "key_points": [
+      "La vinificazione potrebbe essere stata una delle prime esperienze umane con S. cerevisiae, perche non richiedeva l'introduzione intenzionale di un agente esterno: il lievito era gia presente sulla frutta e nei mosti.",
+      "L'uso di schiume, mosti o impasti gia fermentati come starter per nuovi lotti puo avere favorito il passaggio empirico del lievito dal vino al pane e alla birra.",
+      "L'aggiunta di ingredienti ricchi di zucchero come uva, fichi, datteri o miele poteva facilitare inoculo e avvio della fermentazione in altre miscele alimentari.",
+      "La diffusione di S. cerevisiae tra vino, pane e birra e coerente con una lunga selezione pratica basata su prove, errori e riuso di fermenti efficaci."
+    ]
+  },
+  "vineyard_cellar_ecology": {
+    "summary": "La presenza del lievito nella filiera antica del vino puo dipendere da un ecosistema condiviso tra frutto, insetti, ambienti di trasformazione e attivita umana.",
+    "key_points": [
+      "Le bucce d'uva danneggiate e i mosti zuccherini sono contesti favorevoli all'innesco fermentativo.",
+      "Insetti come api e vespe possono agire da vettori del lievito tra frutti danneggiati, vigneto e ambienti di lavorazione.",
+      "In contesti tradizionali e ambienti vivi come grotte o cantine in pietra, superfici e attrezzature possono partecipare alla continuita microbiologica del processo.",
+      "Una parte della letteratura collega fortemente S. cerevisiae alle aree antropizzate e ai sistemi alimentari costruiti dall'uomo."
+    ]
+  },
+  "selection_and_starters": {
+    "summary": "La modernita industriale ha interrotto in parte l'evoluzione piu spontanea del lievito introducendo starter selezionati e colture piu standardizzate.",
+    "key_points": [
+      "Dopo Pasteur e lo sviluppo della microbiologia, i processi fermentativi sono stati compresi e controllati in modo piu rigoroso.",
+      "L'uso di colture pure e ceppi selezionati ha aumentato prevedibilita e standardizzazione di pane, vino, birra e distillati.",
+      "Le industrie spesso cercano di preservare la stabilita dei ceppi evitando derive mutative che alterino prestazione e profilo sensoriale.",
+      "I ceppi naturali, laddove ancora usati, mantengono maggiore variabilita genetica e possono contribuire a identita territoriali o artigianali piu marcate."
+    ]
+  },
+  "culinary_intelligence": {
+    "when_relevant": [
+      "Quando Chef AI propone pane, focacce, lievitati, birra in cucina, riduzioni al vino, fermentazioni spontanee o impasti da recupero.",
+      "Quando serve spiegare perche un lievito o uno starter conferiscono aroma, struttura, alveolatura, sviluppo o stabilita fermentativa.",
+      "Quando il contesto della ricetta beneficia di una lettura storica o culturale, ad esempio pane ancestrale, fermentazioni tradizionali, birre rustiche o cucine del recupero."
+    ],
+    "how_to_use": [
+      "Usare queste nozioni per spiegazioni credibili e sintetiche, non per trasformare ogni ricetta in una lezione di archeologia alimentare.",
+      "Richiamare la coevoluzione uomo-lievito quando aiuta a motivare l'uso di starter, impasti riportati, prefermenti o fermentazioni miste.",
+      "Valorizzare il legame tra microrganismo, pratica culinaria e cultura materiale del cibo."
+    ],
+    "guardrails": [
+      "Non presentare ipotesi storiche come certezze assolute: usare formule come probabilmente, plausibilmente o secondo alcune ricostruzioni.",
+      "Non confondere fermentazione spontanea, starter selezionati e pasta madre: sono contesti collegati ma distinti.",
+      "Mantenere il focus culinario: le nozioni storiche devono servire a migliorare la proposta gastronomica o la spiegazione tecnica."
+    ]
+  },
+  "language_notes": {
+    "summary": "Anche la varieta dei termini storici per il lievito riflette la profondita culturale del fenomeno fermentativo.",
+    "examples": [
+      "Le famiglie linguistiche europee collegano spesso il lievito a bollore, crescita, rigonfiamento e fermentazione.",
+      "L'etimologia di Saccharomyces cerevisiae richiama zucchero, fungo e birra."
+    ]
+  }
+}

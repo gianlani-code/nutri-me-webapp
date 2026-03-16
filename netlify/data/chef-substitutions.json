@@ -1,0 +1,46 @@
+{
+  "version": "1.0",
+  "category": "sostituzioni-intelligenti",
+  "items": [
+    {
+      "trigger": "lattosio",
+      "replace": [
+        "bevande vegetali senza zuccheri aggiunti",
+        "olio EVO per mantecare quando possibile",
+        "yogurt vegetale non zuccherato in salse fredde"
+      ]
+    },
+    {
+      "trigger": "glutine",
+      "replace": [
+        "riso, grano saraceno o mais al posto di basi con frumento",
+        "pangrattato gluten free o frutta secca tritata per gratinare",
+        "amidi o farine naturalmente senza glutine per addensare"
+      ]
+    },
+    {
+      "trigger": "uova",
+      "replace": [
+        "leganti vegetali quando servono struttura e morbidezza",
+        "creme di legumi o patate schiacciate in polpette e burger",
+        "emulsioni di olio e liquidi aromatici per lucidare o legare insalate"
+      ]
+    },
+    {
+      "trigger": "frutta-secca",
+      "replace": [
+        "semi tostati se compatibili con la dieta dell'utente",
+        "pangrattato o crumble salato per la componente croccante",
+        "legumi croccanti al forno per texture"
+      ]
+    },
+    {
+      "trigger": "pesce",
+      "replace": [
+        "legumi strutturati",
+        "tofu o tempeh se coerenti con dieta e obiettivo",
+        "uova o latticini solo se compatibili con il profilo"
+      ]
+    }
+  ]
+}

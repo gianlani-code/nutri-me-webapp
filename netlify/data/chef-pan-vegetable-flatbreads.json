@@ -1,0 +1,91 @@
+{
+  "version": "1.0",
+  "category": "focaccine-di-verdure-in-padella",
+  "overview": {
+    "summary": "Le focaccine di verdure in padella sono un formato rapido e versatile che unisce impasto morbido, cottura senza forno e inserimento diretto di ortaggi nell'impasto. Sono utili come snack, antipasto leggero, pranzo veloce o base da farcire.",
+    "strengths": [
+      "Non richiedono forno e funzionano bene anche in cucine essenziali o contesti di viaggio.",
+      "Permettono di incorporare verdure nell'impasto aumentando morbidezza, sapore e varietà stagionale.",
+      "Possono essere servite da sole oppure accompagnate con salse, creme, formaggi o farciture leggere."
+    ]
+  },
+  "dough_logic": {
+    "summary": "L'impasto di questo formato e una via di mezzo tra focaccia rapida e pane morbido da padella, con una quota lattica che aiuta morbidezza e gestione dell'umidita.",
+    "key_points": [
+      "Una base con farina, yogurt o ricotta, acqua, olio e lievito istantaneo produce un impasto rapido e gestibile.",
+      "Lo yogurt bianco naturale apporta umidita e una lieve nota acidula; la ricotta tende a dare maggiore sofficita.",
+      "Il lievito istantaneo per torte salate rende il formato pratico quando non si vuole attendere una lunga fermentazione.",
+      "L'olio contribuisce a elasticita, morbidezza e migliore contatto con la padella."
+    ]
+  },
+  "vegetable_moisture_management": {
+    "summary": "La criticita principale di queste focaccine e il controllo dell'acqua rilasciata dalle verdure inserite nell'impasto.",
+    "key_points": [
+      "Verdure grattugiate come zucchina e carota aumentano morbidezza ma possono rendere l'impasto troppo umido.",
+      "Peperoni o altri ortaggi tagliati piccoli distribuiscono sapore e struttura senza appesantire troppo la massa se dosati bene.",
+      "Quando le verdure rilasciano molta acqua puo essere necessario correggere con un po' di farina o strizzare leggermente gli ortaggi piu acquosi.",
+      "La gestione dell'umidita e piu importante della precisione matematica delle dosi, perche cambia con stagione, ortaggio e grattugia usata."
+    ]
+  },
+  "flavor_building": {
+    "summary": "Parmigiano, erbe aromatiche e spezie aiutano a dare identita alle focaccine senza complicare la preparazione.",
+    "key_points": [
+      "Il parmigiano aggiunge sapidita, corpo aromatico e una leggera spinta alla colorazione.",
+      "Origano, timo, paprika o miscele simili permettono di orientare il profilo finale verso note piu mediterranee o piu rustiche.",
+      "Il formato si presta bene a varianti stagionali e a piccole personalizzazioni per bambini o per farciture successive."
+    ]
+  },
+  "shaping_and_cooking": {
+    "summary": "La riuscita dipende da pezzatura uniforme, spessore moderato e cottura dolce con coperchio.",
+    "key_points": [
+      "Dividere l'impasto in pezzi regolari aiuta una cottura omogenea.",
+      "Uno spessore intorno a 1 centimetro e adatto a mantenere morbidezza interna senza rischiare una superficie troppo cotta e un cuore crudo.",
+      "La padella antiaderente con poco olio permette una rosolatura controllata.",
+      "Il fuoco medio-basso e il coperchio favoriscono una cottura uniforme anche al centro."
+    ]
+  },
+  "service_and_pairing": {
+    "summary": "Le focaccine possono essere pensate sia come prodotto finito sia come base di servizio o farcitura.",
+    "pairings": [
+      "salsa allo yogurt",
+      "hummus",
+      "creme spalmabili salate",
+      "formaggi morbidi",
+      "salumi se il contesto non e vegetariano",
+      "semplice olio extravergine e un pizzico di sale"
+    ],
+    "service_modes": [
+      "snack salato",
+      "merenda",
+      "antipasto leggero",
+      "pranzo veloce",
+      "base farcita"
+    ]
+  },
+  "seasonal_variations": {
+    "summary": "Il valore del formato sta anche nella sua adattabilita alle stagioni e agli ortaggi disponibili.",
+    "examples": [
+      "primavera: zucchine, erbette, cipollotto",
+      "estate: peperoni, pomodorini ben scolati, basilico",
+      "autunno: zucca ben asciutta, salvia, formaggi delicati",
+      "inverno: cavolo cappuccio saltato e strizzato, carota, spezie dolci"
+    ]
+  },
+  "chef_use": {
+    "when_relevant": [
+      "Quando Chef AI deve proporre un impasto rapido salato senza forno.",
+      "Quando servono idee anti-noia per inserire verdure in snack, merende o pasti veloci.",
+      "Quando l'utente ha una padella, pochi ingredienti e poco tempo."
+    ],
+    "how_to_use": [
+      "Usare questa base come schema tecnico adattabile, non come ricetta fissa.",
+      "Esplicitare sempre come correggere l'impasto se le verdure rilasciano troppa acqua.",
+      "Proporre farciture o accompagnamenti coerenti con il profilo della focaccina."
+    ],
+    "guardrails": [
+      "Non trattare tutte le verdure come equivalenti: il loro contenuto d'acqua cambia molto il risultato.",
+      "Non alzare troppo la fiamma per velocizzare: si rischia esterno scuro e interno crudo.",
+      "Non caricare l'impasto con troppe inclusioni umide senza prevedere una correzione di struttura."
+    ]
+  }
+}

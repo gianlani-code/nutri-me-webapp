@@ -1,0 +1,66 @@
+{
+  "version": "1.0",
+  "category": "tecniche-di-cottura",
+  "items": [
+    {
+      "id": "T001",
+      "name": "tostatura-a-secco",
+      "use_when": ["cereali", "semi", "risotti", "frutta secca"],
+      "effect": "Intensifica aroma e sapore senza aggiungere grassi nella fase iniziale.",
+      "notes": [
+        "Utile quando si vuole sviluppare profumo e struttura mantenendo il controllo sui grassi.",
+        "Richiede attenzione per evitare note amare o bruciature."
+      ]
+    },
+    {
+      "id": "T002",
+      "name": "cottura-a-vapore",
+      "use_when": ["verdure", "pesce", "ravioli", "cucina-leggera"],
+      "effect": "Preserva delicatezza, colore e leggibilita del gusto con un uso minimo di grassi.",
+      "notes": [
+        "Adatta a ricette leggere o clinicamente ordinate.",
+        "Puo sfruttare acqua di cottura gia aromatica quando appropriato."
+      ]
+    },
+    {
+      "id": "T003",
+      "name": "cartoccio",
+      "use_when": ["pesce", "verdure", "frutta", "cotture-delicate"],
+      "effect": "Concentra aromi e umidita riducendo la dispersione di profumi e il bisogno di grassi.",
+      "notes": [
+        "Tecnica utile per cotture pulite e porzioni individuali.",
+        "Funziona bene con erbe, agrumi e ingredienti acquosi."
+      ]
+    },
+    {
+      "id": "T004",
+      "name": "scottatura-rapida",
+      "use_when": ["zucchine", "peperoni", "pesce", "carni-tenere"],
+      "effect": "Crea superficie saporita e mantiene l'interno piu integro e succoso.",
+      "notes": [
+        "Utile per contrasto caldo-freddo o per bowl e piatti composti.",
+        "Va eseguita su superficie ben calda e tempi brevi."
+      ]
+    },
+    {
+      "id": "T005",
+      "name": "stufatura-dolce",
+      "use_when": ["legumi", "ortaggi", "zuppe", "creme"],
+      "effect": "Costruisce gusto gradualmente con struttura morbida e rassicurante.",
+      "notes": [
+        "Tecnica ideale per ingredienti da recuperare o da usare fino in fondo.",
+        "Può valorizzare bene ritagli e parti meno nobili."
+      ]
+    },
+    {
+      "id": "T006",
+      "name": "forno-ventilato-controllato",
+      "use_when": ["teglie", "proteine", "gratinate", "verdure-ripiene"],
+      "effect": "Uniforma la cottura e aiuta a creare crosta o asciugatura controllata.",
+      "notes": [
+        "Va sempre adattato al proprio forno reale.",
+        "Utile per batch cooking e recupero di piatti del giorno dopo."
+      ]
+    }
+  ]
+}

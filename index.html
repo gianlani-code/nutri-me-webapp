@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
 <body>
 
@@ -286,8 +287,12 @@
                     </div>
                 </div>
 
-                <div class="search-box">
-                    <input type="text" id="food-search" placeholder="Cerca cibo o ricetta..." oninput="cercaAlimento(event, 'main')">
+                <div class="search-box diary-search-box">
+                    <div class="diary-search-row">
+                        <input type="text" id="food-search" placeholder="Cerca cibo o ricetta..." oninput="cercaAlimento(event, 'main')">
+                        <button type="button" class="scan-trigger-btn" onclick="avviaScanner()">📷 Scansiona</button>
+                    </div>
+                    <div id="reader" class="barcode-reader" style="display:none;"></div>
                     <div id="search-results" class="search-dropdown"></div>
                 </div>
 
@@ -330,8 +335,8 @@
         </section>
 
         <section id="pasti-rapidi" class="tab-content" style="display:none;">
-            <div class="organic-panel" style="margin: 20px auto;">
-                <h3 class="panel-title">Chef Mode: Crea Piatto</h3>
+            <div class="organic-panel chef-mode-panel" style="margin: 20px auto; background: #f8f9fa; border-radius: 15px; border-left: 4px solid var(--info);">
+                <h3 class="panel-title">Chef Mode: Crea il tuo Piatto</h3>
                 <input type="text" id="recipe-name" class="main-input" placeholder="Nome della tua ricetta...">
                 <div class="search-box">
                     <input type="text" id="recipe-search" placeholder="Aggiungi ingrediente..." oninput="cercaAlimento(event, 'ricetta')">
@@ -347,22 +352,61 @@
                 <button onclick="salvaRicettaDefinitiva()" class="btn-main orange">SALVA RICETTA NEI MIEI PIATTI</button>
             </div>
 
-            <div class="organic-panel" style="margin: 20px auto; background: #f8f9fa; border-radius: 15px; border-left: 4px solid var(--info);">
-                <h3 class="panel-title">I Tuoi Piatti Salvati</h3>
-                <ul id="preset-list" class="premium-list"></ul>
+            <div class="organic-panel curiosity-panel" style="margin: 20px auto; background: #f8f9fa; border-radius: 15px; border-left: 4px solid var(--info);">
+                <details class="curiosity-details">
+                    <summary class="curiosity-summary">I Tuoi Piatti Salvati</summary>
+                    <div class="curiosity-content saved-dishes-content">
+                        <ul id="preset-list" class="premium-list"></ul>
+                    </div>
+                </details>
+            </div>
+
+            <div class="organic-panel curiosity-panel" style="margin: 20px auto; background: #f8f9fa; border-radius: 15px; border-left: 4px solid var(--info);">
+                <details class="curiosity-details">
+                    <summary class="curiosity-summary">Curiosita</summary>
+                    <div class="chef-mode-guide curiosity-content">
+                        <div class="chef-mode-guide-grid">
+                            <article class="chef-mode-guide-card">
+                                <strong>Acqua e recupero</strong>
+                                <p>Riutilizza quando ha senso l'acqua di cottura gia salata e ricca di amido: puo aiutare ad addensare salse, minestre, cotture al vapore o il prelavaggio dei piatti.</p>
+                            </article>
+                            <article class="chef-mode-guide-card">
+                                <strong>Locale e stagionale</strong>
+                                <p>Prediligi ingredienti locali, di stagione e filiere trasparenti: spesso hanno piu sapore, meno passaggi e un impatto ambientale piu basso.</p>
+                            </article>
+                            <article class="chef-mode-guide-card">
+                                <strong>Zero spreco reale</strong>
+                                <p>Controlla frigo, freezer e dispensa, compra il necessario e recupera bucce, gambi, foglie, parti verdi e avanzi come nuovi ingredienti.</p>
+                            </article>
+                            <article class="chef-mode-guide-card">
+                                <strong>Sale, spezie e forno</strong>
+                                <p>Assaggia prima di salare, dosa le spezie in base alla loro intensita e ricorda che ogni forno cuoce in modo diverso: osserva sempre la preparazione.</p>
+                            </article>
+                            <article class="chef-mode-guide-card">
+                                <strong>Sicurezza in cucina</strong>
+                                <p>Apri le uova una alla volta in una ciotolina, usa bucce e scorze solo da ingredienti affidabili e presta attenzione a coltelli, teglie calde e ingredienti irritanti.</p>
+                            </article>
+                            <article class="chef-mode-guide-card">
+                                <strong>Brodi e infusioni di recupero</strong>
+                                <p>Carote, cipolle, sedano, finocchi, porri, peperoni, pomodori ed erbe aromatiche possono diventare basi aromatiche, brodi, infusi salati o fondi per altre ricette.</p>
+                            </article>
+                        </div>
+                    </div>
+                </details>
             </div>
 
             <hr class="spacer">
             <div class="organic-panel" style="margin: 20px auto; background: #f8f9fa; border-radius: 15px; border-left: 4px solid var(--info);">
-                <h3 class="panel-title">AI Mode: Scopri 3 piatti su misura</h3>
+                <h3 class="panel-title">AI Mode: 4 modalita su misura</h3>
                 <input type="hidden" id="discover-ingredients" class="main-input" placeholder="Ingredienti a disposizione (es. Zucchine, uova...)" style="display:none;">
                 <div class="search-box" style="margin-top: 10px;">
                     <input type="text" id="discover-ingredient-search" placeholder="Cerca ingrediente da aggiungere..." oninput="cercaAlimento(event, 'ai')">
                     <div id="ai-results" class="search-dropdown"></div>
                 </div>
                 <ul id="ai-ingredient-list" class="recipe-build-list" style="margin-top: 10px;"></ul>
-                <input type="number" id="discover-people" class="main-input" placeholder="Per quante persone?" style="margin-top: 10px;" min="1" value="1">
-                <button onclick="generaRicettaAI()" class="btn-main orange" style="margin-top: 15px;">GENERA 3 RICETTE</button>
+                <label for="discover-people" class="ai-mode-field-label">Numero di persone</label>
+                <input type="number" id="discover-people" class="main-input" placeholder="Numero di persone" style="margin-top: 10px;" min="1" value="1">
+                <button onclick="generaRicettaAI()" class="btn-main orange" style="margin-top: 15px;">GENERA 4 RICETTE</button>
                 <div id="ai-recipe-result" style="display:none; margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 15px; border-left: 4px solid var(--info);"></div>
             </div>
         </section>

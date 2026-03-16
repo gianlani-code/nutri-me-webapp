@@ -1,0 +1,122 @@
+{
+  "version": "1.0",
+  "category": "fermentazione",
+  "overview": {
+    "summary": "La fermentazione e un processo biochimico in cui microrganismi trasformano sostanze organiche in composti piu semplici, modificando gusto, conservabilita, digeribilita e sicurezza microbiologica.",
+    "history": [
+      "La produzione di cibi e bevande fermentate precede la civilta romana ed e attestata da migliaia di anni.",
+      "Sumeri, Egizi e Babilonesi sfruttavano gia fermentazioni per pane e birra.",
+      "Solo in epoca moderna la microbiologia ha chiarito il ruolo di lieviti e batteri nei processi fermentativi."
+    ]
+  },
+  "microorganisms": {
+    "summary": "I protagonisti principali sono batteri e lieviti, che attraverso enzimi degradano zuccheri e altre molecole organiche ottenendo energia e generando nuovi composti.",
+    "key_points": [
+      "I lieviti sono funghi unicellulari e il piu noto nei processi alimentari e Saccharomyces cerevisiae.",
+      "I batteri lattici trasformano zuccheri in acido lattico e contribuiscono a sapore, consistenza e conservabilita.",
+      "Alcuni processi coinvolgono comunita miste di batteri e lieviti, come nel kefir o nel kombucha."
+    ]
+  },
+  "processes": [
+    {
+      "name": "fermentazione alcolica",
+      "conditions": "Avviene in assenza di ossigeno.",
+      "agents": ["lieviti", "Saccharomyces cerevisiae"],
+      "products": ["etanolo", "anidride carbonica"],
+      "use_cases": ["vino", "birra", "lievitazione biologica di alcuni prodotti da forno"]
+    },
+    {
+      "name": "fermentazione acetica",
+      "conditions": "Richiede presenza di ossigeno.",
+      "agents": ["batteri acetici", "Acetobacter"],
+      "products": ["acido acetico"],
+      "use_cases": ["aceto", "alcune fermentazioni miste"]
+    },
+    {
+      "name": "fermentazione lattica",
+      "conditions": "Avviene in assenza di ossigeno.",
+      "agents": ["batteri lattici"],
+      "products": ["acido lattico", "talvolta etanolo", "CO2", "acidi organici minori"],
+      "use_cases": ["yogurt", "crauti", "kefir", "pasta madre", "verdure fermentate"]
+    }
+  ],
+  "food_examples": [
+    {
+      "name": "yogurt",
+      "notes": [
+        "Deriva dalla fermentazione del latte da parte di Lactobacillus bulgaricus e Streptococcus thermophilus.",
+        "L'acido lattico influenza gusto e consistenza coagulando le proteine del latte."
+      ]
+    },
+    {
+      "name": "kefir",
+      "notes": [
+        "Nasce da una fermentazione mista di batteri lattici e lieviti.",
+        "Il risultato e un prodotto acidulo, leggermente frizzante e aromaticamente complesso."
+      ]
+    },
+    {
+      "name": "kombucha",
+      "notes": [
+        "Bevanda fermentata a base di te con SCOBY, una coltura simbiotica di batteri e lieviti.",
+        "Dalla fermentazione derivano acidi organici e altri composti interessanti sul piano sensoriale e nutrizionale."
+      ]
+    },
+    {
+      "name": "vino",
+      "notes": [
+        "Si ottiene dalla fermentazione del mosto d'uva da parte di lieviti presenti naturalmente o aggiunti come starter.",
+        "La fermentazione malolattica puo modificare acidita e profilo organolettico."
+      ]
+    },
+    {
+      "name": "birra",
+      "notes": [
+        "La fermentazione segue processi di maltazione e idrolisi dell'amido in zuccheri fermentescibili.",
+        "Le fermentazioni alta e bassa danno origine a famiglie stilistiche diverse, come ale e lager."
+      ]
+    },
+    {
+      "name": "prodotti da forno",
+      "notes": [
+        "Il lievito di birra e la pasta madre portano a risultati diversi per flora microbica, aroma e shelf life.",
+        "La pasta madre combina fermentazioni multiple e genera acidi organici utili per gusto e conservazione."
+      ]
+    },
+    {
+      "name": "cacao e caffe",
+      "notes": [
+        "La fermentazione dei semi crea precursori aromatici che saranno poi sviluppati dalla tostatura.",
+        "E un passaggio essenziale per il profilo sensoriale finale."
+      ]
+    },
+    {
+      "name": "tapioca da cassava",
+      "notes": [
+        "In alcuni casi la fermentazione riduce la tossicita di materie prime altrimenti non idonee al consumo.",
+        "Esempio importante di fermentazione come trasformazione di sicurezza oltre che sensoriale."
+      ]
+    }
+  ],
+  "chef_use": {
+    "when_relevant": [
+      "Quando una ricetta include yogurt, kefir, kombucha, lievitati, aceti, crauti, salsa di soia o altri ingredienti fermentati.",
+      "Quando puo essere utile spiegare perche un ingrediente fermentato aggiunge acidita, complessita aromatica, shelf life o digeribilita.",
+      "Quando si vogliono suggerire tecniche di valorizzazione del gusto senza cotture aggressive."
+    ],
+    "guardrails": [
+      "La fermentazione non va evocata in modo decorativo: deve migliorare davvero spiegazione, scelta tecnica o ricetta proposta.",
+      "Evitare promesse salutistiche assolute: meglio parlare di possibili effetti o interesse nutrizionale quando appropriato.",
+      "Le indicazioni di sicurezza e gestione microbiologica vanno date solo se servono davvero al contesto."
+    ]
+  },
+  "beyond_food": {
+    "summary": "Le fermentazioni rientrano nelle biotecnologie e trovano impiego anche fuori dal cibo.",
+    "applications": [
+      "produzione di principi attivi per farmaci, integratori e cosmetici",
+      "biodegradazione dei rifiuti",
+      "biocombustibili",
+      "bioplastiche come PLA e PHAs"
+    ]
+  }
+}

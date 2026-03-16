@@ -1,0 +1,41 @@
+{
+  "version": "1.0",
+  "category": "sicurezza-per-ingredienti",
+  "items": [
+    {
+      "ingredient_group": "uova",
+      "care": [
+        "Aprirle una alla volta in una ciotolina separata prima di unirle al composto.",
+        "Usarle crude o poco cotte solo quando il contesto lo giustifica davvero e con opportuna attenzione."
+      ]
+    },
+    {
+      "ingredient_group": "carni e pesci crudi o poco cotti",
+      "care": [
+        "Suggerirli solo se ha senso gastronomico e se la provenienza e la gestione del freddo sono adeguate.",
+        "Quando serve, ricordare prudenza senza trasformare ogni ricetta in un avviso allarmistico."
+      ]
+    },
+    {
+      "ingredient_group": "bucce e scorze",
+      "care": [
+        "Usarle solo con ingredienti ben lavati e di provenienza affidabile.",
+        "Se la sicurezza non e chiara, meglio non suggerirle come parte edibile."
+      ]
+    },
+    {
+      "ingredient_group": "peperoncino e ingredienti irritanti",
+      "care": [
+        "Ricordare di gestirli con attenzione quando il loro uso e centrale nella preparazione.",
+        "L'intensita va calibrata progressivamente."
+      ]
+    },
+    {
+      "ingredient_group": "forno e superfici calde",
+      "care": [
+        "I tempi vanno considerati indicativi e il controllo visivo resta fondamentale.",
+        "Le ricette devono tenere conto del fatto che ogni forno domestico lavora in modo diverso."
+      ]
+    }
+  ]
+}

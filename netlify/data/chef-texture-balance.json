@@ -1,0 +1,26 @@
+{
+  "version": "1.0",
+  "category": "consistenze-e-bilanciamento",
+  "principles": [
+    {
+      "name": "contrasto-cremoso-croccante",
+      "description": "Molte ricette migliorano se una base morbida incontra un elemento croccante o tostato.",
+      "examples": ["pure + granella", "crema + semi", "bowl + topping tostato"]
+    },
+    {
+      "name": "fresco-acido-grasso",
+      "description": "Una componente acida o erbacea puo alleggerire piatti con piu grasso o dolcezza naturale.",
+      "examples": ["agrumi", "aceti delicati", "erbe fresche", "fermentati moderati"]
+    },
+    {
+      "name": "morbido-strutturato",
+      "description": "Un piatto composto funziona meglio se non tutte le componenti hanno la stessa masticazione.",
+      "examples": ["legumi + ortaggi crudi fini", "cereali + verdure scottate", "ricotta vegetale + crumble"]
+    },
+    {
+      "name": "caldo-freddo",
+      "description": "Un elemento tiepido puo rendere piu dinamico un piatto prevalentemente freddo o da dispensa.",
+      "examples": ["bowl con topping tiepido", "insalata con ortaggi scottati", "crema tiepida e contorno fresco"]
+    }
+  ]
+}

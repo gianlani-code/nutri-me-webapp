@@ -1,0 +1,180 @@
+{
+  "version": "1.0",
+  "category": "low-fodmap-e-intestino-irritabile",
+  "overview": {
+    "summary": "L'approccio low FODMAP e una strategia alimentare usata soprattutto per gestire sintomi compatibili con sindrome dell'intestino irritabile, come gonfiore, dolore, alterazioni dell'alvo e disagio addominale. Non e una dieta da seguire in modo indistinto o permanente senza criterio.",
+    "core_principles": [
+      "L'obiettivo non e eliminare per sempre il maggior numero possibile di alimenti, ma identificare quelli meno tollerati e costruire un'alimentazione piu gestibile.",
+      "La tolleranza e molto individuale e dipende spesso da quantita, frequenza, combinazione dei cibi e fase clinica.",
+      "Chef AI deve usare queste nozioni come supporto orientativo e non come prescrizione medica o protocollo terapeutico personalizzato."
+    ]
+  },
+  "three_phases": {
+    "summary": "L'approccio low FODMAP e spesso descritto in tre fasi progressive.",
+    "phases": [
+      {
+        "name": "esclusione",
+        "notes": [
+          "Fase iniziale piu restrittiva e meno varia, pensata per ridurre il carico di alimenti problematici e calmare i sintomi.",
+          "La durata e generalmente limitata nel tempo e non va protratta inutilmente."
+        ]
+      },
+      {
+        "name": "reintroduzione",
+        "notes": [
+          "Si reintroduce un alimento o un gruppo alla volta per osservare tolleranza, dose e risposta individuale.",
+          "Serve a evitare esclusioni inutili e a capire meglio i propri trigger."
+        ]
+      },
+      {
+        "name": "mantenimento",
+        "notes": [
+          "Si costruisce un'alimentazione piu ampia possibile usando gli alimenti tollerati e gestendo quelli critici con moderazione, porzione e frequenza.",
+          "La sostenibilita nel tempo conta piu della rigidita assoluta."
+        ]
+      }
+    ]
+  },
+  "initial_reduction_examples": {
+    "summary": "Nella fase iniziale alcuni alimenti vengono spesso ridotti o esclusi temporaneamente, ma Chef AI deve presentarli come esempi frequenti e non come verita assolute uguali per tutti.",
+    "fruit_often_limited": [
+      "mela",
+      "pera",
+      "pesca",
+      "mango",
+      "anguria",
+      "ciliegie",
+      "susine e prugne",
+      "fichi",
+      "albicocche",
+      "cachi"
+    ],
+    "vegetables_often_limited": [
+      "aglio",
+      "cipolla",
+      "scalogno",
+      "carciofi",
+      "asparagi",
+      "alcuni cavoli e broccoli",
+      "molti funghi"
+    ],
+    "other_categories_often_limited": [
+      "frumento",
+      "orzo",
+      "segale",
+      "molti dolcificanti incluso il miele",
+      "lattosio",
+      "molti legumi interi"
+    ],
+    "notes": [
+      "In alcune persone anche alimenti teoricamente piu gestibili possono comunque dare fastidio per motivi diversi, come reflusso, sensibilita individuale o quantita eccessive.",
+      "L'esclusione non va descritta come cura universale dell'intestino, ma come possibile strumento di gestione sintomatica in contesti adatti."
+    ]
+  },
+  "often_better_tolerated_examples": {
+    "summary": "Esistono alimenti spesso meglio tollerati, ma anche qui la risposta individuale e decisiva.",
+    "fruit": [
+      "mirtilli",
+      "banane non troppo mature",
+      "kiwi",
+      "lamponi",
+      "arance",
+      "limoni",
+      "mandarini",
+      "pompelmo",
+      "fragole",
+      "alcune tipologie di uva"
+    ],
+    "nuts_and_seeds": [
+      "mandorle in porzioni ragionevoli",
+      "noci",
+      "arachidi",
+      "pinoli"
+    ],
+    "vegetables": [
+      "zucchine",
+      "carote",
+      "sedano in quantita compatibili",
+      "biete",
+      "radicchio",
+      "peperoni",
+      "melanzane",
+      "pomodori se tollerati",
+      "fagiolini",
+      "ravanelli",
+      "valeriana",
+      "lattuga in porzioni adatte",
+      "zucca in porzioni adatte",
+      "spinaci se tollerati",
+      "patata americana in piccole quantita",
+      "patate"
+    ],
+    "grains_and_starches": [
+      "avena",
+      "quinoa",
+      "miglio",
+      "amaranto",
+      "grano saraceno",
+      "riso",
+      "teff",
+      "mais",
+      "sorgo"
+    ],
+    "protein_sources": [
+      "uova",
+      "parmigiano molto stagionato",
+      "pesce",
+      "carne",
+      "tofu se tollerato"
+    ],
+    "sweeteners": [
+      "zucchero di cocco in quantita moderate se ben tollerato",
+      "sciroppo d'acero in quantita moderate"
+    ]
+  },
+  "practical_cooking_logic": {
+    "summary": "Per Chef AI la parte utile e costruire piatti semplici, leggibili e con pochi trigger sovrapposti, soprattutto nella fase iniziale.",
+    "key_points": [
+      "Meglio ricette con pochi ingredienti ben identificabili, cosi la tolleranza e piu facile da osservare.",
+      "Aglio e cipolla vanno gestiti con prudenza nelle proposte low FODMAP, cercando alternative aromatiche compatibili col contesto.",
+      "Le porzioni contano: anche un alimento spesso considerato sicuro puo diventare problematico se la quantita sale troppo.",
+      "La semplicità di cottura aiuta: vapore, piastra, forno, padella leggera e bowl strutturate funzionano meglio di preparazioni molto ricche o miste."
+    ]
+  },
+  "protein_and_carb_patterns": {
+    "summary": "In chiave culinaria, molte proposte low FODMAP utili ruotano attorno a una fonte proteica semplice, un carboidrato ben tollerato e una o due verdure gestibili.",
+    "patterns": [
+      "riso con pesce e zucchine",
+      "uova con patate e carote",
+      "quinoa con pollo e peperoni",
+      "grano saraceno con tofu se tollerato e melanzane",
+      "porridge o bowl a base di avena con frutta selezionata"
+    ]
+  },
+  "clinical_guardrails": {
+    "summary": "L'approccio low FODMAP va trattato con cautela perche puo diventare inutilmente restrittivo o nutrizionalmente povero se gestito male.",
+    "key_points": [
+      "Non va proposta come soluzione universale per tutti i problemi intestinali.",
+      "Una fase di esclusione troppo lunga puo ridurre eccessivamente varietà e aderenza.",
+      "Per sintomi persistenti, calo ponderale, sangue nelle feci, dolore severo o condizioni cliniche note serve valutazione sanitaria.",
+      "Chef AI non deve formulare diagnosi di intestino irritabile ne sostituire il supporto di gastroenterologo o dietista."
+    ]
+  },
+  "chef_use": {
+    "when_relevant": [
+      "Quando l'utente chiede ricette low FODMAP o riferisce sensibilita intestinali compatibili con questo approccio.",
+      "Quando bisogna costruire menu semplici con pochi ingredienti e buona leggibilita digestiva.",
+      "Quando serve proporre alternative ad aglio, cipolla, lattosio, frumento o legumi interi."
+    ],
+    "how_to_use": [
+      "Parlare di alimenti spesso piu tollerati o spesso piu problematici, non di proibizioni assolute universali.",
+      "Ricordare che porzione, frequenza e fase del percorso contano quanto l'alimento in se.",
+      "Preferire piatti modulari e facilmente personalizzabili."
+    ],
+    "guardrails": [
+      "Non dichiarare curativa in senso assoluto la low FODMAP per chiunque abbia disturbi intestinali.",
+      "Non dare liste rigide come se fossero definitive o scientificamente uniformi per tutti gli utenti.",
+      "Non ignorare la possibile soggettivita di tolleranza e l'importanza del supporto professionale nei casi complessi."
+    ]
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "version": "1.0",
+  "category": "acidi-e-ph",
+  "overview": {
+    "summary": "Gli acidi sono sostanze che in acqua rilasciano ioni idrogeno H+, mentre il pH e una misura logaritmica della concentrazione di questi ioni. In cucina e tecnologia alimentare il pH influenza gusto, sicurezza microbiologica, fermentazioni, consistenza e capacita gelificante di alcuni ingredienti.",
+    "practical_meaning": [
+      "Un pH piu basso significa una soluzione piu acida.",
+      "Il gusto acido percepito in bocca dipende dalla presenza di acidi, ma il profilo sensoriale finale dipende anche dagli aromi volatili e non solo dagli ioni H+.",
+      "Quasi tutti gli alimenti hanno un pH piu o meno acido; pochi casi, come l'albume, sono basici."
+    ]
+  },
+  "chemistry_basics": {
+    "acids": "Una sostanza acida, semplificando, e in grado di liberare ioni H+ quando e disciolta in acqua.",
+    "bases": "Una base libera ioni ossidrile OH- in acqua secondo la descrizione classica di Arrhenius.",
+    "ph_definition": "Il pH e il logaritmo negativo della concentrazione di ioni H+ presenti in soluzione.",
+    "interpretation": [
+      "pH 7 indica neutralita.",
+      "pH inferiore a 7 indica acidita.",
+      "pH superiore a 7 indica basicita.",
+      "La scala usuale va da 0 a 14, ma cio che conta in cucina e la relazione inversa: meno pH, piu acidita."
+    ]
+  },
+  "acid_types": {
+    "summary": "Non tutti gli acidi si comportano allo stesso modo: possono essere forti o deboli e alcuni possono cedere piu di uno ione H+.",
+    "key_points": [
+      "Gli acidi forti si dissociano quasi completamente in acqua.",
+      "Gli acidi deboli si dissociano solo in parte, come l'acido acetico o l'acido ascorbico.",
+      "La tendenza a dissociarsi si esprime con la costante di dissociazione Ka.",
+      "Esistono acidi poliprotici, come l'acido carbonico, che possono liberare piu di uno ione H+."
+    ]
+  },
+  "measurement": {
+    "summary": "L'acidita puo essere valutata in modo qualitativo con indicatori colorimetrici o in modo piu preciso con il pHmetro.",
+    "methods": [
+      "Le cartine al tornasole e altri indicatori colorimetrici danno una stima approssimativa del pH.",
+      "Il pHmetro misura il pH in modo piu accurato tramite un elettrodo, ma richiede calibrazione con soluzioni tampone.",
+      "Nei campioni liquidi la misura e diretta; nei solidi spesso si lavora su un campione omogeneizzato con acqua distillata, salvo uso di sonde specifiche."
+    ]
+  },
+  "sensory_reading": {
+    "summary": "L'acidita si percepisce come gusto pungente, ma il carattere di un alimento acido dipende dall'integrazione tra gusto e olfatto.",
+    "examples": [
+      "Il latte ha pH vicino alla neutralita, circa 6,7.",
+      "Lo yogurt scende tipicamente a pH 4,0-4,6 per via della formazione di acido lattico.",
+      "Il limone e molto acido, con pH intorno a 2 per la presenza di acido citrico.",
+      "Frutti diversi hanno acidita molto diverse: pesche e albicocche sono mediamente piu acide delle banane o del melone."
+    ]
+  },
+  "food_safety_and_preservation": {
+    "summary": "Controllare il pH e una leva fondamentale per la sicurezza microbiologica e la conservazione degli alimenti.",
+    "key_points": [
+      "Molti microrganismi patogeni e alterativi crescono soprattutto tra pH 4,6 e 8.",
+      "Il valore 4,6 e un riferimento importante perche sotto questa soglia Clostridium botulinum non cresce e non produce tossine.",
+      "Acidificare con aceto, limone o correttori di acidita e una delle strategie storiche di conservazione.",
+      "Anche molte fermentazioni conservano gli alimenti proprio perche producono acidi organici che abbassano il pH e ostacolano microrganismi indesiderati."
+    ]
+  },
+  "fermentation_and_starters": {
+    "summary": "Il pH e una variabile cruciale nelle fermentazioni e nella gestione degli starter, inclusi yogurt, conserve fermentate e lievito madre.",
+    "key_points": [
+      "Nelle fermentazioni microbiche gli alimenti vengono trasformati con produzione di acidi organici, CO2, etanolo e altri composti.",
+      "Nel lievito madre di grano tenero un intervallo orientativo utile e circa 3,8-4,3 a seconda del momento di maturazione e riposo.",
+      "Misurare il pH dice quanti ioni H+ sono presenti, ma non distingue da quali acidi derivino.",
+      "Nel lievito naturale conta anche l'equilibrio tra acido lattico e acido acetico, che influisce su aroma, struttura e stato della coltura."
+    ]
+  },
+  "hydrocolloids_and_gelling": {
+    "summary": "Il pH influisce anche sul comportamento tecnologico di ingredienti strutturanti come la pectina.",
+    "key_points": [
+      "Le pectine ad alto metossile gelificano bene con elevato zucchero e pH acido, orientativamente intorno a 2,5.",
+      "Le pectine a basso metossile possono gelificare con meno zucchero, ma richiedono ioni calcio o altri cationi bivalenti.",
+      "Conoscere il pH aiuta a evitare errori in confetture, gelificazioni, nappature e strutture di frutta."
+    ]
+  },
+  "chef_use": {
+    "when_relevant": [
+      "Quando Chef AI propone fermentazioni, yogurt, kefir, pasta madre, sottaceti, conserve o marinature acide.",
+      "Quando una ricetta richiede controllo di struttura, sicurezza o shelf life legati all'acidita.",
+      "Quando si usano pectine o altre tecniche in cui acidita e zucchero cambiano radicalmente il risultato finale."
+    ],
+    "how_to_use": [
+      "Usare il pH come chiave interpretativa pratica, non come tecnicismo gratuito.",
+      "Tradurre sempre il dato chimico in effetto culinario: gusto, sicurezza, fermentazione, consistenza o conservazione.",
+      "Quando possibile, spiegare che il pH misura acidita globale ma non identifica da solo quali acidi siano presenti."
+    ],
+    "guardrails": [
+      "Non fornire indicazioni di sicurezza troppo semplificate per conserve o fermentazioni rischiose come se fossero protocolli professionali completi.",
+      "Non confondere gusto acido percepito con sola intensita del pH: aroma e matrice alimentare contano molto.",
+      "Non usare valori numerici come regole assolute fuori contesto: vanno collegati al tipo di alimento e alla tecnica."
+    ]
+  }
+}

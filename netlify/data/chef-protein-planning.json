@@ -1,0 +1,121 @@
+{
+  "version": "1.0",
+  "category": "pianificazione-proteica-equilibrata",
+  "overview": {
+    "summary": "Un menu proteico equilibrato non significa eccesso di proteine, ma distribuzione ragionata delle fonti proteiche nell'arco della giornata e della settimana, con attenzione a qualita nutrizionale, sazieta, varieta e sostenibilita.",
+    "baseline": [
+      "Il fabbisogno proteico medio di un adulto sano viene spesso stimato intorno a 0,8-0,9 grammi per chilogrammo di peso corporeo al giorno, salvo condizioni specifiche.",
+      "Un grammo di proteine apporta circa 4 kcal.",
+      "Per molti contesti pratici puo essere utile distribuire le proteine in modo relativamente uniforme nei pasti principali."
+    ]
+  },
+  "why_it_matters": {
+    "summary": "Le proteine sono rilevanti per tessuti, enzimi, ormoni, funzione immunitaria, recupero e mantenimento della massa muscolare.",
+    "key_points": [
+      "Contribuiscono al mantenimento della massa muscolare, specialmente se associate ad allenamento contro resistenza.",
+      "Favoriscono recupero e riparazione dei tessuti.",
+      "Hanno un buon potere saziante e possono aiutare il controllo dell'appetito all'interno di una dieta ben costruita.",
+      "Un apporto adeguato e utile anche nel contrasto alla perdita muscolare legata all'eta."
+    ]
+  },
+  "balanced_distribution": {
+    "summary": "La logica piu utile non e concentrare tutte le proteine in un solo pasto, ma distribuirle in modo piu omogeneo.",
+    "key_points": [
+      "Una distribuzione uniforme nell'arco della giornata puo essere piu funzionale di un'assunzione sbilanciata.",
+      "In molti approcci pratici si ragiona su un intervallo orientativo di 20-40 grammi di proteine per pasto, da adattare al contesto individuale.",
+      "La qualita complessiva della giornata e della settimana conta piu del singolo alimento definito proteico."
+    ]
+  },
+  "source_rotation": {
+    "summary": "Per un profilo nutrizionale piu completo conviene alternare fonti animali e vegetali e non ripetere sempre gli stessi cibi.",
+    "animal_sources": [
+      "pesce bianco e azzurro",
+      "carni magre",
+      "uova",
+      "yogurt, kefir, latte",
+      "fiocchi di latte e ricotta"
+    ],
+    "plant_sources": [
+      "legumi come ceci, lenticchie, fagioli e cicerchie",
+      "soia e derivati come tofu e tempeh",
+      "cereali integrali",
+      "frutta secca a guscio",
+      "semi oleosi",
+      "quinoa",
+      "semi di canapa",
+      "alcune varieta di funghi come pleurotus e portobello"
+    ],
+    "principles": [
+      "Le fonti vegetali vanno valorizzate non solo per le proteine ma anche per fibra, vitamine e minerali.",
+      "Le fonti animali possono offrire proteine ad alto valore biologico, ma vanno inserite con misura e varietà.",
+      "E utile limitare l'abitudine a basare la quota proteica su alimenti ultraprocessati o trasformati."
+    ]
+  },
+  "protein_complementation": {
+    "summary": "La complementazione proteica permette di migliorare il profilo aminoacidico complessivo abbinando fonti vegetali diverse.",
+    "key_points": [
+      "I cereali sono relativamente piu poveri di lisina.",
+      "I legumi sono relativamente piu poveri di metionina.",
+      "L'abbinamento tra cereali e legumi aiuta a costruire un profilo aminoacidico piu completo.",
+      "Questa logica e utile in zuppe, bowl, insalate di cereali e legumi, polpette vegetali e piatti unici."
+    ]
+  },
+  "weekly_menu_logic": {
+    "summary": "Un menu proteico settimanale ben fatto varia ingredienti, tecniche e combinazioni per evitare monotonia e squilibri.",
+    "patterns": [
+      "Alternare pasti a base di pesce, pollame, uova, latticini fermentati, legumi e derivati della soia.",
+      "Associare spesso la fonte proteica a cereali integrali, verdure e grassi di buona qualita.",
+      "Usare spuntini con una quota proteica leggera quando il contesto lo richiede, come yogurt, kefir, hummus, skyr, lupini o frutta secca.",
+      "Privilegiare alimenti freschi, stagionali e poco processati."
+    ]
+  },
+  "cooking_methods": {
+    "summary": "La tecnica di cottura influisce su gusto, digeribilita, densita energetica e varietà percepita del menu.",
+    "methods": [
+      "griglia per carne, pesce e verdure con sapore intenso e pochi grassi aggiunti",
+      "forno per frittate, polpette di legumi, crocchette di pesce e piatti composti",
+      "vapore per pesce e verdure con buona conservazione dei nutrienti",
+      "padella antiaderente per tofu, tempeh, carne magra o uova con gestione essenziale dei grassi",
+      "cottura lenta per zuppe di legumi, spezzatini e preparazioni comfort"
+    ],
+    "flavor_support": [
+      "spezie",
+      "erbe aromatiche",
+      "aceto",
+      "succo di limone"
+    ]
+  },
+  "weight_loss_context": {
+    "summary": "Le proteine possono aiutare sazieta e preservazione della massa muscolare, ma da sole non determinano il dimagrimento.",
+    "key_points": [
+      "Per perdere peso serve un contesto di bilancio energetico adeguato, non solo piatti proteici.",
+      "Un menu proteico puo essere utile in un percorso di dimagrimento solo se resta equilibrato sul piano calorico complessivo.",
+      "La qualita della dieta e l'aderenza nel tempo contano piu di etichette come alta o bassa in proteine."
+    ]
+  },
+  "health_guardrails": {
+    "summary": "L'uso di questi concetti deve restare prudente e non prescrittivo, soprattutto in presenza di condizioni cliniche.",
+    "key_points": [
+      "Per soggetti sani un apporto moderato e bilanciato di proteine non e di per se problematico.",
+      "In caso di patologie renali, trapianto di rene o altre condizioni cliniche, i fabbisogni possono cambiare molto e richiedono indicazioni professionali.",
+      "Un consumo eccessivo o sbilanciato di proteine animali, specialmente da carni grasse o processate, non va presentato come modello salutare."
+    ]
+  },
+  "chef_use": {
+    "when_relevant": [
+      "Quando Chef AI propone menu settimanali, piatti unici, colazioni o spuntini con una quota proteica ragionata.",
+      "Quando l'utente chiede pasti proteici ma equilibrati e variati.",
+      "Quando serve spiegare come combinare legumi, cereali, latticini fermentati, uova, pesce o tofu in modo sensato."
+    ],
+    "how_to_use": [
+      "Tradurre la logica proteica in piatti concreti e non in numeri astratti quando non strettamente necessario.",
+      "Favorire varietà, stagionalità e alternanza tra fonti animali e vegetali.",
+      "Usare il concetto di complementazione proteica soprattutto per proposte vegetali o miste."
+    ],
+    "guardrails": [
+      "Non presentare Chef AI come sostituto di un professionista sanitario o dietologico.",
+      "Non formulare prescrizioni cliniche personalizzate o target proteici medici senza contesto professionale.",
+      "Non confondere menu proteico con dieta iperproteica o automaticamente dimagrante."
+    ]
+  }
+}

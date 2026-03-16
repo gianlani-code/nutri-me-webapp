@@ -37,12 +37,12 @@ function mostraRiepilogo() {
     const frase = frasi[Math.floor(Math.random() * frasi.length)];
 
     // Riepilogo dati
-    const dati = `Ciao <b>${username}</b>, sono felice che oggi ti senti così!<br><br>
-        <b>Età:</b> ${eta}<br>
-        <b>Peso:</b> ${peso} kg<br>
-        <b>Altezza:</b> ${altezza} cm<br>
-        <b>${stileVita}</b><br>
-        <b>Obiettivo:</b> ${obiettivo}<br><br>
+    const dati = `Ciao <b>${escapeHtml(username)}</b>, sono felice che oggi ti senti così!<br><br>
+        <b>Età:</b> ${escapeHtml(eta)}<br>
+        <b>Peso:</b> ${escapeHtml(peso)} kg<br>
+        <b>Altezza:</b> ${escapeHtml(altezza)} cm<br>
+        <b>${escapeHtml(stileVita)}</b><br>
+        <b>Obiettivo:</b> ${escapeHtml(obiettivo)}<br><br>
         Informazioni che troverai nella home.<br>`;
 
     // Mostra step 6 senza nascondere la barra dei tasti
@@ -1805,8 +1805,12 @@ let ricetteSalvate = JSON.parse(localStorage.getItem('nv_ricette')) || [];
 let activeDate = formatLocalIsoDate(new Date());
 let currentMonth = new Date();
 let currentMealType = null;
+let selectedFood = null;
 let aiSelectedIngredients = [];
 let aiGeneratedRecipes = [];
+let barcodeScanner = null;
+let barcodeScannerActive = false;
+let barcodeScanLocked = false;
 
 function formatLocalIsoDate(date) {
     const year = date.getFullYear();
@@ -2343,14 +2347,14 @@ function caricaDatiProfilo() {
     const summary = document.getElementById('profilo-summary-content');
     if (summary) {
         summary.innerHTML = `
-            <div><strong>Nome:</strong> ${datiProfilo.username || '-'}</div>
-            <div><strong>Età:</strong> ${datiProfilo.age || '-'} anni</div>
-            <div><strong>Peso:</strong> ${datiProfilo.weight || '-'} kg</div>
-            <div><strong>Altezza:</strong> ${datiProfilo.height || '-'} cm</div>
-            <div><strong>Obiettivo:</strong> ${datiProfilo.goal || '-'}</div>
-            <div><strong>Attività:</strong> ${datiProfilo.jobType || '-'}</div>
-            <div><strong>Allenamenti:</strong> ${datiProfilo.workoutsPerWeek ?? '-'} / settimana</div>
-            <div><strong>Acqua:</strong> ${datiProfilo.waterIntake || '-'} L</div>
+            <div><strong>Nome:</strong> ${escapeHtml(datiProfilo.username || '-')}</div>
+            <div><strong>Età:</strong> ${escapeHtml(datiProfilo.age || '-')} anni</div>
+            <div><strong>Peso:</strong> ${escapeHtml(datiProfilo.weight || '-')} kg</div>
+            <div><strong>Altezza:</strong> ${escapeHtml(datiProfilo.height || '-')} cm</div>
+            <div><strong>Obiettivo:</strong> ${escapeHtml(datiProfilo.goal || '-')}</div>
+            <div><strong>Attività:</strong> ${escapeHtml(datiProfilo.jobType || '-')}</div>
+            <div><strong>Allenamenti:</strong> ${escapeHtml(datiProfilo.workoutsPerWeek ?? '-')} / settimana</div>
+            <div><strong>Acqua:</strong> ${escapeHtml(datiProfilo.waterIntake || '-')} L</div>
         `;
     }
 
@@ -2559,7 +2563,7 @@ function renderUserProfileSummary() {
     if (diaryData && diaryData.profilo) {
         homeProfileSummary.innerHTML = `
             <div style="margin-bottom: 10px; padding: 10px 12px; background: #f4f9ff; border: 1px solid #dce9f5; border-radius: 14px; text-align: center;">
-                <strong>${diaryData.profilo.username || 'Utente'}</strong> • ${diaryData.profilo.sex || '-'} • ${diaryData.profilo.age || '-'} anni • TDEE: ${diaryData.profilo.target || '-'} kcal
+                <strong>${escapeHtml(diaryData.profilo.username || 'Utente')}</strong> • ${escapeHtml(diaryData.profilo.sex || '-')} • ${escapeHtml(diaryData.profilo.age || '-')} anni • TDEE: ${escapeHtml(diaryData.profilo.target || '-')} kcal
             </div>
         `;
         return;
@@ -2668,32 +2672,127 @@ function rimuoviPasto(index) {
     aggiornaUI();
 }
 
-function cercaAlimento(e, context) {
-    if (context === 'main' && isFutureDay(activeDate)) {
-        e.target.value = '';
+async function cercaAlimentoOFF(query) {
+    const url = `https://it.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=10`;
+
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        return (Array.isArray(data.products) ? data.products : []).map((product) => ({
+            nome: (product.product_name_it || product.product_name || 'Prodotto OFF') + (product.brands ? ` (${product.brands})` : ''),
+            kcal: product.nutriments?.['energy-kcal_100g'] || 0,
+            proteine: product.nutriments?.proteins_100g || 0,
+            carboidrati: product.nutriments?.carbohydrates_100g || 0,
+            grassi: product.nutriments?.fat_100g || 0,
+            fe: 0,
+            ca: 0,
+            b12: 0,
+            isOFF: true
+        })).filter((product) => product.kcal > 0);
+    } catch (error) {
+        console.error('Errore nella comunicazione con Open Food Facts:', error);
+        return [];
+    }
+}
+
+let timeoutRicerca;
+let latestSearchRequestId = 0;
+
+function getSearchResultsContainerId(context) {
+    if (context === 'main') return 'search-results';
+    if (context === 'ricetta') return 'recipe-results';
+    if (context === 'ai') return 'ai-results';
+    return '';
+}
+
+function normalizeFoodResultKey(value) {
+    return String(value || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/\([^)]*\)/g, ' ')
+        .replace(/[^a-z0-9]+/g, ' ')
+        .replace(/\bprodotto off\b/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function dedupeFoodResults(results) {
+    const seen = new Set();
+
+    return results.filter((item) => {
+        const rawName = item.nome || item.n || '';
+        const key = normalizeFoodResultKey(rawName);
+        if (!key || seen.has(key)) {
+            return false;
+        }
+        seen.add(key);
+        return true;
+    });
+}
+
+function sortFoodResultsAlphabetically(results) {
+    return [...results].sort((left, right) => {
+        const leftName = String(left.nome || left.n || '').trim();
+        const rightName = String(right.nome || right.n || '').trim();
+        return leftName.localeCompare(rightName, 'it', { sensitivity: 'base' });
+    });
+}
+
+function closeFoodSearchDropdown(context, clearInput = false) {
+    const resultsId = getSearchResultsContainerId(context);
+    const resDiv = document.getElementById(resultsId);
+    if (resDiv) {
+        resDiv.innerHTML = '';
+    }
+
+    if (!clearInput) {
         return;
     }
 
-    const query = e.target.value.toLowerCase();
-    let resultsId;
-    if (context === 'main') resultsId = 'search-results';
-    else if (context === 'ricetta') resultsId = 'recipe-results';
-    else if (context === 'ai') resultsId = 'ai-results';
-    const resDiv = document.getElementById(resultsId);
-    if (!resDiv) return;
-    resDiv.innerHTML = "";
+    const inputId = context === 'main'
+        ? 'food-search'
+        : (context === 'ricetta' ? 'recipe-search' : (context === 'ai' ? 'discover-search' : ''));
 
-    if (query.length < 2) return;
+    if (!inputId) {
+        return;
+    }
 
-    const fullDb = [...db, ...ricetteSalvate.filter((item) => !item.aiGenerated)];
-    const filtered = fullDb.filter(f => (f.nome && f.nome.toLowerCase().includes(query)) || (f.n && f.n.toLowerCase().includes(query)));
+    const input = document.getElementById(inputId);
+    if (input) {
+        input.value = '';
+    }
+}
 
-    filtered.forEach(f => {
+function renderFoodSearchResults(results, resDiv, context, inputElement) {
+    resDiv.innerHTML = '';
+
+    if (!Array.isArray(results) || results.length === 0) {
+        resDiv.innerHTML = "<div class='search-item' style='color:#dc3545; text-align:center;'>Nessun risultato trovato</div>";
+        return;
+    }
+
+    const closeButton = document.createElement('button');
+    closeButton.type = 'button';
+    closeButton.className = 'search-dropdown-close';
+    closeButton.setAttribute('aria-label', 'Chiudi risultati ricerca');
+    closeButton.innerText = 'x';
+    closeButton.onclick = (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        closeFoodSearchDropdown(context);
+    };
+    resDiv.appendChild(closeButton);
+
+    results.forEach((f) => {
         const div = document.createElement('div');
-        div.className = 'result-item';
+        div.className = 'search-item';
         const nomeCibo = f.nome || f.n;
         const kcalCibo = f.kcal || f.k;
+
         div.innerHTML = `<span>${nomeCibo}</span> <small>${Math.round(kcalCibo)} kcal/100g</small>`;
+
         div.onclick = () => {
             selectedFood = f;
             if (context === 'main') {
@@ -2714,16 +2813,65 @@ function cercaAlimento(e, context) {
                     aiSelectedIngredients.push(nomeCibo);
                 }
                 const list = document.getElementById('ai-ingredient-list');
-                list.innerHTML = aiSelectedIngredients.map(item => `<li style="padding:4px 0;">• ${item}</li>`).join('');
-                // Aggiungi ingredienti al campo principale AI per facilitare la generazione
+                list.innerHTML = aiSelectedIngredients.map((item) => `<li style="padding:4px 0;">• ${item}</li>`).join('');
                 const discoverInput = document.getElementById('discover-ingredients');
                 discoverInput.value = aiSelectedIngredients.join(', ');
             }
-            resDiv.innerHTML = "";
-            e.target.value = "";
+            closeFoodSearchDropdown(context);
+            inputElement.value = '';
         };
+
         resDiv.appendChild(div);
     });
+}
+
+async function cercaAlimento(e, context) {
+    if (context === 'main' && isFutureDay(activeDate)) {
+        e.target.value = '';
+        return;
+    }
+
+    const query = e.target.value.toLowerCase().trim();
+    const resultsId = getSearchResultsContainerId(context);
+
+    const resDiv = document.getElementById(resultsId);
+    if (!resDiv) return;
+
+    if (query.length < 2) {
+        clearTimeout(timeoutRicerca);
+        resDiv.innerHTML = '';
+        return;
+    }
+
+    clearTimeout(timeoutRicerca);
+
+    const requestId = ++latestSearchRequestId;
+
+    timeoutRicerca = setTimeout(async () => {
+        const fullDb = [...db, ...ricetteSalvate.filter((item) => !item.aiGenerated)];
+        const localResults = fullDb.filter((food) =>
+            (food.nome && food.nome.toLowerCase().includes(query))
+            || (food.n && food.n.toLowerCase().includes(query))
+        );
+
+        const sortedLocalResults = sortFoodResultsAlphabetically(localResults).slice(0, 15);
+        renderFoodSearchResults(sortedLocalResults, resDiv, context, e.target);
+
+        if (requestId !== latestSearchRequestId) {
+            return;
+        }
+
+        const offResults = await cercaAlimentoOFF(query);
+
+        if (requestId !== latestSearchRequestId) {
+            return;
+        }
+
+        const combinedResults = sortFoodResultsAlphabetically(
+            dedupeFoodResults([...localResults, ...offResults])
+        ).slice(0, 15);
+        renderFoodSearchResults(combinedResults, resDiv, context, e.target);
+    }, 500);
 }
 
 function selezionaCibo(alimento) {
@@ -3036,6 +3184,140 @@ function getAIProfilePayload() {
     };
 }
 
+const AI_RECIPE_MODE_SLOTS = [
+    { key: 'base', label: 'Cucina base', difficulty: 'Semplice' },
+    { key: 'media', label: 'Cucina media', difficulty: 'Media' },
+    { key: 'chef', label: 'Chef mode', difficulty: 'Chef' },
+    { key: 'salvafrigo', label: 'Salvafrigo', difficulty: 'Semplice' }
+];
+
+const AI_NUTRITION_METHODOLOGY = {
+    summary: [
+        'I valori nutrizionali mostrati sono medie di riferimento indicative e non assolute: stagione, acqua, crescita, conservazione, lavorazione e cottura possono cambiare il profilo reale dell alimento.',
+        'Per prodotti trasformati e ricette i dati si riferiscono a una preparazione specifica, campionata e studiata secondo protocolli standardizzati.',
+        'Quando possibile i dati sono riferiti a 100 g di parte edibile; per alcune preparazioni conta anche la porzione e la variazione di peso dopo cottura.',
+        'In queste schede i valori mancanti possono essere completati da riferimenti nutrizionali compatibili, senza sovrascrivere valori gia presenti e plausibili.'
+    ],
+    energyFactors: [
+        ['Proteine', '4 kcal/g'],
+        ['Lipidi', '9 kcal/g'],
+        ['Carboidrati disponibili', '3,75 kcal/g'],
+        ['Amido', '4,13 kcal/g'],
+        ['Fibra', '2 kcal/g'],
+        ['Alcol etilico', '7 kcal/g'],
+        ['Conversione energia', '1 kcal = 4,184 kJ']
+    ],
+    proteinFactors: [
+        ['Latte e derivati', '6,38'],
+        ['Farina di frumento e soia', '5,70'],
+        ['Frumento, orzo, avena', '5,83'],
+        ['Segale, farine integrali, riso', '5,95'],
+        ['Mandorle', '5,18'],
+        ['Noci e nocciole', '5,30'],
+        ['Arachidi', '5,46'],
+        ['Gelatina', '5,55'],
+        ['Tutti gli altri alimenti', '6,25']
+    ],
+    carbohydrateFactors: [
+        ['Disaccaridi in monosaccaridi', '1,05'],
+        ['Polisaccaridi in monosaccaridi', '1,10']
+    ],
+    vitaminConversions: [
+        ['Vitamina E', 'alfa-tocoferolo x 1,0; beta x 0,1; gamma x 0,4'],
+        ['Vitamina A', '1 retinolo equivalente = 1 ug retinolo = 6 ug beta-carotene = 3,33 U.I.']
+    ],
+    aminoPattern: [
+        ['Istidina', '1,5 g/100 g proteine'],
+        ['Isoleucina', '3,0 g/100 g proteine'],
+        ['Leucina', '5,9 g/100 g proteine'],
+        ['Lisina', '4,5 g/100 g proteine'],
+        ['Metionina + cistina', '2,2 g/100 g proteine'],
+        ['Fenilalanina + tirosina', '3,8 g/100 g proteine'],
+        ['Treonina', '2,3 g/100 g proteine'],
+        ['Triptofano', '0,6 g/100 g proteine'],
+        ['Valina', '3,9 g/100 g proteine']
+    ],
+    yieldExamples: [
+        ['Pasta di semola secca, bollitura', 'Y.F. 3,0'],
+        ['Riso basmati, bollitura', 'Y.F. 3,0'],
+        ['Quinoa, bollitura', 'Y.F. 3,1'],
+        ['Ceci secchi, bollitura', 'Y.F. 2,9'],
+        ['Lenticchie secche, bollitura', 'Y.F. 2,5'],
+        ['Pollo petto, bollitura', 'Y.F. 0,9'],
+        ['Spigola al forno', 'Y.F. 0,8'],
+        ['Zucchine a fette in padella', 'Y.F. 0,8']
+    ]
+};
+
+function renderAINutritionMethodologyTable(rows) {
+    return `
+        <table class="ai-methodology-table">
+            <tbody>
+                ${rows.map(([label, value]) => `
+                    <tr>
+                        <td>${escapeHtml(label)}</td>
+                        <td>${escapeHtml(value)}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
+function renderAINutritionMethodology() {
+    return `
+        <details class="ai-nutrition-methodology">
+            <summary>Metodologia e fattori di calcolo</summary>
+            <div class="ai-nutrition-methodology-content">
+                <ul class="ai-nutrition-methodology-list">
+                    ${AI_NUTRITION_METHODOLOGY.summary.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}
+                </ul>
+                <div class="ai-methodology-grid">
+                    <section>
+                        <h6>Tabella A: energia</h6>
+                        ${renderAINutritionMethodologyTable(AI_NUTRITION_METHODOLOGY.energyFactors)}
+                    </section>
+                    <section>
+                        <h6>Azoto totale in proteine</h6>
+                        ${renderAINutritionMethodologyTable(AI_NUTRITION_METHODOLOGY.proteinFactors)}
+                    </section>
+                    <section>
+                        <h6>Carboidrati come monosaccaridi</h6>
+                        ${renderAINutritionMethodologyTable(AI_NUTRITION_METHODOLOGY.carbohydrateFactors)}
+                    </section>
+                    <section>
+                        <h6>Conversioni vitaminiche</h6>
+                        ${renderAINutritionMethodologyTable(AI_NUTRITION_METHODOLOGY.vitaminConversions)}
+                    </section>
+                    <section>
+                        <h6>Pattern aminoacidico WHO/FAO/UNU</h6>
+                        ${renderAINutritionMethodologyTable(AI_NUTRITION_METHODOLOGY.aminoPattern)}
+                    </section>
+                    <section>
+                        <h6>Tabella C: esempi di yield factor</h6>
+                        ${renderAINutritionMethodologyTable(AI_NUTRITION_METHODOLOGY.yieldExamples)}
+                    </section>
+                </div>
+            </div>
+        </details>
+    `;
+}
+
+function decorateAIRecipeModes(recipes) {
+    return AI_RECIPE_MODE_SLOTS.map((slot, index) => {
+        const recipe = Array.isArray(recipes) ? recipes[index] : null;
+        if (!recipe) return null;
+
+        return {
+            ...recipe,
+            mode_key: recipe.mode_key || recipe.modeKey || slot.key,
+            mode_label: recipe.mode_label || recipe.modeLabel || slot.label,
+            difficolta: recipe.difficolta || slot.difficulty,
+            style: recipe.style || slot.label
+        };
+    }).filter(Boolean);
+}
+
 function getAIFallbackRecipes(ingredients, people, profile) {
     const safeIngredients = ingredients.length > 0 ? ingredients : ['verdure miste'];
     const lead = safeIngredients.slice(0, 3);
@@ -3060,97 +3342,180 @@ function getAIFallbackRecipes(ingredients, people, profile) {
         attivo: 'Funziona bene anche come pasto post giornata intensa.'
     };
 
-    return [
+    return decorateAIRecipeModes([
         {
-            title: `Padellata smart di ${lead[0] || 'frigo'} e ${lead[1] || 'dispensa'}`,
-            style: 'Svuotafrigo express',
-            summary: `Una proposta veloce per ${people} ${people === 1 ? 'persona' : 'persone'} che valorizza ${leadText}.`,
+            title: `Pasta o padellata base con ${lead[0] || 'frigo'} e ${lead[1] || 'dispensa'}`,
+            style: 'Cucina base',
+            summary: `Una proposta fondamentale per ${people} ${people === 1 ? 'persona' : 'persone'} che valorizza ${leadText} con una tecnica sola e leggibile.`,
             whyItFits: `Ideata per l'obiettivo ${goal} ${goalHintMap[goal] || goalHintMap.mantenere}. ${dietHint} ${jobHintMap[jobType] || jobHintMap.moderato}`,
             ingredients: [...lead, 'olio EVO', 'aglio o cipolla', 'erbe aromatiche'],
             steps: [
-                'Taglia gli ingredienti principali in pezzi regolari per cuocerli in modo uniforme.',
-                'Rosola un fondo con poco olio e aggiungi prima gli ingredienti piu consistenti, poi quelli piu delicati.',
-                'Regola con spezie ed erbe, quindi servi come piatto unico o come base per cereali, pane o legumi.'
+                'Prepara un fondo semplice oppure una cottura diretta senza costruire piu componenti.',
+                'Cuoci l ingrediente principale con un solo passaggio chiaro e leggibile.',
+                'Chiudi il piatto in modo essenziale, senza salse complesse o impiattamenti tecnici.'
             ],
             wasteTip: 'Usa gambi, foglie tenere e parti esterne ben lavate per dare piu volume al piatto.',
             goalTag: goal || 'mantenere'
         },
         {
-            title: `Teglia anti-spreco con ${lead[0] || 'ingredienti'} al forno`,
-            style: 'Forno zero stress',
-            summary: `Una ricetta da forno semplice che trasforma pochi ingredienti in un pasto completo per ${people} ${people === 1 ? 'persona' : 'persone'}.`,
-            whyItFits: `Pensata per semplificare la preparazione e mantenere coerenza con il tuo stile di vita ${jobType || 'quotidiano'}.`,
+            title: `Versione media con ${lead[0] || 'ingrediente principale'} e accompagnamento`,
+            style: 'Cucina media',
+            summary: `Una ricetta piu costruita della base, con elemento principale piu crema, salsa o verdura di supporto per ${people} ${people === 1 ? 'persona' : 'persone'}.`,
+            whyItFits: `Pensata per darti un gradino tecnico in piu ma restare ancora dentro una cucina domestica concreta.`,
             ingredients: [...safeIngredients.slice(0, 4), 'pangrattato o semi', 'olio EVO', 'spezie a piacere'],
             steps: [
-                'Disponi gli ingredienti in teglia, condisci con olio e aromi e aggiungi una parte croccante in superficie.',
-                'Cuoci finche i bordi risultano dorati e l interno resta morbido.',
-                'Servi la teglia da sola oppure accompagnata da una salsa yogurt, hummus o crema di legumi in base al regime alimentare.'
+                'Prepara un elemento principale con una lavorazione in piu rispetto alla base.',
+                'Abbinalo a una crema, salsa o verdura di accompagnamento ben distinta.',
+                'Servi le due componenti in modo ordinato ma ancora semplice e domestico.'
             ],
             wasteTip: 'Se avanzano porzioni, riusale il giorno dopo come ripieno per piadina, bowl o insalata.',
             goalTag: goal || 'mantenere'
         },
         {
-            title: `Bowl creativa con ${lead[0] || 'ingredienti di stagione'}`,
-            style: 'Idea flessibile',
-            summary: 'Una terza opzione diversa dalle altre due, piu modulabile e utile anche per usare piccoli avanzi.',
-            whyItFits: `Ti lascia margine per aggiungere una quota proteica coerente con il tuo profilo e ridurre lo spreco degli ingredienti gia aperti.`,
-            ingredients: [...safeIngredients.slice(0, 3), 'base a scelta: riso, pane, patate o legumi', 'condimento leggero'],
+            title: `Chef mode con ${lead[0] || 'ingrediente guida'}`,
+            style: 'Chef mode',
+            summary: 'Una terza opzione che mette davvero alla prova: piu tecnica, piu precisa e meno perdonante della modalita media.',
+            whyItFits: 'Ti lascia un piatto che richiede controllo e mano, non solo un nome piu elegante della versione media.',
+            ingredients: [...safeIngredients.slice(0, 3), 'elemento croccante', 'finitura aromatica'],
             steps: [
-                'Cuoci o scalda una base neutra in porzione adatta al numero di persone.',
-                'Abbina gli ingredienti scelti con una componente cremosa o croccante per dare contrasto.',
-                'Completa con semi, spezie o erbe per cambiare sapore senza comprare altro.'
+                'Cuoci separatamente l ingrediente principale con controllo preciso di tempo e temperatura.',
+                'Aggiungi almeno una seconda componente tecnica, come crema, salsa, crosta o guarnizione strutturale.',
+                'Chiudi con una finitura coerente e un impiattamento piu rigoroso del solito.'
             ],
-            wasteTip: 'Perfetta per finire mezze porzioni gia cotte: anche pochi cucchiai possono diventare topping utili.',
+            wasteTip: 'Anche qui puoi recuperare ritagli e componenti secondari come topping, fondi o finiture.',
+            goalTag: goal || 'mantenere'
+        },
+        {
+            title: `Salvafrigo con ${lead[0] || 'avanzi utili'} e ${lead[1] || 'dispensa'}`,
+            style: 'Salvafrigo',
+            summary: 'La modalita piu facile e diretta: pochi passaggi, utilita massima e zero pretese estetiche.',
+            whyItFits: 'Serve quando vuoi la soluzione piu banale in senso pratico: usare quello che hai e cucinare senza pensare troppo.',
+            ingredients: [...safeIngredients.slice(0, 3), 'condimento essenziale', 'pane, riso o legumi se servono'],
+            steps: [
+                'Riunisci gli ingredienti piu semplici da usare subito.',
+                'Scaldali in una padella unica oppure assemblali a freddo se sono gia pronti.',
+                'Condisci il minimo indispensabile e servi appena pronto.'
+            ],
+            wasteTip: 'Qui l obiettivo e finire ingredienti aperti o mezze porzioni senza creare altro spreco.',
             goalTag: goal || 'mantenere'
         }
-    ];
+    ]);
 }
 
 function renderAIRecipeResults(recipes, metadata = {}) {
     const resultBox = document.getElementById('ai-recipe-result');
     if (!resultBox) return;
 
-    aiGeneratedRecipes = Array.isArray(recipes) ? recipes : [];
+    aiGeneratedRecipes = decorateAIRecipeModes(recipes);
+    const hasNutritionTables = aiGeneratedRecipes.some((recipe) => recipe?.nutrition);
+    const peopleCount = Math.max(1, Number(metadata.people || 1));
 
     const sourceLabel = metadata.source === 'fallback'
         ? 'Suggerimenti smart di backup'
-        : '3 proposte generate per il tuo profilo';
+        : '4 proposte generate per il tuo profilo';
+
+    const sourceNote = metadata.source === 'fallback'
+        ? `<p class="ai-mode-subtitle"><strong>Nota:</strong> in questo momento stai vedendo il motore di backup e non la AI live.${metadata.reason ? ` Motivo: ${escapeHtml(metadata.reason)}.` : ''}</p>`
+        : '<p class="ai-mode-subtitle">AI live attiva: le ricette sono divise in Cucina base, Cucina media, Chef mode e Salvafrigo.</p>';
 
     resultBox.style.display = 'block';
     resultBox.innerHTML = `
         <div class="ai-mode-header">
             <div>
                 <h4 class="ai-mode-title">${escapeHtml(sourceLabel)}</h4>
-                <p class="ai-mode-subtitle">Le ricette tengono conto degli ingredienti scelti e delle informazioni del questionario.</p>
+                ${sourceNote}
             </div>
         </div>
         <div class="ai-recipe-grid">
-            ${recipes.map((recipe, index) => `
+            ${aiGeneratedRecipes.map((recipe, index) => `
                 <article class="ai-recipe-card">
                     <div class="ai-recipe-card-top">
-                        <span class="ai-recipe-index">Opzione ${index + 1}</span>
-                        <span class="ai-recipe-tag">${escapeHtml(recipe.style || recipe.goalTag || 'Ricetta')}</span>
+                        <span class="ai-recipe-index">${escapeHtml(recipe.mode_label || `Opzione ${index + 1}`)}</span>
+                        <span class="ai-recipe-tag">${escapeHtml(recipe.difficolta || recipe.style || recipe.goalTag || 'Ricetta')}</span>
                     </div>
-                    <h5>${escapeHtml(recipe.title)}</h5>
+                    <h5>${escapeHtml(recipe.nome_ricetta || recipe.title)}</h5>
+                    <p class="ai-recipe-fit"><strong>ID:</strong> ${escapeHtml(recipe.id || `R${index + 1}`)} • <strong>Tempo:</strong> ${escapeHtml(recipe.tempo_prep_min || 0)} min</p>
+                    <p class="ai-recipe-fit"><strong>Per:</strong> ${escapeHtml(peopleCount)} ${peopleCount === 1 ? 'persona' : 'persone'}</p>
                     <p class="ai-recipe-summary">${escapeHtml(recipe.summary || '')}</p>
                     <p class="ai-recipe-fit"><strong>Perche ti puo aiutare:</strong> ${escapeHtml(recipe.whyItFits || '')}</p>
+                    ${(recipe.allergeni_esclusi && recipe.allergeni_esclusi.length > 0) ? `
+                        <p class="ai-recipe-fit"><strong>Allergeni esclusi:</strong> ${escapeHtml(recipe.allergeni_esclusi.join(', '))}</p>
+                    ` : ''}
                     <div class="ai-recipe-section">
                         <strong>Ingredienti</strong>
                         <ul>
-                            ${(recipe.ingredients || []).map((item) => `<li>${escapeHtml(item)}</li>`).join('')}
+                            ${((recipe.ingredienti_tabella && recipe.ingredienti_tabella.length > 0)
+                                ? recipe.ingredienti_tabella.map((item) => `${item.n}${item.qty ? ` (${item.qty} g)` : ''}`)
+                                : (recipe.ingredients || [])).map((item) => `<li>${escapeHtml(item)}</li>`).join('')}
                         </ul>
                     </div>
                     <div class="ai-recipe-section">
                         <strong>Procedimento</strong>
                         <ol>
-                            ${(recipe.steps || []).map((step) => `<li>${escapeHtml(step)}</li>`).join('')}
+                            ${(recipe.procedimento || recipe.steps || []).map((step) => `<li>${escapeHtml(step)}</li>`).join('')}
                         </ol>
                     </div>
-                    <p class="ai-recipe-waste"><strong>Tip anti-spreco:</strong> ${escapeHtml(recipe.wasteTip || '')}</p>
+                    ${(recipe.substitutions && recipe.substitutions.length > 0) ? `
+                        <div class="ai-recipe-section">
+                            <strong>Sostituzioni compatibili</strong>
+                            <ul>
+                                ${recipe.substitutions.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
+                    ${(recipe.tecnica_cottura || recipe.healthyCooking) ? `
+                        <p class="ai-recipe-fit"><strong>Cottura consigliata:</strong> ${escapeHtml(recipe.tecnica_cottura || recipe.healthyCooking)}</p>
+                    ` : ''}
+                    ${recipe.nutrition ? `
+                        <div class="ai-recipe-section">
+                            <strong>Tabella nutrizionale</strong>
+                            <div class="ai-nutrition-table-wrap">
+                                <table class="ai-nutrition-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Ingrediente</th>
+                                            <th>Kcal</th>
+                                            <th>P</th>
+                                            <th>C</th>
+                                            <th>G</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${(recipe.nutrition.ingredients || []).map((row) => `
+                                            <tr>
+                                                <td>
+                                                    <div class="ai-nutrition-cell-main">${escapeHtml(row.name)}</div>
+                                                    ${row.note ? `<div class="ai-nutrition-row-note">${escapeHtml(row.note)}</div>` : ''}
+                                                </td>
+                                                <td>${escapeHtml(row.kcal)}</td>
+                                                <td>${escapeHtml(row.protein)}</td>
+                                                <td>${escapeHtml(row.carbs)}</td>
+                                                <td>${escapeHtml(row.fat)}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                    ${recipe.nutrition.total ? `
+                                        <tfoot>
+                                            <tr>
+                                                <td>Totale</td>
+                                                <td>${escapeHtml(recipe.nutrition.total.kcal)}</td>
+                                                <td>${escapeHtml(recipe.nutrition.total.protein)}</td>
+                                                <td>${escapeHtml(recipe.nutrition.total.carbs)}</td>
+                                                <td>${escapeHtml(recipe.nutrition.total.fat)}</td>
+                                            </tr>
+                                        </tfoot>
+                                    ` : ''}
+                                </table>
+                            </div>
+                            <p class="ai-nutrition-footnote">Valori medi indicativi: la composizione reale varia con materia prima, acqua, stagione, lavorazione e cottura.</p>
+                        </div>
+                    ` : ''}
+                    <p class="ai-recipe-waste"><strong>Tip anti-spreco:</strong> ${escapeHtml(recipe.anti_spreco || recipe.wasteTip || '')}</p>
                     <button type="button" class="ai-recipe-save-btn" onclick="salvaRicettaAI(${index})">Salva tra i miei piatti</button>
                 </article>
             `).join('')}
         </div>
+        ${hasNutritionTables ? renderAINutritionMethodology() : ''}
     `;
 }
 
@@ -3161,7 +3526,7 @@ function renderAIRecipeLoading(ingredients, people) {
     resultBox.style.display = 'block';
     resultBox.innerHTML = `
         <div class="ai-mode-loading">
-            <h4 class="ai-mode-title">Sto costruendo 3 idee per te...</h4>
+            <h4 class="ai-mode-title">Sto costruendo 4 idee per te...</h4>
             <p class="ai-mode-subtitle">Ingredienti analizzati: <strong>${escapeHtml(ingredients.join(', ') || 'dispensa di casa')}</strong> per <strong>${people}</strong> ${people === 1 ? 'persona' : 'persone'}.</p>
         </div>
     `;
@@ -3227,12 +3592,16 @@ async function generaRicettaAI() {
             throw new Error('La risposta AI non contiene ricette valide.');
         }
 
-        renderAIRecipeResults(payload.recipes.slice(0, 3), payload.meta || {});
+        renderAIRecipeResults(payload.recipes.slice(0, 4), {
+            ...(payload.meta || {}),
+            people: persone
+        });
     } catch (error) {
         console.error('AI Mode error:', error);
         const fallbackRecipes = getAIFallbackRecipes(ingredienti, persone, profilePayload);
         renderAIRecipeResults(fallbackRecipes, {
-            source: 'fallback'
+            source: 'fallback',
+            people: persone
         });
     }
 }
@@ -3390,7 +3759,7 @@ function salvaRicettaAI(index) {
     const recipe = aiGeneratedRecipes[index];
     if (!recipe) return;
 
-    const recipeName = String(recipe.title || '').trim();
+    const recipeName = String(recipe.nome_ricetta || recipe.title || '').trim();
     if (!recipeName) {
         alert('Questa ricetta AI non puo essere salvata.');
         return;
@@ -3423,15 +3792,164 @@ function salvaRicettaAI(index) {
             b12: 0
         })),
         aiGenerated: true,
+        aiId: recipe.id || '',
+        aiDifficulty: recipe.difficolta || '',
+        aiPrepTimeMin: Number(recipe.tempo_prep_min || 0),
+        aiExcludedAllergens: Array.isArray(recipe.allergeni_esclusi) ? [...recipe.allergeni_esclusi] : [],
         aiStyle: recipe.style || '',
         aiSummary: recipe.summary || '',
         aiWhyItFits: recipe.whyItFits || '',
-        aiSteps: Array.isArray(recipe.steps) ? [...recipe.steps] : [],
-        aiWasteTip: recipe.wasteTip || ''
+        aiSubstitutions: Array.isArray(recipe.substitutions) ? [...recipe.substitutions] : [],
+        aiHealthyCooking: recipe.tecnica_cottura || recipe.healthyCooking || '',
+        aiSteps: Array.isArray(recipe.procedimento) ? [...recipe.procedimento] : (Array.isArray(recipe.steps) ? [...recipe.steps] : []),
+        aiWasteTip: recipe.anti_spreco || recipe.wasteTip || '',
+        aiNutrition: recipe.nutrition || null
     };
 
     ricetteSalvate.push(savedRecipe);
     localStorage.setItem('nv_ricette', JSON.stringify(ricetteSalvate));
     aggiornaListaRicetteSalvate();
     alert('Ricetta AI salvata nei tuoi piatti!');
+}
+
+function setScannerVisibility(visible) {
+    const reader = document.getElementById('reader');
+    if (reader) {
+        reader.style.display = visible ? 'block' : 'none';
+    }
+
+    const scanButton = document.querySelector('.scan-trigger-btn');
+    if (scanButton) {
+        scanButton.textContent = visible ? 'Chiudi scanner' : '📷 Scansiona';
+    }
+}
+
+async function fermaScanner() {
+    barcodeScanLocked = false;
+
+    if (barcodeScanner) {
+        if (barcodeScannerActive) {
+            try {
+                await barcodeScanner.stop();
+            } catch (error) {
+                console.warn('Stop scanner warning:', error);
+            }
+        }
+
+        try {
+            await barcodeScanner.clear();
+        } catch (error) {
+            console.warn('Clear scanner warning:', error);
+        }
+    }
+
+    barcodeScannerActive = false;
+    barcodeScanner = null;
+    setScannerVisibility(false);
+}
+
+function mapOpenFoodFactsProduct(product, fallbackCode = '') {
+    if (!product || typeof product !== 'object' || !product.nutriments) {
+        return null;
+    }
+
+    return {
+        nome: String(product.product_name_it || product.product_name || `Prodotto ${fallbackCode || 'scannerizzato'}`).trim(),
+        kcal: Number(product.nutriments['energy-kcal_100g'] || 0),
+        proteine: Number(product.nutriments.proteins_100g || 0),
+        carboidrati: Number(product.nutriments.carbohydrates_100g || 0),
+        grassi: Number(product.nutriments.fat_100g || 0),
+        fe: 0,
+        ca: 0,
+        b12: 0,
+        isOFF: true
+    };
+}
+
+async function gestisciBarcodeScansionato(barcode) {
+    const normalizedCode = String(barcode || '').trim();
+    if (!normalizedCode) {
+        alert('Codice a barre non valido.');
+        return;
+    }
+
+    try {
+        const response = await fetch(`https://it.openfoodfacts.org/api/v0/product/${encodeURIComponent(normalizedCode)}.json`);
+        const data = await response.json();
+        const mappedFood = data?.status === 1 ? mapOpenFoodFactsProduct(data.product, normalizedCode) : null;
+
+        if (!mappedFood) {
+            alert('Prodotto non trovato.');
+            return;
+        }
+
+        selectedFood = mappedFood;
+        document.getElementById('add-panel').style.display = 'block';
+        document.getElementById('selected-name').innerText = mappedFood.nome;
+        document.getElementById('qty').value = 100;
+        updateSelectedFoodPreview();
+    } catch (error) {
+        console.error('Errore nel recupero prodotto scannerizzato:', error);
+        alert('Errore durante il recupero del prodotto.');
+    }
+}
+
+async function avviaScanner() {
+    if (isFutureDay(activeDate)) {
+        alert(getDiaryDateErrorMessage(activeDate));
+        return;
+    }
+
+    if (barcodeScannerActive) {
+        await fermaScanner();
+        return;
+    }
+
+    if (typeof Html5Qrcode === 'undefined') {
+        alert('Scanner barcode non disponibile in questo momento.');
+        return;
+    }
+
+    const reader = document.getElementById('reader');
+    if (!reader) {
+        return;
+    }
+
+    setScannerVisibility(true);
+    barcodeScanner = new Html5Qrcode('reader');
+    barcodeScanLocked = false;
+
+    try {
+        await barcodeScanner.start(
+            { facingMode: 'environment' },
+            {
+                fps: 10,
+                qrbox: { width: 260, height: 140 },
+                aspectRatio: 1.777,
+                formatsToSupport: [
+                    Html5QrcodeSupportedFormats.EAN_13,
+                    Html5QrcodeSupportedFormats.EAN_8,
+                    Html5QrcodeSupportedFormats.UPC_A,
+                    Html5QrcodeSupportedFormats.UPC_E,
+                    Html5QrcodeSupportedFormats.CODE_128
+                ]
+            },
+            async (decodedText) => {
+                if (barcodeScanLocked) {
+                    return;
+                }
+
+                barcodeScanLocked = true;
+                await fermaScanner();
+                await gestisciBarcodeScansionato(decodedText);
+            },
+            () => {}
+        );
+
+        barcodeScannerActive = true;
+    } catch (error) {
+        console.error('Errore avvio scanner:', error);
+        await fermaScanner();
+        alert('Impossibile avviare la fotocamera.');
+    }
 }

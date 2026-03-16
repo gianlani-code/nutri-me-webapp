@@ -1,0 +1,42 @@
+{
+  "version": "1.0",
+  "category": "recupero-scarti-e-avanzati",
+  "ideas": [
+    {
+      "source": "bucce e gambi vegetali",
+      "reuse": ["brodi", "infusi salati", "fondi", "chips leggere", "basi per salse"]
+    },
+    {
+      "source": "pane secco",
+      "reuse": ["crumble salato", "zuppe", "polpette", "gratinature", "panzanella evoluta"]
+    },
+    {
+      "source": "pane ammollato e latte aromatico di recupero",
+      "reuse": ["terrine e polpettoni di recupero", "ripieni morbidi", "creme e vellutate se il latte viene filtrato", "basi leganti per impasti salati"]
+    },
+    {
+      "source": "legumi cotti avanzati",
+      "reuse": ["biscotti rustici dolci", "brownie morbidi", "creme dessert", "burger e polpette", "impasti leganti ad alto recupero"]
+    },
+    {
+      "source": "riso, cereali o patate gia cotti",
+      "reuse": ["bowl", "frittate", "sformati", "insalate fredde", "ripieni"]
+    },
+    {
+      "source": "avanzi di carni cotte o salumi",
+      "reuse": ["terrine", "ripieni", "polpette", "sughi saporiti", "sformati rustici"]
+    },
+    {
+      "source": "cioccolato avanzato o stagionale in esubero",
+      "reuse": ["biscotti", "ganache", "torte da credenza", "topping croccanti", "cubetti da congelare per usi futuri"]
+    },
+    {
+      "source": "verdure appassite ma sane",
+      "reuse": ["vellutate", "ripassi in padella", "ripieni", "sughi vegetali", "pesti rustici"]
+    },
+    {
+      "source": "erbe aromatiche in fine vita",
+      "reuse": ["mazzetti aromatici", "oli profumati", "marinature", "sali aromatici", "brodi"]
+    }
+  ]
+}
