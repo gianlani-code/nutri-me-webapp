@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
 <body>
 
@@ -44,11 +46,11 @@
                 <input type="number" id="wizard-weight" placeholder="Peso in kg" min="20" max="300" />
                 <label>Altezza (cm)<span style="color:#000;">*</span></label>
                 <input type="number" id="wizard-height" placeholder="Altezza in cm" min="80" max="250" />
+                <label>Quanta acqua bevi al giorno (L)?<span style="color:#000;">*</span></label>
+                <input type="number" id="wizard-water" placeholder="Litri/giorno" step="0.1" min="0" max="10" />
             </div>
 
             <div class="wizard-step" data-step="2">
-                <label>Quanta acqua bevi al giorno (L)?<span style="color:#000;">*</span></label>
-                <input type="number" id="wizard-water" placeholder="Litri/giorno" step="0.1" min="0" max="10" />
                 <label>Allergie</label>
                 <input type="text" id="wizard-allergies" placeholder="lattosio, glutine" />
                 <label>Intolleranze</label>
@@ -81,6 +83,13 @@
                 <input type="number" id="wizard-meals" placeholder="Numero pasti" min="1" max="10" />
                 <label>Punto debole</label>
                 <input type="text" id="wizard-weakpoint" placeholder="sonnolenza post pranzo" />
+                <label>Fumi?</label>
+                <select id="wizard-smoke">
+                    <option value="">Seleziona</option>
+                    <option value="si">Si</option>
+                    <option value="no">No</option>
+                    <option value="qualche_volta">Qualche volta</option>
+                </select>
             </div>
 
             <div class="wizard-step" data-step="5">
@@ -119,34 +128,25 @@
 
     <main id="main-app" style="display:none;">
         <nav class="side-nav">
-            <button onclick="mostraSezione('home')" class="nav-item">
-                <div class="icon">🏠</div>
-                <span>Home</span>
+            <button onclick="mostraSezione('home')" class="nav-item" aria-label="Home">
+                <div class="icon"><i data-lucide="house"></i></div>
             </button>
-            <button onclick="mostraSezione('diario')" class="nav-item">
-                <div class="icon">📅</div>
-                <span>Diario</span>
+            <button onclick="mostraSezione('diario')" class="nav-item" aria-label="Diario">
+                <div class="icon"><i data-lucide="notebook-pen"></i></div>
             </button>
-            <button onclick="mostraSezione('cronologia')" class="nav-item">
-                <div class="icon">🕘</div>
-                <span>Cronologia</span>
+            <button onclick="mostraSezione('pasti-rapidi')" class="nav-item" aria-label="Ricette">
+                <div class="icon"><i data-lucide="chef-hat"></i></div>
             </button>
-            <button onclick="mostraSezione('pasti-rapidi')" class="nav-item">
-                <div class="icon">🍳</div>
-                <span>Ricette</span>
-            </button>
-            <button onclick="mostraSezione('profilo')" class="nav-item logout">
+            <button onclick="mostraSezione('profilo')" class="nav-item logout" aria-label="Profilo">
                 <div class="nav-photo-wrapper">
                     <img id="user-nav-photo" src="avatars/1.jpg" alt="Profilo">
                 </div>
-                <span>Profilo</span>
             </button>
         </nav>
 
         <section id="home" class="tab-content">
             <div id="home-screen" class="screen active">
                 <div class="home-main-content">
-                        <div id="home-profile-summary" class="diary-profile-summary home-profile-summary"></div>
                         <header class="dash-header">
                             <div>
                                 <h1>Dashboard</h1>
@@ -184,27 +184,27 @@
                                 <div class="progress-bar"><div id="bar-carb" style="width: 0%"></div></div>
                             </div>
                             <div class="macro-card prot">
-                        <div class="macro-info">
-                            <label>Proteine</label>
-                            <span id="home-prot">0/0 g</span>
+                                <div class="macro-info">
+                                    <label>Proteine</label>
+                                    <span id="home-prot">0/0 g</span>
+                                </div>
+                                <div class="progress-bar"><div id="bar-prot" style="width: 0%"></div></div>
+                            </div>
+                            <div class="macro-card fat">
+                                <div class="macro-info">
+                                    <label>Grassi</label>
+                                    <span id="home-fat">0/0 g</span>
+                                </div>
+                                <div class="progress-bar"><div id="bar-fat" style="width: 0%"></div></div>
+                            </div>
                         </div>
-                        <div class="progress-bar"><div id="bar-prot" style="width: 0%"></div></div>
-                    </div>
-                    <div class="macro-card fat">
-                        <div class="macro-info">
-                            <label>Grassi</label>
-                            <span id="home-fat">0/0 g</span>
-                        </div>
-                        <div class="progress-bar"><div id="bar-fat" style="width: 0%"></div></div>
-                    </div>
-                </div>
 
                 <div class="micro-targets">
                     <h3>Target Micronutrienti</h3>
 
                     <div class="micro-row">
                         <div class="micro-row-top">
-                            <div class="micro-row-title"><span>💧</span><span>Acqua</span></div>
+                            <div class="micro-row-title"><i data-lucide="droplets" class="micro-icon"></i><span>Acqua</span></div>
                             <strong id="val-water">0.0 / 7000 ml</strong>
                         </div>
                         <div class="micro-progress"><div id="bar-water" style="width:0%"></div></div>
@@ -212,7 +212,7 @@
 
                     <div class="micro-row">
                         <div class="micro-row-top">
-                            <div class="micro-row-title"><span>🩸</span><span>Ferro</span></div>
+                            <div class="micro-row-title"><i data-lucide="droplet" class="micro-icon"></i><span>Ferro</span></div>
                             <strong id="val-fe">0 / 14 mg</strong>
                         </div>
                         <div class="micro-progress"><div id="bar-fe" style="width:0%"></div></div>
@@ -220,7 +220,7 @@
 
                     <div class="micro-row">
                         <div class="micro-row-top">
-                            <div class="micro-row-title"><span>🥛</span><span>Calcio</span></div>
+                            <div class="micro-row-title"><i data-lucide="milk" class="micro-icon"></i><span>Calcio</span></div>
                             <strong id="val-ca">0 / 1000 mg</strong>
                         </div>
                         <div class="micro-progress"><div id="bar-ca" style="width:0%"></div></div>
@@ -228,7 +228,7 @@
 
                     <div class="micro-row">
                         <div class="micro-row-top">
-                            <div class="micro-row-title"><span>🧪</span><span>Magnesio</span></div>
+                            <div class="micro-row-title"><i data-lucide="flask-conical" class="micro-icon"></i><span>Magnesio</span></div>
                             <strong id="val-mg">0 / 300 mg</strong>
                         </div>
                         <div class="micro-progress"><div id="bar-mg" style="width:0%"></div></div>
@@ -236,7 +236,7 @@
 
                     <div class="micro-row">
                         <div class="micro-row-top">
-                            <div class="micro-row-title"><span>🍌</span><span>Potassio</span></div>
+                            <div class="micro-row-title"><i data-lucide="banana" class="micro-icon"></i><span>Potassio</span></div>
                             <strong id="val-k">0 / 3500 mg</strong>
                         </div>
                         <div class="micro-progress"><div id="bar-k" style="width:0%"></div></div>
@@ -244,7 +244,7 @@
 
                     <div class="micro-row">
                         <div class="micro-row-top">
-                            <div class="micro-row-title"><span>🧬</span><span>Vit. B12</span></div>
+                            <div class="micro-row-title"><i data-lucide="dna" class="micro-icon"></i><span>Vit. B12</span></div>
                             <strong id="val-b12">0 / 2.4 µg</strong>
                         </div>
                         <div class="micro-progress"><div id="bar-b12" style="width:0%"></div></div>
@@ -252,7 +252,7 @@
 
                     <div class="micro-row">
                         <div class="micro-row-top">
-                            <div class="micro-row-title"><span>🌿</span><span>Acido folico</span></div>
+                            <div class="micro-row-title"><i data-lucide="leaf" class="micro-icon"></i><span>Acido folico</span></div>
                             <strong id="val-fol">0 / 400 µg</strong>
                         </div>
                         <div class="micro-progress"><div id="bar-fol" style="width:0%"></div></div>
@@ -271,6 +271,8 @@
                         <strong id="water-goal-display">0.0 L</strong>
                     </div>
                 </div>
+
+                <div class="section-brand-footer" aria-label="Nutri-Me">NUTRI-ME</div>
             </div>
         </section>
 
@@ -290,7 +292,7 @@
                 <div class="search-box diary-search-box">
                     <div class="diary-search-row">
                         <input type="text" id="food-search" placeholder="Cerca cibo o ricetta..." oninput="cercaAlimento(event, 'main')">
-                        <button type="button" class="scan-trigger-btn" onclick="avviaScanner()">📷 Scansiona</button>
+                        <button type="button" class="scan-trigger-btn" onclick="avviaScansioneIntelligente()"><i data-lucide="scan-line" style="width:15px;height:15px;vertical-align:middle;margin-right:5px;"></i>Scansiona</button>
                     </div>
                     <div id="reader" class="barcode-reader" style="display:none;"></div>
                     <div id="search-results" class="search-dropdown"></div>
@@ -323,16 +325,11 @@
                 <div id="calendar-grid" class="calendar-grid"></div>
                 <p id="future-date-note" class="future-date-note" style="display:none;">*nel caso in cui venga selezionata una data futura rispetto a quella di oggi non si potra aggiungere ingredienti o pasti.</p>
             </div>
+
+            <div class="section-brand-footer" aria-label="Nutri-Me">NUTRI-ME</div>
         </section>
 
-        <section id="cronologia" class="tab-content" style="display:none;">
-            <div class="organic-panel chronology-panel">
-                <div class="section-header chronology-header">
-                    <h2>CRONOLOGIA</h2>
-                </div>
-                <div id="chronology-list" class="chronology-list"></div>
-            </div>
-        </section>
+        <section id="cronologia" class="tab-content" style="display:none;"></section>
 
         <section id="pasti-rapidi" class="tab-content" style="display:none;">
             <div class="organic-panel chef-mode-panel" style="margin: 20px auto; background: #f8f9fa; border-radius: 15px; border-left: 4px solid var(--info);">
@@ -409,11 +406,18 @@
                 <button onclick="generaRicettaAI()" class="btn-main orange" style="margin-top: 15px;">GENERA 4 RICETTE</button>
                 <div id="ai-recipe-result" style="display:none; margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 15px; border-left: 4px solid var(--info);"></div>
             </div>
+
+            <div class="section-brand-footer" aria-label="Nutri-Me">NUTRI-ME</div>
         </section>
 
         <section id="profilo" class="tab-content" style="display:none;">
             <div class="organic-panel">
-                <h3 class="panel-title" style="color: #0074A6; text-transform: uppercase; justify-content: center; width: 100%;">PROFILO</h3>
+                <div class="profile-title-row">
+                    <h3 class="panel-title" style="color: #0074A6; text-transform: uppercase; justify-content: center; width: 100%;">PROFILO</h3>
+                    <button onclick="toggleDarkMode()" id="mini-theme-toggle" class="mini-theme-btn" aria-label="Cambia tema">
+                        <i data-lucide="moon"></i>
+                    </button>
+                </div>
 
                 <div class="profile-avatar-wrapper">
                     <img id="profile-avatar-preview" src="avatars/1.jpg" alt="Avatar profilo">
@@ -474,7 +478,15 @@
                     </div>
                 </details>
 
+                <details class="profile-editor">
+                    <summary class="btn-main orange profile-editor-toggle">CRONOLOGIA</summary>
+                    <div class="profile-editor-content">
+                        <div id="chronology-list" class="chronology-list"></div>
+                    </div>
+                </details>
+
                 <button onclick="apriConfermaResetProfilo()" style="background-color: #dc3545; color: white; margin-top: 20px;" class="btn-main">Resetta il mio profilo</button>
+                <div class="section-brand-footer" aria-label="Nutri-Me">NUTRI-ME</div>
             </div>
         </section>
 

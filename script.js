@@ -1811,6 +1811,8 @@ let aiGeneratedRecipes = [];
 let barcodeScanner = null;
 let barcodeScannerActive = false;
 let barcodeScanLocked = false;
+let latestSmartScanFood = null;
+let smartScanFallbackTimer = null;
 
 function formatLocalIsoDate(date) {
     const year = date.getFullYear();
@@ -2065,6 +2067,16 @@ function initApp(profile) {
 }
 
 window.onload = () => {
+    // Restore saved theme (dark/light)
+    const savedTheme = localStorage.getItem('nv_theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    if (savedTheme === 'dark') {
+        const icon = document.querySelector('#mini-theme-toggle [data-lucide]');
+        if (icon) icon.setAttribute('data-lucide', 'sun');
+    }
+    // Initialise Lucide icons
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
     setupAvatarFallbacks();
     const storedProfile = JSON.parse(localStorage.getItem('nv_profilo'));
     if (!storedProfile || isFirstAccess()) {
@@ -2113,9 +2125,9 @@ function showWizardStep(step) {
     if (prevBtn) prevBtn.disabled = step === 1;
     if (nextBtn) nextBtn.textContent = step === wizardTotalSteps ? 'VAI!' : 'Avanti';
 
-    // Step 4: mostra skip, altri: nascondi
+    // Step opzionali: 2 e 4
     if (skipBtn) {
-        if (step === 4) {
+        if (step === 2 || step === 4) {
             skipBtn.style.display = 'inline-block';
         } else {
             skipBtn.style.display = 'none';
@@ -2128,12 +2140,17 @@ function validateStep(step) {
     const stepEl = document.querySelector(`.wizard-step[data-step='${step}']`);
     if (!stepEl) return true;
 
-    const mandatorySteps = [1, 2, 3, 5, 6];
+    if (step === 5 && !selectedAvatarPath) {
+        alert('Seleziona un avatar prima di procedere.');
+        return false;
+    }
+
+    const mandatorySteps = [1, 3, 5, 6];
     const isMandatory = mandatorySteps.includes(step);
     const inputs = stepEl.querySelectorAll('input, select');
 
-    if (step === 4) {
-        // Step 4: può procedere anche senza risposte
+    if (step === 2 || step === 4) {
+        // Step 2 e 4: possono procedere anche senza risposte
         return true;
     }
 
@@ -2141,21 +2158,8 @@ function validateStep(step) {
         return true;
     }
 
-    if (step === 2) {
-        // Predefinite: allergie, intolleranze, regime alimentare
-        const allergies = document.getElementById('wizard-allergies');
-        if (!allergies.value) allergies.value = 'non allergico a sostanze o alimenti';
-        const intolerances = document.getElementById('wizard-intolerances');
-        if (!intolerances.value) intolerances.value = 'non intollerante ad alimenti';
-        const diet = document.getElementById('wizard-diet');
-        if (!diet.value) diet.value = 'regime alimentare non specificato';
-    }
     for (const input of inputs) {
         const value = (input.value || '').toString().trim();
-        // Per step 2, ignora allergie/intolleranze/diet se vuote (sono già valorizzate sopra)
-        if (step === 2 && (input.id === 'wizard-allergies' || input.id === 'wizard-intolerances' || input.id === 'wizard-diet')) {
-            continue;
-        }
         if (value === '') {
             alert('Compila tutti i campi obbligatori prima di procedere.');
             input.focus();
@@ -2194,6 +2198,16 @@ function skipStep() {
     if (wizardCurrentStep < wizardTotalSteps) {
         wizardCurrentStep += 1;
         showWizardStep(wizardCurrentStep);
+        if (wizardCurrentStep === 6) {
+            mostraRiepilogo();
+            const nextBtn = document.getElementById('next-btn');
+            if (nextBtn) {
+                nextBtn.textContent = 'Entra nella dashboard';
+                nextBtn.onclick = function() {
+                    finalizzaProfilo();
+                };
+            }
+        }
     }
 }
 
@@ -2248,11 +2262,12 @@ function finalizzaProfilo() {
         jobType: document.getElementById('wizard-job').value,
         workoutsPerWeek: parseInt(document.getElementById('wizard-workouts').value, 10),
         goal: document.getElementById('wizard-goal').value,
-        diet: document.getElementById('wizard-diet').value,
-        allergies: document.getElementById('wizard-allergies').value,
-        intolerances: document.getElementById('wizard-intolerances').value,
-        mealsPerDay: parseInt(document.getElementById('wizard-meals').value, 10),
-        weakPoint: document.getElementById('wizard-weakpoint').value,
+        diet: document.getElementById('wizard-diet').value || 'regime alimentare non specificato',
+        allergies: document.getElementById('wizard-allergies').value || 'non allergico a sostanze o alimenti',
+        intolerances: document.getElementById('wizard-intolerances').value || 'non intollerante ad alimenti',
+        mealsPerDay: parseInt(document.getElementById('wizard-meals').value, 10) || 0,
+        weakPoint: document.getElementById('wizard-weakpoint').value || 'non specificato',
+        smoke: document.getElementById('wizard-smoke').value || 'non specificato',
         waterIntake: parseFloat(document.getElementById('wizard-water').value)
     };
 
@@ -2484,6 +2499,7 @@ function mostraSezione(tabId) {
     }
     if (tabId === 'profilo') {
         caricaDatiProfilo();
+        renderCronologia();
     }
 }
 
@@ -3827,6 +3843,11 @@ function setScannerVisibility(visible) {
 async function fermaScanner() {
     barcodeScanLocked = false;
 
+    if (smartScanFallbackTimer) {
+        clearTimeout(smartScanFallbackTimer);
+        smartScanFallbackTimer = null;
+    }
+
     if (barcodeScanner) {
         if (barcodeScannerActive) {
             try {
@@ -3849,16 +3870,26 @@ async function fermaScanner() {
 }
 
 function mapOpenFoodFactsProduct(product, fallbackCode = '') {
-    if (!product || typeof product !== 'object' || !product.nutriments) {
+    if (!product || typeof product !== 'object') {
         return null;
     }
 
+    const nutriments = product.nutriments || {};
+    const kcalValue = Number(
+        nutriments['energy-kcal_100g']
+        || nutriments['energy-kcal']
+        || 0
+    );
+    const kjValue = Number(nutriments.energy_100g || nutriments.energy || 0);
+    const kcalFromKj = kjValue > 0 ? (kjValue / 4.184) : 0;
+    const kcal = kcalValue > 0 ? kcalValue : kcalFromKj;
+
     return {
         nome: String(product.product_name_it || product.product_name || `Prodotto ${fallbackCode || 'scannerizzato'}`).trim(),
-        kcal: Number(product.nutriments['energy-kcal_100g'] || 0),
-        proteine: Number(product.nutriments.proteins_100g || 0),
-        carboidrati: Number(product.nutriments.carbohydrates_100g || 0),
-        grassi: Number(product.nutriments.fat_100g || 0),
+        kcal: Number.isFinite(kcal) ? kcal : 0,
+        proteine: Number(nutriments.proteins_100g || 0),
+        carboidrati: Number(nutriments.carbohydrates_100g || 0),
+        grassi: Number(nutriments.fat_100g || 0),
         fe: 0,
         ca: 0,
         b12: 0,
@@ -3866,20 +3897,413 @@ function mapOpenFoodFactsProduct(product, fallbackCode = '') {
     };
 }
 
+const KAGGLE_DATASET_ENDPOINTS = [
+    '/data/kaggle-products.json',
+    'data/kaggle-products.json',
+    '/kaggle-products.json',
+    'kaggle-products.json'
+];
+
+let kaggleBarcodeIndex = new Map();
+let kaggleProductsCache = [];
+let kaggleDatasetLoadAttempted = false;
+
+function toNumberSafe(value) {
+    if (value === null || value === undefined || value === '') return 0;
+    if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+
+    const normalized = String(value)
+        .replace(/,/g, '.')
+        .replace(/[^0-9.-]/g, '')
+        .trim();
+
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function pickFirstDefined(obj, keys, fallback = '') {
+    for (const key of keys) {
+        if (!obj || !(key in obj)) continue;
+        const value = obj[key];
+        if (value === null || value === undefined) continue;
+        if (typeof value === 'string' && value.trim() === '') continue;
+        return value;
+    }
+    return fallback;
+}
+
+function collectKaggleBarcodes(product) {
+    const rawValues = [
+        pickFirstDefined(product, ['code']),
+        pickFirstDefined(product, ['barcode']),
+        pickFirstDefined(product, ['barcodes']),
+        pickFirstDefined(product, ['ean']),
+        pickFirstDefined(product, ['ean13']),
+        pickFirstDefined(product, ['upc']),
+        pickFirstDefined(product, ['gtin'])
+    ].filter(Boolean);
+
+    const parsed = [];
+    rawValues.forEach((raw) => {
+        const pieces = String(raw).split(/[|,;\s]+/g).filter(Boolean);
+        pieces.forEach((piece) => {
+            const digits = String(piece).replace(/\D/g, '');
+            if (digits.length >= 7) parsed.push(digits);
+        });
+    });
+
+    return [...new Set(parsed)];
+}
+
+function mapKaggleProductToScanResult(product, note = 'Fonte dataset Kaggle (locale)') {
+    const nutriScoreRaw = pickFirstDefined(product, ['nutriscore_grade', 'nutriscore', 'nutri_score_grade'], '?');
+    const nutriScore = String(nutriScoreRaw || '?').toUpperCase().replace(/[^A-E]/g, '') || '?';
+
+    const sodiumMgDirect = toNumberSafe(pickFirstDefined(product, ['sodium_mg_100g', 'sodium_mg']));
+    const sodiumG = toNumberSafe(pickFirstDefined(product, ['sodium_100g', 'sodium']));
+    const saltG = toNumberSafe(pickFirstDefined(product, ['salt_100g', 'salt']));
+    const sodiumMg = sodiumMgDirect > 0
+        ? sodiumMgDirect
+        : (sodiumG > 0 ? sodiumG * 1000 : (saltG > 0 ? saltG * 393 : 0));
+
+    return {
+        alimento: String(pickFirstDefined(product, ['product_name_it', 'product_name', 'food_name', 'name', 'title'], 'Alimento')).trim(),
+        descrizione: String(pickFirstDefined(product, ['brands', 'brand', 'brand_name', 'brand_owner', 'food_category', 'category', 'food_type', 'marca'], '')).trim(),
+        per_100g: {
+            kcal: toNumberSafe(pickFirstDefined(product, ['energy-kcal_100g', 'energy_kcal_100g', 'kcal_100g', 'kcal', 'energy_kcal', 'calories'])),
+            proteine: toNumberSafe(pickFirstDefined(product, ['proteins_100g', 'proteine_100g', 'protein_100g', 'proteins', 'proteine', 'protein_g'])),
+            carboidrati: toNumberSafe(pickFirstDefined(product, ['carbohydrates_100g', 'carboidrati_100g', 'carbs_100g', 'carbohydrates', 'carboidrati', 'available_carbohydrates', 'carbs_g'])),
+            zuccheri: toNumberSafe(pickFirstDefined(product, ['sugars_100g', 'zuccheri_100g', 'sugars', 'zuccheri', 'soluble_sugars', 'sugar_g'])),
+            grassi: toNumberSafe(pickFirstDefined(product, ['fat_100g', 'grassi_100g', 'fats_100g', 'fat', 'grassi', 'lipids', 'fat_g'])),
+            grassi_saturi: toNumberSafe(pickFirstDefined(product, ['saturated-fat_100g', 'saturated_fat_100g', 'grassi_saturi_100g', 'saturated_fat', 'grassi_saturi', 'saturated_fat_g'])),
+            fibre: toNumberSafe(pickFirstDefined(product, ['fiber_100g', 'fibre_100g', 'fibra_100g', 'fiber', 'fibre', 'fibra', 'total_fiber', 'fiber_g'])),
+            sodio_mg: sodiumMg
+        },
+        nutriscore: nutriScore,
+        note,
+        source: 'kaggle'
+    };
+}
+
+function mapKaggleProductToFoodEntry(product, fallbackCode = '') {
+    const scanResult = mapKaggleProductToScanResult(product, `Fonte dataset Kaggle (barcode ${fallbackCode || 'n/d'})`);
+    return {
+        nome: scanResult.alimento,
+        kcal: Number(scanResult.per_100g.kcal || 0),
+        proteine: Number(scanResult.per_100g.proteine || 0),
+        carboidrati: Number(scanResult.per_100g.carboidrati || 0),
+        grassi: Number(scanResult.per_100g.grassi || 0),
+        fe: 0,
+        ca: 0,
+        b12: 0,
+        isOFF: false,
+        scanResult
+    };
+}
+
+async function ensureKaggleBarcodeIndexLoaded() {
+    if (kaggleDatasetLoadAttempted) {
+        return kaggleBarcodeIndex;
+    }
+
+    kaggleDatasetLoadAttempted = true;
+
+    for (const endpoint of KAGGLE_DATASET_ENDPOINTS) {
+        try {
+            const response = await fetch(endpoint, { cache: 'no-store' });
+            if (!response.ok) continue;
+
+            const payload = await response.json();
+            const rows = Array.isArray(payload)
+                ? payload
+                : (Array.isArray(payload?.products) ? payload.products : (Array.isArray(payload?.rows) ? payload.rows : []));
+
+            if (!Array.isArray(rows) || rows.length === 0) {
+                continue;
+            }
+
+            kaggleProductsCache = rows;
+            const index = new Map();
+
+            rows.forEach((row) => {
+                if (!row || typeof row !== 'object') return;
+                const barcodes = collectKaggleBarcodes(row);
+                barcodes.forEach((barcode) => {
+                    if (!index.has(barcode)) {
+                        index.set(barcode, row);
+                    }
+                });
+            });
+
+            kaggleBarcodeIndex = index;
+            console.info(`Kaggle dataset caricato: ${rows.length} record, ${index.size} barcode indicizzati da ${endpoint}`);
+            break;
+        } catch (error) {
+            console.warn('Impossibile caricare dataset Kaggle:', endpoint, error);
+        }
+    }
+
+    return kaggleBarcodeIndex;
+}
+
+async function findKaggleProductByBarcodeCandidates(codeCandidates) {
+    const index = await ensureKaggleBarcodeIndexLoaded();
+    if (!index || index.size === 0) return null;
+
+    for (const candidate of codeCandidates) {
+        const digits = String(candidate || '').replace(/\D/g, '');
+        if (!digits) continue;
+
+        if (index.has(digits)) {
+            return { product: index.get(digits), code: digits };
+        }
+    }
+
+    return null;
+}
+
+function scoreKaggleProductAgainstOcr(product, normalizedOcr, terms) {
+    const name = normalizeOcrText(pickFirstDefined(product, ['product_name_it', 'product_name', 'food_name', 'name', 'title']));
+    const brand = normalizeOcrText(pickFirstDefined(product, ['brands', 'brand', 'brand_name', 'brand_owner']));
+    if (!name && !brand) return 0;
+
+    let score = 0;
+    if (name && normalizedOcr.includes(name)) score += 40;
+    if (brand && normalizedOcr.includes(brand)) score += 22;
+
+    const sourceTerms = Array.isArray(terms) ? terms : [];
+    sourceTerms.forEach((term) => {
+        const t = normalizeOcrText(term);
+        if (!t || t.length < 3) return;
+        if (name.includes(t)) score += 6;
+        if (brand.includes(t)) score += 3;
+    });
+
+    if (toNumberSafe(product?.energy_kcal_100g || product?.calories) > 0) score += 2;
+    return score;
+}
+
+async function findKaggleProductByOcrText(ocrText, terms) {
+    await ensureKaggleBarcodeIndexLoaded();
+    if (!Array.isArray(kaggleProductsCache) || kaggleProductsCache.length === 0) {
+        return null;
+    }
+
+    const normalizedOcr = normalizeOcrText(ocrText);
+    if (!normalizedOcr) return null;
+
+    let bestProduct = null;
+    let bestScore = 0;
+
+    for (const product of kaggleProductsCache) {
+        const score = scoreKaggleProductAgainstOcr(product, normalizedOcr, terms);
+        if (score > bestScore) {
+            bestScore = score;
+            bestProduct = product;
+        }
+    }
+
+    if (bestProduct && bestScore >= 12) {
+        return { product: bestProduct, score: bestScore };
+    }
+
+    return null;
+}
+
+function getBarcodeCandidates(barcode) {
+    const raw = String(barcode || '').trim();
+    const digitsOnly = raw.replace(/\D/g, '');
+    const candidates = new Set();
+
+    if (raw) candidates.add(raw);
+    if (digitsOnly) candidates.add(digitsOnly);
+
+    // UPC-A (12) spesso va cercato come EAN-13 con zero iniziale.
+    if (digitsOnly.length === 12) {
+        candidates.add(`0${digitsOnly}`);
+    }
+
+    // A volte un EAN-13 con zero iniziale corrisponde a UPC-A nel DB.
+    if (digitsOnly.length === 13 && digitsOnly.startsWith('0')) {
+        candidates.add(digitsOnly.slice(1));
+    }
+
+    const upcaFromUpce = convertUpceLikeCodeToUpca(digitsOnly);
+    if (upcaFromUpce) {
+        candidates.add(upcaFromUpce);
+        candidates.add(`0${upcaFromUpce}`);
+    }
+
+    // Alcuni lettori restituiscono EAN-8 senza check o con prefissi strani.
+    if (digitsOnly.length === 7) {
+        candidates.add(`0${digitsOnly}`);
+    }
+
+    return [...candidates];
+}
+
+function computeUpcaCheckDigit(upca11) {
+    if (!/^\d{11}$/.test(upca11)) {
+        return '';
+    }
+
+    let oddSum = 0;
+    let evenSum = 0;
+
+    for (let i = 0; i < upca11.length; i += 1) {
+        const n = Number(upca11[i]);
+        if ((i + 1) % 2 === 1) {
+            oddSum += n;
+        } else {
+            evenSum += n;
+        }
+    }
+
+    const total = (oddSum * 3) + evenSum;
+    const check = (10 - (total % 10)) % 10;
+    return String(check);
+}
+
+function convertUpceLikeCodeToUpca(digits) {
+    // Supporta UPC-E a 6 cifre, 7 cifre (NS+6) o 8 cifre (NS+6+check).
+    if (!/^\d{6,8}$/.test(digits)) {
+        return '';
+    }
+
+    let numberSystem = '0';
+    let upceBody = '';
+    let checkDigit = '';
+
+    if (digits.length === 8) {
+        numberSystem = digits[0];
+        upceBody = digits.slice(1, 7);
+        checkDigit = digits[7];
+    } else if (digits.length === 7) {
+        numberSystem = digits[0];
+        upceBody = digits.slice(1);
+    } else {
+        upceBody = digits;
+    }
+
+    if (!/^[01]$/.test(numberSystem) || !/^\d{6}$/.test(upceBody)) {
+        return '';
+    }
+
+    const [d1, d2, d3, d4, d5, d6] = upceBody.split('');
+    let upca11 = '';
+
+    if (d6 === '0' || d6 === '1' || d6 === '2') {
+        upca11 = `${numberSystem}${d1}${d2}${d6}0000${d3}${d4}${d5}`;
+    } else if (d6 === '3') {
+        upca11 = `${numberSystem}${d1}${d2}${d3}00000${d4}${d5}`;
+    } else if (d6 === '4') {
+        upca11 = `${numberSystem}${d1}${d2}${d3}${d4}00000${d5}`;
+    } else {
+        upca11 = `${numberSystem}${d1}${d2}${d3}${d4}${d5}0000${d6}`;
+    }
+
+    if (!/^\d{11}$/.test(upca11)) {
+        return '';
+    }
+
+    const finalCheck = checkDigit || computeUpcaCheckDigit(upca11);
+    return finalCheck ? `${upca11}${finalCheck}` : '';
+}
+
+async function fetchOpenFoodFactsProductByCode(code) {
+    const safeCode = encodeURIComponent(code);
+    const endpoints = [
+        `https://it.openfoodfacts.org/api/v0/product/${safeCode}.json`,
+        `https://world.openfoodfacts.org/api/v0/product/${safeCode}.json`
+    ];
+
+    for (const endpoint of endpoints) {
+        try {
+            const response = await fetch(endpoint);
+            if (!response.ok) {
+                continue;
+            }
+
+            const data = await response.json();
+            if (data?.status === 1 && data.product) {
+                return data.product;
+            }
+        } catch (error) {
+            console.warn('Errore lookup OpenFoodFacts:', endpoint, error);
+        }
+    }
+
+    return null;
+}
+
+async function searchOpenFoodFactsByCodeText(code) {
+    const safeCode = encodeURIComponent(code);
+    const endpoints = [
+        `https://it.openfoodfacts.org/cgi/search.pl?search_terms=${safeCode}&search_simple=1&action=process&json=1&page_size=1`,
+        `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${safeCode}&search_simple=1&action=process&json=1&page_size=1`
+    ];
+
+    for (const endpoint of endpoints) {
+        try {
+            const response = await fetch(endpoint);
+            if (!response.ok) {
+                continue;
+            }
+
+            const data = await response.json();
+            if (Array.isArray(data?.products) && data.products.length > 0) {
+                return data.products[0];
+            }
+        } catch (error) {
+            console.warn('Errore text search OpenFoodFacts:', endpoint, error);
+        }
+    }
+
+    return null;
+}
+
 async function gestisciBarcodeScansionato(barcode) {
-    const normalizedCode = String(barcode || '').trim();
-    if (!normalizedCode) {
+    const codeCandidates = getBarcodeCandidates(barcode);
+    if (codeCandidates.length === 0) {
         alert('Codice a barre non valido.');
         return;
     }
 
     try {
-        const response = await fetch(`https://it.openfoodfacts.org/api/v0/product/${encodeURIComponent(normalizedCode)}.json`);
-        const data = await response.json();
-        const mappedFood = data?.status === 1 ? mapOpenFoodFactsProduct(data.product, normalizedCode) : null;
+        let mappedFood = null;
+        let usedCode = codeCandidates[0];
+
+        const kaggleMatch = await findKaggleProductByBarcodeCandidates(codeCandidates);
+        if (kaggleMatch?.product) {
+            usedCode = kaggleMatch.code || usedCode;
+            mappedFood = mapKaggleProductToFoodEntry(kaggleMatch.product, usedCode);
+        }
 
         if (!mappedFood) {
-            alert('Prodotto non trovato.');
+            let foundProduct = null;
+
+            for (const candidate of codeCandidates) {
+                const product = await fetchOpenFoodFactsProductByCode(candidate);
+                if (product) {
+                    foundProduct = product;
+                    usedCode = candidate;
+                    break;
+                }
+
+                const searchedProduct = await searchOpenFoodFactsByCodeText(candidate);
+                if (searchedProduct) {
+                    foundProduct = searchedProduct;
+                    usedCode = candidate;
+                    break;
+                }
+            }
+
+            mappedFood = foundProduct ? mapOpenFoodFactsProduct(foundProduct, usedCode) : null;
+        }
+
+        if (!mappedFood) {
+            console.warn('Nessun match Kaggle/OpenFoodFacts per codici candidati', codeCandidates);
+            alert('Prodotto non trovato su dataset Kaggle/OpenFoodFacts. Prova con un altro barcode o usa AI Foto.');
             return;
         }
 
@@ -3895,6 +4319,11 @@ async function gestisciBarcodeScansionato(barcode) {
 }
 
 async function avviaScanner() {
+    // Compatibilita: inoltra al nuovo flusso unico foto+AI+OFF.
+    return avviaScansioneIntelligente();
+}
+
+async function avviaScansioneIntelligente() {
     if (isFutureDay(activeDate)) {
         alert(getDiaryDateErrorMessage(activeDate));
         return;
@@ -3906,12 +4335,13 @@ async function avviaScanner() {
     }
 
     if (typeof Html5Qrcode === 'undefined') {
-        alert('Scanner barcode non disponibile in questo momento.');
+        avviaRiconoscimentoAI();
         return;
     }
 
     const reader = document.getElementById('reader');
     if (!reader) {
+        avviaRiconoscimentoAI();
         return;
     }
 
@@ -3923,8 +4353,8 @@ async function avviaScanner() {
         await barcodeScanner.start(
             { facingMode: 'environment' },
             {
-                fps: 10,
-                qrbox: { width: 260, height: 140 },
+                fps: 12,
+                qrbox: { width: 280, height: 150 },
                 aspectRatio: 1.777,
                 formatsToSupport: [
                     Html5QrcodeSupportedFormats.EAN_13,
@@ -3947,9 +4377,513 @@ async function avviaScanner() {
         );
 
         barcodeScannerActive = true;
+
+        // Fallback automatico: se il codice non viene letto in tempo, passa alla foto prodotto.
+        smartScanFallbackTimer = setTimeout(async () => {
+            if (!barcodeScannerActive || barcodeScanLocked) {
+                return;
+            }
+
+            barcodeScanLocked = true;
+            await fermaScanner();
+            avviaRiconoscimentoAI();
+        }, 9000);
     } catch (error) {
-        console.error('Errore avvio scanner:', error);
+        console.error('Errore avvio scanner intelligente:', error);
         await fermaScanner();
-        alert('Impossibile avviare la fotocamera.');
+        avviaRiconoscimentoAI();
+    }
+}
+
+function applySmartScanResultToAddPanel(scanResult) {
+    if (!scanResult || !scanResult.per_100g) {
+        return;
+    }
+
+    const nutrients = scanResult.per_100g;
+    const mappedFood = {
+        nome: String(scanResult.alimento || 'Alimento scansionato').trim(),
+        kcal: Number(nutrients.kcal || 0),
+        proteine: Number(nutrients.proteine || 0),
+        carboidrati: Number(nutrients.carboidrati || 0),
+        grassi: Number(nutrients.grassi || 0),
+        fe: 0,
+        ca: 0,
+        b12: 0,
+        isOFF: scanResult.source === 'openfoodfacts'
+    };
+
+    latestSmartScanFood = mappedFood;
+    selectedFood = mappedFood;
+
+    const addPanel = document.getElementById('add-panel');
+    if (addPanel) {
+        addPanel.style.display = 'block';
+    }
+
+    const selectedName = document.getElementById('selected-name');
+    if (selectedName) {
+        selectedName.innerText = mappedFood.nome;
+    }
+
+    const qty = document.getElementById('qty');
+    if (qty) {
+        qty.value = 100;
+    }
+
+    updateSelectedFoodPreview();
+}
+
+// --- AI Camera Food Recognition ---
+
+function avviaRiconoscimentoAI() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/jpeg,image/png,image/webp';
+    input.capture = 'environment';
+
+    input.onchange = async () => {
+        const file = input.files && input.files[0];
+        if (!file) return;
+
+        if (file.size > 4 * 1024 * 1024) {
+            alert('Immagine troppo grande (max 4 MB). Riprova con una foto più piccola.');
+            return;
+        }
+
+        mostraModalScanAI('caricamento');
+
+        try {
+            const result = await riconosciProdottoDaFotoGratis(file);
+            if (!result) {
+                chiudiModalScanAI();
+                alert('Prodotto non trovato. Prova a inquadrare meglio etichetta o barcode.');
+                return;
+            }
+
+            applySmartScanResultToAddPanel(result);
+            mostraModalScanAI('risultato', result);
+        } catch (err) {
+            console.error('Errore scansione foto gratuita:', err);
+            chiudiModalScanAI();
+            alert('Errore durante la scansione foto. Riprova.');
+        }
+    };
+
+    input.click();
+}
+
+function normalizeOcrText(value) {
+    return String(value || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9\s]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function buildSearchTermsFromOcr(ocrText) {
+    const lines = String(ocrText || '')
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter((line) => line.length >= 3);
+
+    const cleanLines = lines
+        .map((line) => normalizeOcrText(line))
+        .filter((line) => line.length >= 4 && !/^\d+$/.test(line));
+
+    const tokens = normalizeOcrText(ocrText)
+        .split(' ')
+        .filter((token) => token.length >= 4 && !/^\d+$/.test(token));
+
+    const unique = [...new Set([...cleanLines.slice(0, 8), ...tokens.slice(0, 8)])];
+    return unique.slice(0, 8);
+}
+
+function mapOpenFoodFactsScanResult(product, note = 'Fonte OpenFoodFacts') {
+    const nutriments = product?.nutriments || {};
+
+    const energyKcal = Number(nutriments['energy-kcal_100g'] || nutriments['energy-kcal'] || 0);
+    const energyKj = Number(nutriments.energy_100g || nutriments.energy || 0);
+    const kcal = energyKcal > 0 ? energyKcal : (energyKj > 0 ? energyKj / 4.184 : 0);
+
+    const sodiumFromSalt = Number(nutriments.salt_100g || 0) * 393;
+    const sodiumDirect = Number(nutriments.sodium_100g || 0) * 1000;
+
+    return {
+        alimento: String(product.product_name_it || product.product_name || 'Alimento').trim(),
+        descrizione: String(product.brands || '').trim(),
+        per_100g: {
+            kcal: Number(kcal || 0),
+            proteine: Number(nutriments.proteins_100g || 0),
+            carboidrati: Number(nutriments.carbohydrates_100g || 0),
+            zuccheri: Number(nutriments.sugars_100g || 0),
+            grassi: Number(nutriments.fat_100g || 0),
+            grassi_saturi: Number(nutriments['saturated-fat_100g'] || 0),
+            fibre: Number(nutriments.fiber_100g || 0),
+            sodio_mg: Number((sodiumDirect > 0 ? sodiumDirect : sodiumFromSalt) || 0)
+        },
+        nutriscore: String(product.nutriscore_grade || '?').toUpperCase().replace(/[^A-E]/g, '') || '?',
+        note,
+        source: 'openfoodfacts'
+    };
+}
+
+function scoreProductAgainstOcr(product, normalizedText) {
+    const name = normalizeOcrText(product?.product_name_it || product?.product_name);
+    const brand = normalizeOcrText(product?.brands);
+    if (!name && !brand) return 0;
+
+    let score = 0;
+
+    if (name && normalizedText.includes(name)) score += 40;
+    if (brand && normalizedText.includes(brand)) score += 30;
+
+    const nameTokens = name.split(' ').filter((token) => token.length >= 4);
+    nameTokens.slice(0, 6).forEach((token) => {
+        if (normalizedText.includes(token)) score += 6;
+    });
+
+    if (product?.nutriments) score += 5;
+    if (product?.nutriscore_grade) score += 4;
+
+    return score;
+}
+
+function getProductImageUrl(product) {
+    return String(
+        product?.image_front_small_url
+        || product?.image_small_url
+        || product?.image_front_url
+        || product?.image_url
+        || ''
+    ).trim();
+}
+
+async function loadImageForHash(src) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = src;
+    });
+}
+
+async function computeImageAHashFromElement(imageEl) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 8;
+    canvas.height = 8;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return '';
+
+    ctx.drawImage(imageEl, 0, 0, 8, 8);
+    const data = ctx.getImageData(0, 0, 8, 8).data;
+
+    const grays = [];
+    for (let i = 0; i < data.length; i += 4) {
+        const gray = (data[i] * 0.299) + (data[i + 1] * 0.587) + (data[i + 2] * 0.114);
+        grays.push(gray);
+    }
+
+    const avg = grays.reduce((sum, value) => sum + value, 0) / grays.length;
+    return grays.map((value) => (value >= avg ? '1' : '0')).join('');
+}
+
+async function computeImageAHashFromFile(file) {
+    try {
+        const bitmap = await createImageBitmap(file);
+        const canvas = document.createElement('canvas');
+        canvas.width = 8;
+        canvas.height = 8;
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        if (!ctx) return '';
+
+        ctx.drawImage(bitmap, 0, 0, 8, 8);
+        const data = ctx.getImageData(0, 0, 8, 8).data;
+
+        const grays = [];
+        for (let i = 0; i < data.length; i += 4) {
+            const gray = (data[i] * 0.299) + (data[i + 1] * 0.587) + (data[i + 2] * 0.114);
+            grays.push(gray);
+        }
+
+        const avg = grays.reduce((sum, value) => sum + value, 0) / grays.length;
+        return grays.map((value) => (value >= avg ? '1' : '0')).join('');
+    } catch (error) {
+        console.warn('Impossibile calcolare hash immagine file:', error);
+        return '';
+    }
+}
+
+function hammingDistance(hashA, hashB) {
+    if (!hashA || !hashB || hashA.length !== hashB.length) return 64;
+    let diff = 0;
+    for (let i = 0; i < hashA.length; i += 1) {
+        if (hashA[i] !== hashB[i]) diff += 1;
+    }
+    return diff;
+}
+
+async function scoreProductWithVisualPackaging(product, fileHash) {
+    const imageUrl = getProductImageUrl(product);
+    if (!imageUrl || !fileHash) return 0;
+
+    try {
+        const imageEl = await loadImageForHash(imageUrl);
+        const productHash = await computeImageAHashFromElement(imageEl);
+        if (!productHash) return 0;
+
+        const distance = hammingDistance(fileHash, productHash);
+        // 0 diff -> 30 punti, 32 diff -> 0 punti
+        return Math.max(0, 30 - (distance * 0.94));
+    } catch {
+        return 0;
+    }
+}
+
+async function searchOpenFoodFactsByText(term) {
+    const query = encodeURIComponent(term);
+    const fields = encodeURIComponent('code,product_name,product_name_it,brands,nutriscore_grade,nutriments,image_front_small_url,image_small_url,image_front_url,image_url');
+    const endpoints = [
+        `https://it.openfoodfacts.org/cgi/search.pl?search_terms=${query}&search_simple=1&action=process&json=1&page_size=6&fields=${fields}`,
+        `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${query}&search_simple=1&action=process&json=1&page_size=6&fields=${fields}`
+    ];
+
+    const found = [];
+    for (const endpoint of endpoints) {
+        try {
+            const response = await fetch(endpoint);
+            if (!response.ok) continue;
+            const data = await response.json();
+            if (Array.isArray(data?.products)) {
+                found.push(...data.products);
+            }
+        } catch (error) {
+            console.warn('Errore ricerca OFF da OCR:', endpoint, error);
+        }
+    }
+
+    const deduped = new Map();
+    found.forEach((product) => {
+        const code = String(product?.code || '').trim();
+        const key = code || `${product?.product_name || ''}|${product?.brands || ''}`;
+        if (!deduped.has(key)) deduped.set(key, product);
+    });
+
+    return [...deduped.values()];
+}
+
+function extractBarcodeFromOcrText(ocrText) {
+    const matches = String(ocrText || '').match(/\b\d{8,14}\b/g) || [];
+    if (matches.length === 0) return '';
+    return matches.sort((a, b) => b.length - a.length)[0];
+}
+
+async function riconosciProdottoDaFotoGratis(file) {
+    if (typeof Tesseract === 'undefined') {
+        throw new Error('Tesseract non disponibile');
+    }
+
+    const ocr = await Tesseract.recognize(file, 'ita+eng');
+    const ocrText = String(ocr?.data?.text || '').trim();
+    const normalizedOcr = normalizeOcrText(ocrText);
+    const terms = buildSearchTermsFromOcr(ocrText);
+
+    const barcodeFromText = extractBarcodeFromOcrText(ocrText);
+    if (barcodeFromText) {
+        const barcodeCandidates = getBarcodeCandidates(barcodeFromText);
+        const kaggleMatch = await findKaggleProductByBarcodeCandidates(barcodeCandidates);
+        if (kaggleMatch?.product) {
+            return mapKaggleProductToScanResult(kaggleMatch.product, `Fonte dataset Kaggle (barcode ${kaggleMatch.code || barcodeFromText})`);
+        }
+
+        const byBarcode = await fetchOpenFoodFactsProductByCode(barcodeFromText);
+        if (byBarcode) {
+            return mapOpenFoodFactsScanResult(byBarcode, `Fonte OpenFoodFacts (barcode ${barcodeFromText})`);
+        }
+    }
+
+    const kaggleTextMatch = await findKaggleProductByOcrText(ocrText, terms);
+    if (kaggleTextMatch?.product) {
+        return mapKaggleProductToScanResult(kaggleTextMatch.product, 'Fonte dataset Kaggle (match OCR nome prodotto)');
+    }
+
+    const candidates = [];
+    const fileHash = await computeImageAHashFromFile(file);
+
+    for (const term of terms) {
+        const products = await searchOpenFoodFactsByText(term);
+        candidates.push(...products);
+        if (candidates.length >= 24) break;
+    }
+
+    let bestProduct = null;
+    let bestScore = 0;
+    const scoredCandidates = [];
+
+    for (const product of candidates) {
+        const textScore = scoreProductAgainstOcr(product, normalizedOcr);
+        const visualScore = await scoreProductWithVisualPackaging(product, fileHash);
+        const score = textScore + visualScore;
+        scoredCandidates.push({ product, score, textScore, visualScore });
+
+        if (score > bestScore) {
+            bestScore = score;
+            bestProduct = product;
+        }
+    }
+
+    if (!bestProduct && scoredCandidates.length > 0) {
+        scoredCandidates.sort((a, b) => b.score - a.score);
+        bestProduct = scoredCandidates[0].product;
+        bestScore = scoredCandidates[0].score;
+    }
+
+    if (bestProduct && bestScore >= 14) {
+        return mapOpenFoodFactsScanResult(bestProduct, 'Fonte OpenFoodFacts (match foto confezione + OCR)');
+    }
+
+    return null;
+}
+
+function mostraModalScanAI(stato, dati) {
+    let modal = document.getElementById('scan-ai-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'scan-ai-modal';
+        modal.className = 'scan-ai-overlay';
+        modal.innerHTML = '<div class="scan-ai-box" id="scan-ai-box"></div>';
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) chiudiModalScanAI();
+        });
+        document.body.appendChild(modal);
+    }
+
+    const box = document.getElementById('scan-ai-box');
+
+    if (stato === 'caricamento') {
+        box.innerHTML =
+            '<div class="scan-ai-loading">' +
+            '<span class="skeleton-block shimmer-skeleton tall"></span>' +
+            '<span class="skeleton-block shimmer-skeleton"></span>' +
+            '<span class="skeleton-block shimmer-skeleton medium"></span>' +
+            '<span class="skeleton-block shimmer-skeleton short"></span>' +
+            '<span class="skeleton-block shimmer-skeleton"></span>' +
+            '</div>';
+        modal.style.display = 'flex';
+        return;
+    }
+
+    if (stato === 'risultato' && dati) {
+        const ns = String(dati.nutriscore || '?').toUpperCase();
+        const p = dati.per_100g || {};
+
+        box.innerHTML =
+            '<button class="scan-ai-close" onclick="chiudiModalScanAI()">✕</button>' +
+            '<h3 class="scan-ai-title">' + escapeHtml(dati.alimento || 'Alimento') + '</h3>' +
+            (dati.descrizione ? '<p class="scan-ai-desc">' + escapeHtml(dati.descrizione) + '</p>' : '') +
+            '<div class="nutriscore-wrap">' +
+            '<span class="nutriscore-label">NutriScore</span>' +
+            '<span class="nutriscore-badge nutriscore-' + ns.toLowerCase() + '">' + ns + '</span>' +
+            '</div>' +
+            '<table class="scan-ai-table">' +
+            '<thead><tr><th>Nutriente</th><th>per 100 g</th></tr></thead>' +
+            '<tbody>' +
+            '<tr><td>Energia</td><td>' + Math.round(p.kcal || 0) + ' kcal</td></tr>' +
+            '<tr><td>Proteine</td><td>' + (+p.proteine || 0).toFixed(1) + ' g</td></tr>' +
+            '<tr><td>Carboidrati</td><td>' + (+p.carboidrati || 0).toFixed(1) + ' g</td></tr>' +
+            '<tr class="indent-row"><td>&nbsp;&nbsp;di cui zuccheri</td><td>' + (+p.zuccheri || 0).toFixed(1) + ' g</td></tr>' +
+            '<tr><td>Grassi</td><td>' + (+p.grassi || 0).toFixed(1) + ' g</td></tr>' +
+            '<tr class="indent-row"><td>&nbsp;&nbsp;di cui saturi</td><td>' + (+p.grassi_saturi || 0).toFixed(1) + ' g</td></tr>' +
+            '<tr><td>Fibre</td><td>' + (+p.fibre || 0).toFixed(1) + ' g</td></tr>' +
+            '<tr><td>Sodio</td><td>' + Math.round(p.sodio_mg || 0) + ' mg</td></tr>' +
+            '</tbody></table>' +
+            (dati.note ? '<p class="scan-ai-note">ℹ️ ' + escapeHtml(dati.note) + '</p>' : '') +
+            '<p class="scan-ai-disclaimer">' +
+            (dati.source === 'kaggle'
+                ? 'Valori da dataset Kaggle locale.'
+                : 'Valori da OpenFoodFacts quando disponibili.') +
+            '</p>';
+
+        modal.style.display = 'flex';
+    }
+}
+
+function chiudiModalScanAI() {
+    const modal = document.getElementById('scan-ai-modal');
+    if (modal) modal.style.display = 'none';
+}
+/* ================================================================
+   2026 UI Utilities � Typewriter � Shimmer � Dark Mode Toggle
+   ================================================================ */
+
+/**
+ * Types text into an element character-by-character (typewriter effect).
+ * @param {HTMLElement} element  Target DOM element (textContent is set)
+ * @param {string}      text     Text to animate
+ * @param {number}      speed    Milliseconds per character (default 28)
+ * @returns {Promise<void>}      Resolves when typing is complete
+ */
+function typeWriterEffect(element, text, speed = 28) {
+    return new Promise(resolve => {
+        element.textContent = '';
+        let i = 0;
+        const tick = () => {
+            if (i >= text.length) { resolve(); return; }
+            element.textContent += text[i++];
+            setTimeout(tick, speed);
+        };
+        tick();
+    });
+}
+
+/**
+ * Replaces a container's children with shimmering skeleton rows.
+ * The original innerHTML is stored in dataset.originalContent.
+ * Call hideShimmerSkeleton() to restore it.
+ * @param {HTMLElement} container
+ * @param {number}      rows  Number of skeleton lines (default 3)
+ */
+function showShimmerSkeleton(container, rows = 3) {
+    if (!container) return;
+    container.dataset.originalContent = container.innerHTML;
+    const widths = ['100%', '80%', '60%', '90%', '50%'];
+    const heights = ['48px', '14px', '14px', '14px', '14px'];
+    container.innerHTML = Array.from({ length: rows }, (_, i) =>
+        `<span class="skeleton-block shimmer-skeleton" style="width:${widths[i % widths.length]};height:${heights[i % heights.length]};margin-bottom:12px;display:block;"></span>`
+    ).join('');
+}
+
+/**
+ * Restores content previously replaced by showShimmerSkeleton().
+ * @param {HTMLElement} container
+ */
+function hideShimmerSkeleton(container) {
+    if (!container || container.dataset.originalContent === undefined) return;
+    container.innerHTML = container.dataset.originalContent;
+    delete container.dataset.originalContent;
+}
+
+/**
+ * Toggles between light and dark theme.
+ * Persists preference to localStorage under key 'nv_theme'.
+ */
+function toggleDarkMode() {
+    const html = document.documentElement;
+    const isDark = html.getAttribute('data-theme') === 'dark';
+    const next = isDark ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem('nv_theme', next);
+
+    // Flip icon on the mini profile button
+    const miniBtn = document.getElementById('mini-theme-toggle');
+    if (miniBtn) {
+        const icon = miniBtn.querySelector('[data-lucide]');
+        if (icon) {
+            icon.setAttribute('data-lucide', isDark ? 'moon' : 'sun');
+            if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [icon] });
+        }
     }
 }
