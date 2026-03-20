@@ -1,0 +1,94 @@
+{
+  "version": "1.0",
+  "category": "metodo-ragionamento-nutrizionale-cena",
+  "overview": {
+    "summary": "Questo modulo traduce un esempio professionale di cena in un metodo flessibile: apertura con verdure crude, scelta rotativa della fonte proteica, quota glucidica modulabile, verdure sempre presenti, olio EVO dichiarato e frutta finale opzionale.",
+    "principles": [
+      "La cena va costruita come pasto leggibile, saziante e coerente con il piano giornaliero, non come compensazione casuale della giornata.",
+      "L esempio clinico non va trasformato in schema rigido: le opzioni sono equivalenti e adattabili al profilo, alla fame e alla routine.",
+      "Una rotazione ragionata delle fonti proteiche migliora varieta, aderenza e qualita complessiva della settimana."
+    ]
+  },
+  "meal_order_logic": {
+    "summary": "Anche la cena puo iniziare con una piccola apertura vegetale per migliorare ritmo del pasto e consapevolezza.",
+    "steps": [
+      "Quando coerente con il profilo, iniziare con verdure crude semplici come insalata, carota o finocchio puo aiutare masticazione, sazieta e ordine del pasto.",
+      "Dopo l apertura vegetale si costruisce il nucleo della cena con una fonte proteica ben leggibile e una quota glucidica modulata.",
+      "L eventuale frutta finale va trattata come opzione contestualizzata, non come obbligo fisso."
+    ]
+  },
+  "protein_rotation_logic": {
+    "summary": "Le proteine della cena possono ruotare tra fonti animali leggere, vegetali e latticini leggeri, mantenendo una struttura pratica e ripetibile.",
+    "patterns": [
+      "3 uova intere come opzione proteica semplice e concreta, anche in forma di frittata.",
+      "Tofu o tempeh come opzioni vegetali principali, utili per variare la rotazione proteica con buona struttura del pasto.",
+      "Ricotta light, feta light, mozzarella proteica o formaggi freschi light come opzioni piu occasionali dentro la settimana.",
+      "Burger vegetali ad alta quota proteica o burger fatti in casa con lupini e albume come alternative pratiche ma non necessariamente quotidiane."
+    ],
+    "principles": [
+      "La frequenza settimanale serve come logica di rotazione, non come prescrizione assoluta nel singolo output.",
+      "La fonte proteica va scelta anche in base a praticita reale, gusto e aderenza, non solo ai numeri teorici.",
+      "Le opzioni fatte in casa o semi-pronte possono avere valore se mantengono una quota proteica leggibile."
+    ]
+  },
+  "carbohydrate_logic": {
+    "summary": "La quota glucidica della cena va presentata come famiglia di alternative equivalenti da modulare sul resto della giornata.",
+    "examples": [
+      "riso a chicco lungo o altri cereali gia preparati",
+      "pane scuro",
+      "patate medio-grandi",
+      "patata americana"
+    ],
+    "principles": [
+      "La scelta del carboidrato dipende da fame, attivita, organizzazione e quota glucidica gia presente nel resto della giornata.",
+      "Le alternative devono essere leggibili e scambiabili, non vissute come unica scelta possibile.",
+      "Il carboidrato della cena va letto insieme a proteine, verdure e condimento."
+    ]
+  },
+  "fat_and_vegetable_logic": {
+    "summary": "Verdure e condimento dichiarato fanno parte della struttura della cena e non di dettagli accessori.",
+    "principles": [
+      "Le verdure crude o cotte devono essere presenti in modo chiaro e non simbolico.",
+      "L olio EVO va dichiarato esplicitamente e usato come parte attiva del ragionamento del pasto.",
+      "La presenza di verdure migliora sazieta, volume e qualita percepita della cena."
+    ]
+  },
+  "fruit_ending_logic": {
+    "summary": "La frutta finale puo essere inserita come chiusura semplice del pasto quando coerente con il profilo e con la fame reale.",
+    "principles": [
+      "La frutta non va trattata come obbligo automatico ma come opzione utile e semplice.",
+      "La scelta di inserirla dipende dal contesto della giornata e dalla struttura gia costruita della cena.",
+      "Meglio una chiusura lineare e sostenibile che un finale piu ricco non necessario."
+    ]
+  },
+  "recipe_ideas_logic": {
+    "summary": "Le idee tecniche su tofu e tempeh vanno usate come esempi di metodo: piastratura, panatura leggera, salse semplici e polpette strutturate ma domestiche.",
+    "patterns": [
+      "Tempeh piastrato con salsa semplice a base di tahina e limone come esempio di piatto vegetale concreto e gustoso.",
+      "Tofu a fettine con panatura leggera, rosolatura e finitura acida come esempio di tecnica semplice ma identitaria.",
+      "Polpette di tofu e spinaci come esempio di struttura piu domestica e ripetibile, utile anche in doppia porzione."
+    ],
+    "principles": [
+      "Le ricette di esempio non vanno copiate parola per parola ma trasformate in decisioni tecniche adattabili.",
+      "Salse brevi, padella, piastra e uso di ingredienti gia presenti in dispensa aumentano aderenza e praticita.",
+      "Le preparazioni vegetali devono restare riconoscibili e appetibili, non punitive."
+    ]
+  },
+  "chef_use": {
+    "when_relevant": [
+      "Quando l IA costruisce cene, secondi con contorno o esempi di piano giornaliero che includono la cena.",
+      "Quando il contesto richiede alternative proteiche ruotabili tra uova, tofu, tempeh, latticini light o burger vegetali.",
+      "Quando serve proporre una cena pratica ma strutturata con verdure, carboidrato modulato e condimento dichiarato."
+    ],
+    "how_to_use": [
+      "Usa il modulo come metodo di costruzione della cena e non come testo da copiare.",
+      "Traduci la logica in una cena con apertura vegetale, fonte proteica leggibile, quota glucidica modulata e olio EVO dichiarato.",
+      "Se rilevante, usa le idee tecniche su tofu o tempeh come ispirazione pratica per la ricetta o per il piano."
+    ],
+    "guardrails": [
+      "Non trasformare le frequenze settimanali in prescrizioni assolute per il singolo output.",
+      "Non rendere obbligatoria la frutta finale in ogni cena.",
+      "Mantieni la distinzione tra esempio professionale e regola generale."
+    ]
+  }
+}

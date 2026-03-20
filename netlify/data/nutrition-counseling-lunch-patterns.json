@@ -1,0 +1,84 @@
+{
+  "version": "1.0",
+  "category": "metodo-ragionamento-nutrizionale-pranzo",
+  "overview": {
+    "summary": "Questo modulo traduce un esempio professionale di pranzo in un metodo di ragionamento flessibile: ordine del pasto, scelta della base amidacea, quota vegetale, fonte proteica vegetale, condimento e gestione della nota dolce finale.",
+    "principles": [
+      "Il pranzo va costruito come pasto leggibile e saziante, non come somma casuale di alimenti isolati.",
+      "L esempio del singolo utente non e mai una regola fissa: le quantita e la struttura vanno adattate a profilo, obiettivo, fame e routine.",
+      "La presenza di piu opzioni equivalenti migliora l aderenza e la variabilita del piano."
+    ]
+  },
+  "meal_order_logic": {
+    "summary": "L ordine del pasto puo essere usato come strumento di sazieta e consapevolezza alimentare.",
+    "steps": [
+      "Quando coerente con il profilo, iniziare con verdure crude semplici come insalata, carota o finocchio puo aiutare ritmo del pasto, masticazione e sazieta.",
+      "Dopo l apertura vegetale si inserisce il piatto principale costruito sul bisogno energetico e proteico della persona.",
+      "L eventuale nota dolce finale va contestualizzata come gestione delle abitudini, non come automatismo da inserire sempre."
+    ]
+  },
+  "lunch_structure": {
+    "summary": "Una struttura frequente e utile per il pranzo combina base amidacea, fonte proteica soprattutto vegetale, verdure e grassi di condimento ben dichiarati.",
+    "patterns": [
+      "Primo piatto con cereali integrali, pasta, quinoa, cous-cous o gnocchi, condito con legumi o edamame e sempre accompagnato da verdure.",
+      "Mix di cereali e legumi nello stesso formato, come cous-cous classico piu cous-cous di legumi, per costruire un piatto piu completo e pratico.",
+      "Pasta proteica con verdure e olio EVO come alternativa piu comoda quando serve una soluzione rapida ma strutturata."
+    ]
+  },
+  "carbohydrate_logic": {
+    "summary": "La scelta della base amidacea non va trattata come fissa ma come famiglia di alternative equivalenti da adattare al contesto.",
+    "examples": [
+      "cereali integrali come farro, riso integrale, orzo",
+      "pasta classica, integrale o di farro",
+      "quinoa o cous-cous",
+      "gnocchi",
+      "pasta proteica"
+    ],
+    "principles": [
+      "La porzione dipende dal profilo e non dal singolo alimento astratto.",
+      "Integrare formati diversi aiuta aderenza, praticita e varieta settimanale.",
+      "La base glucidica va sempre letta insieme a fibre, fonte proteica e condimento."
+    ]
+  },
+  "protein_fiber_logic": {
+    "summary": "Nel pranzo l uso di legumi, edamame o basi miste cereale-legume aiuta a costruire un piatto saziante e nutrizionalmente piu solido.",
+    "principles": [
+      "Legumi ed edamame sono fonti utili per aumentare fibra, sazieta e quota proteica del pasto.",
+      "Le combinazioni cereale + legume migliorano la struttura complessiva del piatto e la qualita percepita del pranzo.",
+      "Le soluzioni veloci, come legumi gia cotti o edamame surgelato, hanno valore pratico reale e migliorano la sostenibilita del piano."
+    ]
+  },
+  "fat_and_vegetable_logic": {
+    "summary": "Verdure e grassi di condimento dichiarati chiaramente aiutano sazieta, palatabilita e trasparenza del piano.",
+    "principles": [
+      "Le verdure non sono solo contorno simbolico ma parte strutturale del pranzo.",
+      "Il condimento va esplicitato in modo chiaro e non lasciato implicito.",
+      "La quota di olio EVO puo essere parte attiva del ragionamento del pasto, non un dettaglio secondario."
+    ]
+  },
+  "sweet_ending_logic": {
+    "summary": "L eventuale piccolo dolce a fine pasto va presentato come leva comportamentale, non come diritto fisso del pranzo quotidiano.",
+    "principles": [
+      "Una piccola quota di cioccolato fondente puo essere usata in modo contestualizzato per lavorare sulla disabitudine al dolce costante.",
+      "La frequenza va sempre letta come strategia educativa e non come obbligo giornaliero.",
+      "Se il profilo non mostra questo bisogno, il dolce finale non va inserito per forza."
+    ]
+  },
+  "chef_use": {
+    "when_relevant": [
+      "Quando l IA costruisce pranzi, piatti unici o esempi di piano giornaliero.",
+      "Quando il contesto richiede soluzioni pratiche basate su cereali, pasta, cous-cous, quinoa, legumi o edamame.",
+      "Quando serve proporre alternative equivalenti per il pranzo senza rigidita eccessiva."
+    ],
+    "how_to_use": [
+      "Usa il modulo come struttura del ragionamento e non come lista da copiare parola per parola.",
+      "Trasforma l esempio clinico in schemi adattabili: base amidacea, quota vegetale, fonte proteica/fibrosa e condimento dichiarato.",
+      "Se il profilo lo richiede, puoi usare la logica della piccola nota dolce finale come strumento comportamentale, non come abitudine da rinforzare."
+    ],
+    "guardrails": [
+      "Non trasformare le quantita dell esempio in prescrizioni universali.",
+      "Non rendere il dolce finale una componente fissa del pranzo per tutti.",
+      "Mantieni sempre la distinzione tra esempio professionale e regola generale."
+    ]
+  }
+}

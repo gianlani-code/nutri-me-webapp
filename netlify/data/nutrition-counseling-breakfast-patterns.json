@@ -1,0 +1,79 @@
+{
+  "version": "1.0",
+  "category": "metodo-ragionamento-nutrizionale-colazione",
+  "overview": {
+    "summary": "Questo modulo non definisce regole fisse, ma un modo professionale di ragionare sulla colazione a partire dai dati del singolo utente: contesto corporeo, fabbisogno, obiettivo, quota proteica, fame reale, praticita e varieta.",
+    "principles": [
+      "Il professionista distingue sempre tra fabbisogno calorico, piano calorico impostato e singolo pasto.",
+      "La colazione non va costruita per automatismo: va adattata a fame, routine, obiettivo, allenamento e tollerabilita individuale.",
+      "Le opzioni equivalenti sono spesso piu utili di un solo schema rigido, perche migliorano aderenza e continuita."
+    ]
+  },
+  "reasoning_method": {
+    "summary": "La sequenza di ragionamento corretta parte dal profilo e solo dopo arriva agli alimenti.",
+    "steps": [
+      "Leggi il contesto corporeo del soggetto: IMC, obiettivo, fabbisogno e piano calorico.",
+      "Stima quanta quota proteica e utile far entrare nella prima parte della giornata, senza trattare la colazione come un obbligo identico per tutti.",
+      "Valuta fame, praticita, sazieta e facilita di preparazione: una buona soluzione deve essere sostenibile nella routine reale.",
+      "Formula 2-3 alternative equivalenti per struttura nutrizionale, non copie identiche per ingredienti.",
+      "Usa linguaggio prudente: l esempio del singolo utente non diventa mai regola generale."
+    ]
+  },
+  "breakfast_structure": {
+    "summary": "Una colazione ben ragionata puo essere costruita con una base proteica, una quota di carboidrati selezionata e, quando utile, una piccola quota di grassi o fibra per migliorare sazieta e aderenza.",
+    "patterns": [
+      "Base proteica magra: yogurt greco 0%, skyr, albumi o altre fonti coerenti col profilo.",
+      "Carboidrati funzionali e facili da gestire: fiocchi di avena, granola a ridotto contenuto di zuccheri, cereali semplici o frutta.",
+      "Piccola quota di grassi buoni o frutta secca per completare consistenza e sazieta quando serve.",
+      "Se la fame e bassa al risveglio, puo avere senso iniziare con acqua o bevanda non zuccherata e rimandare leggermente la colazione."
+    ]
+  },
+  "option_logic": {
+    "summary": "Le opzioni devono essere diverse abbastanza da dare varieta, ma simili abbastanza da restare nello stesso ragionamento nutrizionale.",
+    "examples": [
+      "Opzione yogurt + granola o cereali controllati negli zuccheri.",
+      "Opzione yogurt + frutta + frutta secca.",
+      "Opzione porridge o overnight oats con base proteica e frutta cotta o fresca."
+    ],
+    "principles": [
+      "La varieta migliora l aderenza al piano e riduce la monotonia.",
+      "Le alternative vanno presentate come equivalenti ragionate, non come eccezioni casuali.",
+      "Le porzioni restano sempre dipendenti dal profilo del soggetto, non dall alimento in astratto."
+    ]
+  },
+  "fruit_portion_logic": {
+    "summary": "Quando si usa il concetto di porzione di frutta, e utile ragionare per equivalenze semplici e comprensibili.",
+    "examples": [
+      "1 pomo come mela o pera.",
+      "2 frutti piccoli come kiwi o mandarini.",
+      "1 banana.",
+      "1 coppetta di fragole o frutti di bosco.",
+      "2 fette di melone bianco."
+    ]
+  },
+  "supplement_context": {
+    "summary": "Eventuali supplementi non vanno trattati come automatismi. Se compaiono, devono essere contestualizzati e presentati con prudenza.",
+    "principles": [
+      "La creatina puo comparire come nota accessoria solo se coerente con allenamento, obiettivo e contesto del soggetto.",
+      "Non presentare un supplemento come obbligatorio o necessario per tutti.",
+      "Se il contesto non lo richiede, e meglio concentrarsi sulla struttura del pasto e sulla sostenibilita della routine."
+    ]
+  },
+  "chef_use": {
+    "when_relevant": [
+      "Quando l IA costruisce colazioni, spuntini strutturati o alternative di primo pasto.",
+      "Quando il profilo suggerisce di dare maggiore importanza a sazieta, quota proteica o praticita al mattino.",
+      "Quando serve proporre alternative equivalenti invece di un unica colazione rigida."
+    ],
+    "how_to_use": [
+      "Usa il modulo come metodo di ragionamento e non come testo da copiare.",
+      "Trasforma il principio clinico in proposte alimentari concrete, adattate al profilo e agli ingredienti disponibili.",
+      "Se il contesto non e una colazione, eredita solo il metodo: personalizzazione, equivalenze, prudenza e focus sull aderenza."
+    ],
+    "guardrails": [
+      "Non trasformare questo esempio in prescrizione universale.",
+      "Non trattare integratori, attese della fame o porzioni come obblighi invariabili.",
+      "Mantieni sempre la distinzione tra esempio professionale e regola generale."
+    ]
+  }
+}

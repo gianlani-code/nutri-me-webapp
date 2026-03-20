@@ -1,0 +1,63 @@
+{
+  "version": "1.0",
+  "category": "metodo-ragionamento-nutrizionale-piano-giornaliero",
+  "overview": {
+    "summary": "Un piano giornaliero professionale non nasce dalla somma casuale di pasti, ma da una distribuzione ragionata di energia, proteine, sazieta, praticita e aderenza sul singolo utente.",
+    "principles": [
+      "Il professionista distingue tra fabbisogno di mantenimento, piano calorico impostato e ruolo di ogni singolo pasto.",
+      "Il piano va costruito sul profilo della persona: obiettivo, IMC, attivita, fame, routine, allenamento e sostenibilita reale.",
+      "La giornata deve risultare gestibile nella vita quotidiana, non solo teoricamente corretta."
+    ]
+  },
+  "reasoning_method": {
+    "summary": "La logica parte dai numeri del profilo ma viene tradotta in scelte pratiche e aderenti.",
+    "steps": [
+      "Leggi il contesto corporeo e nutrizionale: IMC, obiettivo, fabbisogno, piano calorico e quota proteica.",
+      "Decidi come distribuire energia e proteine tra colazione, pasti principali e spuntini, senza irrigidire il numero dei pasti oltre il necessario.",
+      "Dai piu struttura ai pasti che servono davvero alla persona per fame, lavoro, allenamento o gestione della giornata.",
+      "Costruisci pasti equivalenti e intercambiabili quando questo migliora l aderenza.",
+      "Mantieni sempre prudenza: l esempio del singolo utente non si trasforma in protocollo universale."
+    ]
+  },
+  "distribution_logic": {
+    "summary": "La distribuzione ideale non e uguale per tutti, ma in molti contesti pratici e utile avere una struttura leggibile.",
+    "patterns": [
+      "Colazione con quota proteica concreta e struttura facilmente ripetibile.",
+      "Pranzo e cena con nucleo proteico, verdure e quota glucidica modulata sul contesto.",
+      "Spuntini leggeri e funzionali, utili quando aiutano fame, aderenza o distribuzione della quota proteica."
+    ]
+  },
+  "protein_logic": {
+    "summary": "La quota proteica giornaliera va distribuita in modo sensato, non concentrata tutta in uno o due momenti se questo peggiora la praticita.",
+    "principles": [
+      "Una distribuzione piu uniforme tra i pasti principali e spesso piu utile di una concentrazione estrema.",
+      "La prima parte della giornata puo ospitare una quota proteica utile per sazieta e continuita.",
+      "Spuntini proteici leggeri possono essere sensati, ma solo se hanno una funzione reale nel profilo della persona."
+    ]
+  },
+  "adherence_logic": {
+    "summary": "Un piano ben fatto deve essere realisticamente seguibile.",
+    "principles": [
+      "Meglio un piano semplice ma sostenibile che uno perfetto e irrealistico.",
+      "Le alternative equivalenti migliorano flessibilita e continuita.",
+      "La routine del soggetto conta quanto i numeri teorici."
+    ]
+  },
+  "chef_use": {
+    "when_relevant": [
+      "Quando l IA costruisce una giornata alimentare completa o esempi di menu giornalieri.",
+      "Quando il profilo dell utente include target calorico e proteico e serve tradurli in pasti reali.",
+      "Quando si vogliono proporre pasti leggibili e coerenti tra loro, non suggerimenti scollegati."
+    ],
+    "how_to_use": [
+      "Usa questi principi come metodo di costruzione del piano, non come testo da copiare.",
+      "Traduci i target in pasti concreti, gestibili e con una distribuzione ragionata.",
+      "Mantieni un tono prudente e non prescrittivo."
+    ],
+    "guardrails": [
+      "Non presentare il piano come prescrizione clinica personalizzata.",
+      "Non usare numeri o ripartizioni come regole fisse per tutti gli utenti.",
+      "Evita giornate troppo complesse, monotone o scollegate dalla routine reale."
+    ]
+  }
+}

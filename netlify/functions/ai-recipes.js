@@ -18,10 +18,15 @@ const chefPanVegetableFlatbreads = require('../data/chef-pan-vegetable-flatbread
 const chefAmatricianaTraditional = require('../data/chef-amatriciana-traditional.json');
 const chefLowFodmap = require('../data/chef-low-fodmap.json');
 const chefPlantBasedRawPattern = require('../data/chef-plant-based-raw-pattern.json');
+const nutritionCounselingBreakfastPatterns = require('../data/nutrition-counseling-breakfast-patterns.json');
+const nutritionCounselingDinnerPatterns = require('../data/nutrition-counseling-dinner-patterns.json');
+const nutritionCounselingDinnerTemplates = require('../data/nutrition-counseling-dinner-templates.json');
+const nutritionCounselingLunchPatterns = require('../data/nutrition-counseling-lunch-patterns.json');
 const premiumSeedManifest = require('../data/recipe-seed-premium.json');
 const chefFoodCompositionCrea = require('../data/chef-food-composition-crea.json');
 const chefFoodSynonyms = require('../data/chef-food-synonyms.json');
 const chefFoodYieldFactors = require('../data/chef-food-yield-factors.json');
+const clinicalNutritionGuidance = require('../data/clinical-nutrition-overweight-50plus.js');
 
 const premiumSeedIds = new Set(
     Array.isArray(premiumSeedManifest?.templates)
@@ -101,6 +106,38 @@ function toList(value) {
 
 function uniqueStrings(values) {
     return [...new Set(values.map((item) => String(item).trim()).filter(Boolean))];
+}
+
+function cloneClinicalGuidanceValue(value) {
+    return JSON.parse(JSON.stringify(value));
+}
+
+function getClinicalGuidanceProfiles() {
+    return Object.entries(clinicalNutritionGuidance || {})
+        .map(([key, profile]) => ({ key, ...(profile || {}) }))
+        .sort((left, right) => Number(right.priority || 0) - Number(left.priority || 0));
+}
+
+function matchesClinicalGuidanceCriteria(profile, criteria) {
+    const age = Number(profile?.age || 0);
+    const imc = Number(profile?.imc || 0);
+    const targetCalories = Number(profile?.targetCalories || 0);
+    const goal = normalizeText(profile?.goal || '');
+    const sex = normalizeText(profile?.sex || '');
+    const otherPathologies = normalizeText(profile?.otherPathologies || '');
+    const signals = Array.isArray(criteria?.goalSignals) ? criteria.goalSignals : [];
+    const sexSignals = Array.isArray(criteria?.sexSignals) ? criteria.sexSignals : [];
+    const pathologySignals = Array.isArray(criteria?.pathologySignals) ? criteria.pathologySignals : [];
+
+    return age >= Number(criteria?.ageMin || 0)
+        && age <= Number(criteria?.ageMax || 200)
+        && imc >= Number(criteria?.imcMin || 0)
+        && (criteria?.imcMax == null || imc <= Number(criteria.imcMax))
+        && (targetCalories === 0 || ((criteria?.targetCaloriesMin == null || targetCalories >= Number(criteria.targetCaloriesMin))
+            && (criteria?.targetCaloriesMax == null || targetCalories <= Number(criteria.targetCaloriesMax))))
+        && (!signals.length || signals.some((signal) => goal.includes(normalizeText(signal))) || !goal)
+        && (!sexSignals.length || sexSignals.some((signal) => sex.includes(normalizeText(signal))) || !sex)
+        && (!pathologySignals.length || pathologySignals.some((signal) => otherPathologies.includes(normalizeText(signal))));
 }
 
 function buildSynonymLookup() {
@@ -186,6 +223,12 @@ function limitNumber(value, fallback = 0, min = 0, max = 10_000) {
     return Math.min(max, Math.max(min, numeric));
 }
 
+function normalizeDinnerProteinPreference(value) {
+    return ['uova', 'tofu-tempeh', 'latticini-light', 'burger-vegetali'].includes(value)
+        ? value
+        : 'variata';
+}
+
 function buildRestrictionTokens(profile) {
     return uniqueStrings([
         ...toList(profile.allergies),
@@ -219,11 +262,113 @@ function sanitizeInput(body) {
             diet: limitString(profile.diet, MAX_PROFILE_FIELD_LENGTH),
             allergies: limitString(profile.allergies, MAX_LIST_FIELD_LENGTH),
             intolerances: limitString(profile.intolerances, MAX_LIST_FIELD_LENGTH),
+            otherPathologies: limitString(profile.otherPathologies, MAX_LIST_FIELD_LENGTH),
             jobType: limitString(profile.jobType, MAX_PROFILE_FIELD_LENGTH),
+            sex: limitString(profile.sex, MAX_PROFILE_FIELD_LENGTH),
+            age: limitNumber(profile.age, 0, 0, 120),
+            weight: limitNumber(profile.weight, 0, 0, 400),
+            height: limitNumber(profile.height, 0, 0, 260),
+            imc: limitNumber(profile.imc, 0, 0, 80),
+            imcCategory: limitString(profile.imcCategory, MAX_PROFILE_FIELD_LENGTH),
             workoutsPerWeek: limitNumber(profile.workoutsPerWeek, 0, 0, 14),
-            targetCalories: limitNumber(profile.targetCalories, 0, 0, 10000)
+            maintenanceCalories: limitNumber(profile.maintenanceCalories, 0, 0, 10000),
+            targetCalories: limitNumber(profile.targetCalories, 0, 0, 10000),
+            goalCalorieDelta: limitNumber(profile.goalCalorieDelta, 0, -2000, 2000),
+            proteinTargetPerKg: limitNumber(profile.proteinTargetPerKg, 0, 0, 4),
+            proteinTargetGrams: limitNumber(profile.proteinTargetGrams, 0, 0, 400),
+            lunchContextPreference: profile?.lunchContextPreference === 'free-day' ? 'free-day' : 'workday',
+            dinnerProteinPreference: normalizeDinnerProteinPreference(profile?.dinnerProteinPreference)
         },
         excludedIngredients: excludedIngredients.slice(0, MAX_INGREDIENTS)
+    };
+}
+
+function getLunchContextLabel(value) {
+    return value === 'free-day' ? 'giorno libero' : 'giorno lavorativo';
+}
+
+function getDinnerProteinPreferenceLabel(value) {
+    const normalized = normalizeDinnerProteinPreference(value);
+    return {
+        variata: 'rotazione serale varia',
+        uova: 'preferenza serale per uova',
+        'tofu-tempeh': 'preferenza serale per tofu o tempeh',
+        'latticini-light': 'preferenza serale per latticini light',
+        'burger-vegetali': 'preferenza serale per burger vegetali o lupini'
+    }[normalized] || 'rotazione serale varia';
+}
+
+function getLunchContextSummaryTail(value) {
+    return value === 'free-day'
+        ? 'Il tono del piatto resta un po piu disteso, piacevole e curato, coerente con un giorno libero.'
+        : 'Il tono del piatto resta pratico, organizzabile e sostenibile dentro una giornata lavorativa.';
+}
+
+function applyLunchContextToneToRecipe(recipe, lunchContext) {
+    if (!recipe || typeof recipe !== 'object') {
+        return recipe;
+    }
+
+    const normalizedLunchContext = lunchContext === 'free-day' ? 'free-day' : 'workday';
+    const summaryTail = getLunchContextSummaryTail(normalizedLunchContext);
+    const summaryText = String(recipe.summary || '').trim();
+    const normalizedSummary = normalizeText(summaryText);
+    const alreadyContextualized = normalizedLunchContext === 'free-day'
+        ? hasSignal(normalizedSummary, ['giorno libero', 'piu distes', 'piu curat', 'piu calmo', 'piacevole'])
+        : hasSignal(normalizedSummary, ['giorno lavorativo', 'routine', 'pratic', 'organizz', 'sostenibile']);
+
+    return {
+        ...recipe,
+        summary: summaryText
+            ? (alreadyContextualized ? summaryText : `${summaryText} ${summaryTail}`.trim())
+            : summaryTail
+    };
+}
+
+function buildNutritionMethodSummary(profile) {
+    const parts = [];
+
+    if (Number(profile.imc || 0) > 0) {
+        parts.push(`IMC ${profile.imc}${profile.imcCategory ? ` (${profile.imcCategory})` : ''}`);
+    }
+
+    if (Number(profile.maintenanceCalories || 0) > 0) {
+        parts.push(`fabbisogno ${profile.maintenanceCalories} kcal`);
+    }
+
+    if (Number(profile.targetCalories || 0) > 0) {
+        parts.push(`piano ${profile.targetCalories} kcal`);
+    }
+
+    if (Number(profile.goalCalorieDelta || 0) !== 0) {
+        parts.push(`delta ${profile.goalCalorieDelta > 0 ? '+' : ''}${profile.goalCalorieDelta} kcal`);
+    }
+
+    if (Number(profile.proteinTargetPerKg || 0) > 0) {
+        const proteinText = `${profile.proteinTargetPerKg} g/kg`;
+        parts.push(Number(profile.proteinTargetGrams || 0) > 0
+            ? `proteine ${proteinText} (~${profile.proteinTargetGrams} g)`
+            : `proteine ${proteinText}`);
+    }
+
+    parts.push(`pranzo abituale da ${getLunchContextLabel(profile.lunchContextPreference)}`);
+    parts.push(`rotazione proteica cena: ${getDinnerProteinPreferenceLabel(profile.dinnerProteinPreference)}`);
+
+    return parts.length > 0 ? parts.join(' | ') : 'metodo nutrizionale non disponibile';
+}
+
+function getClinicalNutritionContext(profile) {
+    const match = getClinicalGuidanceProfiles().find((source) => matchesClinicalGuidanceCriteria(profile, source.criteria || {}));
+
+    if (!match) {
+        return { applicable: false };
+    }
+
+    return {
+        ...cloneClinicalGuidanceValue(match),
+        applicable: true,
+        selectedProfileKey: match.key,
+        recipePromptLines: cloneClinicalGuidanceValue(match.recipePromptLines || match.promptLines || [])
     };
 }
 
@@ -581,6 +726,10 @@ function buildGenericFallbackRecipes(payload) {
     const goal = payload.profile.goal || 'mantenere';
     const diet = payload.profile.diet || 'equilibrato';
     const activity = payload.profile.jobType || 'moderato';
+    const clinicalContext = getClinicalNutritionContext(payload.profile);
+    const clinicalTail = clinicalContext.applicable
+        ? ` ${clinicalContext.recipeTail || 'Per un profilo adulto 50+ in sovrappeso con deficit moderato, il piatto privilegia verdure, condimenti misurati, olio EVO preferibilmente a crudo e una struttura anti-fame ma non pesante.'}`
+        : '';
 
     return [
         withRecipeSlot({
@@ -601,7 +750,7 @@ function buildGenericFallbackRecipes(payload) {
             title: `Pasta o padellata base con ${lead[0] || 'stagione'} e ${lead[1] || 'dispensa'}`,
             style: 'Cucina base',
             summary: `Ricetta fondamentale e molto semplice per ${payload.people} ${peopleLabel}, pensata per usare subito ${lead.slice(0, 3).join(', ')} con una tecnica sola.`,
-            whyItFits: `Questa proposta ${goalHint(goal)} e ${dietHint(diet)}. Si abbina bene a uno stile di vita ${activity}.`,
+            whyItFits: `Questa proposta ${goalHint(goal)} e ${dietHint(diet)}. Si abbina bene a uno stile di vita ${activity}.${clinicalTail}`,
             ingredients: [...lead.slice(0, 3), 'olio EVO', 'aglio o cipolla', 'erbe aromatiche'],
             steps: [
                 'Prepara un fondo semplice oppure una cottura diretta senza costruire piu componenti.',
@@ -629,7 +778,7 @@ function buildGenericFallbackRecipes(payload) {
             title: `Versione media con ${lead[0] || 'ingrediente principale'} e accompagnamento`,
             style: 'Cucina media',
             summary: 'Una proposta intermedia, con piatto principale piu accompagnamento o crema, ma ancora pienamente da cucina di casa.',
-            whyItFits: `Aiuta a cucinare una volta sola per ${payload.people} ${peopleLabel} con un minimo di tecnica in piu e senza sprechi.`,
+            whyItFits: `Aiuta a cucinare una volta sola per ${payload.people} ${peopleLabel} con un minimo di tecnica in piu e senza sprechi.${clinicalTail}`,
             ingredients: [...lead.slice(0, 4), 'olio EVO', 'spezie', 'pangrattato o semi'],
             steps: [
                 'Prepara un elemento principale con una lavorazione in piu rispetto alla base.',
@@ -657,7 +806,7 @@ function buildGenericFallbackRecipes(payload) {
             title: `Chef mode con ${lead[0] || 'ingrediente guida'} e ${lead[1] || 'contrasti'}`,
             style: 'Chef mode',
             summary: 'Una proposta che mette davvero alla prova: piu tecnica, piu precisa e meno perdonante della modalita media.',
-            whyItFits: 'Alza davvero il livello della richiesta e usa gli ingredienti per una ricetta che richiede attenzione, controllo e mano.',
+            whyItFits: `Alza davvero il livello della richiesta e usa gli ingredienti per una ricetta che richiede attenzione, controllo e mano.${clinicalTail}`,
             ingredients: [...lead.slice(0, 3), 'elemento croccante', 'finitura aromatica'],
             steps: [
                 'Cuoci separatamente l elemento principale con un controllo preciso di tempo e temperatura.',
@@ -685,7 +834,7 @@ function buildGenericFallbackRecipes(payload) {
             title: `Salvafrigo di ${lead[0] || 'frigo'} e ${lead[1] || 'dispensa'}`,
             style: 'Salvafrigo',
             summary: 'La versione piu semplice e diretta: poca tecnica, pochi passaggi, massima utilita per usare quello che hai.',
-            whyItFits: `E la modalita piu banale in senso utile: entra in cucina, usa quello che c e e non spreca tempo ne ingredienti.`,
+            whyItFits: `E la modalita piu banale in senso utile: entra in cucina, usa quello che c e e non spreca tempo ne ingredienti.${clinicalTail}`,
             ingredients: [...lead.slice(0, 3), 'olio EVO', 'sale', 'erbe o spezie'],
             steps: [
                 'Riunisci gli ingredienti gia pronti o piu facili da trattare senza costruire troppi passaggi.',
@@ -1349,6 +1498,34 @@ function selectRelevantKnowledge(payload, rankedTemplates = []) {
             include: true
         },
         {
+            key: 'nutritionCounseling',
+            title: 'Ragionamento nutrizionale professionale',
+            reason: 'serve a trasformare esempi clinici in metodo adattabile al singolo utente, non in regole fisse',
+            data: nutritionCounselingBreakfastPatterns,
+            include: true
+        },
+        {
+            key: 'nutritionCounselingLunch',
+            title: 'Ragionamento professionale sul pranzo',
+            reason: 'utile per trasformare un esempio di pranzo in logica adattabile su cereali, legumi, verdure, condimento e sazieta',
+            data: nutritionCounselingLunchPatterns,
+            include: hasSignal(signalText, ['pranzo', 'pasta', 'riso', 'farro', 'orzo', 'quinoa', 'cous', 'gnocchi', 'legumi', 'edamame']) || hasArchetype('pasta') || hasArchetype('grain-bowl')
+        },
+        {
+            key: 'nutritionCounselingDinner',
+            title: 'Ragionamento professionale sulla cena',
+            reason: 'utile per trasformare un esempio di cena in logica adattabile su apertura vegetale, rotazione proteica, quota glucidica e condimento',
+            data: nutritionCounselingDinnerPatterns,
+            include: hasSignal(signalText, ['cena', 'uova', 'tofu', 'tempeh', 'ricotta', 'feta', 'mozzarella', 'certosa', 'burger', 'lupini', 'patata', 'pane scuro', 'riso']) || hasArchetype('protein-main') || hasArchetype('egg-dish')
+        },
+        {
+            key: 'nutritionCounselingDinnerTemplates',
+            title: 'Mini-template tecnici cena tofu-tempeh',
+            reason: 'utile per rendere piu precise alcune cene vegetali con tofu o tempeh attraverso strutture tecniche gia collaudate',
+            data: nutritionCounselingDinnerTemplates,
+            include: hasSignal(signalText, ['tofu', 'tempeh', 'spinaci', 'tahina', 'limone', 'pepe rosa', 'pomodori secchi']) || payload.profile.dinnerProteinPreference === 'tofu-tempeh'
+        },
+        {
             key: 'vegetableScience',
             title: 'Scienza delle verdure',
             reason: 'gli ingredienti indicano che la gestione degli ortaggi puo migliorare il risultato',
@@ -1610,11 +1787,22 @@ async function generateRecipesWithAI(payload) {
     const rankedTemplates = rankRecipeTemplates(payload, 6);
     const selectedTemplates = summarizeTemplateSlotsForPrompt(payload);
     const relevantKnowledge = selectRelevantKnowledge(payload, rankedTemplates);
+    const clinicalContext = getClinicalNutritionContext(payload.profile);
 
     const systemPrompt = [
         'Sei uno Chef stellato esperto in nutrizione clinica e cucina anti-spreco.',
         'L utente ti fornira Ingredienti disponibili, Numero Persone, Allergie/Intolleranze, Obiettivo e dati di profilo utili.',
         'Devi comportarti come uno chef reale che possiede una base di conoscenza culinaria ampia, concreta e anti-spreco.',
+        'Quando il profilo include dati nutrizionali personalizzati, devi ragionare come una nutrizionista: interpreta prima IMC e contesto corporeo, distingui fabbisogno calorico e piano calorico, poi usa il target proteico in g/kg per orientare la struttura del piatto.',
+        'IMC, fabbisogno, piano calorico e proteine in g/kg non sono regole fisse universali: sono parametri del singolo utente e vanno letti come guida personalizzata e variabile.',
+        'Quando ricevi esempi di piano nutrizionale professionale, devi assorbirne il metodo di ragionamento e non copiarne il testo o trasformarlo in schema universale.',
+        'Se l esempio riguarda colazioni o alternative di pasto, eredita soprattutto questi principi: personalizzazione, opzioni equivalenti, quota proteica ragionata, praticita reale, sazieta e aderenza nel tempo.',
+        'Se l esempio riguarda il pranzo, puoi ereditare questi principi: possibile apertura con verdure crude, piatto principale leggibile con base amidacea modulabile, quota proteico-fibrosa da legumi o alternative compatibili, verdure sempre presenti e condimento esplicitato.',
+        'Se l esempio riguarda la cena, puoi ereditare questi principi: apertura con verdure crude, fonte proteica ruotabile e leggibile, quota glucidica semplice e modulata, verdure sempre presenti, olio EVO dichiarato e frutta finale solo se contestualmente sensata.',
+        'Se il profilo esprime una preferenza proteica serale, trattala come priorita morbida: deve orientare la scelta della fonte proteica quando coerente con ingredienti e profilo, senza diventare un obbligo meccanico.',
+        'Se il profilo indica un pranzo abituale da giorno lavorativo, nel whyItFits fai emergere praticita, digeribilita, organizzazione e sostenibilita nella routine. Se indica un giorno libero, fai emergere una struttura piu distesa, piacevole e curata, ma sempre coerente con il piano calorico.',
+        'Applica la stessa distinzione anche al summary: nel giorno lavorativo usa un tono piu pratico, agile e organizzabile; nel giorno libero usa un tono piu disteso, piacevole e curato.',
+        'Se il profilo somiglia a un adulto 50+ in sovrappeso con deficit moderato, privilegia ricette scientificamente sobrie: verdure presenti, cotture semplici, olio EVO a crudo quando sensato, porzioni leggibili, niente fritture o intingoli come asse centrale della proposta.',
         'Usa la knowledge base interna come contesto tecnico e culturale: non trattarla come una lista di obblighi da applicare sempre, ma come sapere professionale da richiamare solo quando pertinente alla ricetta.',
         'Vincoli davvero obbligatori:',
         '1. Se ci sono allergie o intolleranze, escludi tassativamente quegli ingredienti e proponi sostituti compatibili se servono.',
@@ -1630,6 +1818,7 @@ async function generateRecipesWithAI(payload) {
         '11. Evita ricette generiche o intercambiabili: se gli ingredienti permettono un piatto specifico, proponilo.',
         '12. Ogni ricetta deve mostrare almeno una decisione tecnica concreta derivata dagli ingredienti, dal profilo o dalla knowledge base selezionata.',
         '13. Il campo tecnica_cottura deve spiegare la scelta tecnica reale, non una formula vaga.',
+        '14. Nel campo whyItFits spiega in modo breve ma concreto come la ricetta si inserisce nel metodo nutrizionale del profilo: IMC contestualizzato, differenza tra fabbisogno e piano, e quota proteica quando utile.',
         'Restituisci ESCLUSIVAMENTE JSON valido con questo shape: {"recipes":[{"id":"R001","mode_key":"base|media|chef|salvafrigo","mode_label":"Cucina base|Cucina media|Chef mode|Salvafrigo","nome_ricetta":"Nome del piatto","difficolta":"Semplice|Media|Chef","tempo_prep_min":20,"allergeni_esclusi":["Lattosio","Glutine"],"tecnica_cottura":"Descrizione della tecnica principale","anti_spreco":"Come usare gli scarti","ingredienti_tabella":[{"n":"Ingrediente 1","qty":100,"k":150,"p":10,"c":20,"g":3}],"totale_piatto":{"k":450,"p":30,"c":60,"g":10},"procedimento":["Step 1","Step 2"],"summary":"","whyItFits":"","substitutions":[""]}]}'
     ].join(' ');
 
@@ -1641,7 +1830,15 @@ async function generateRecipesWithAI(payload) {
         `Regime alimentare: ${payload.profile.diet || 'non specificato'}`,
         `Stile di vita: ${payload.profile.jobType || 'non specificato'}`,
         `Allenamenti settimanali: ${payload.profile.workoutsPerWeek || 0}`,
+        `Metodo nutrizionale personalizzato: ${buildNutritionMethodSummary(payload.profile)}`,
+        `Dati corporei: sesso ${payload.profile.sex || 'non specificato'} | eta ${payload.profile.age || 0} | peso ${payload.profile.weight || 0} kg | altezza ${payload.profile.height || 0} cm`,
+        `IMC e contesto: ${payload.profile.imc || 0} | fascia ${payload.profile.imcCategory || 'non specificata'}`,
+        `Fabbisogno calorico giornaliero: ${payload.profile.maintenanceCalories || 0}`,
         `Calorie target: ${payload.profile.targetCalories || 0}`,
+        `Delta calorico del piano: ${payload.profile.goalCalorieDelta || 0}`,
+        `Apporto proteico target: ${payload.profile.proteinTargetPerKg || 0} g/kg | ${payload.profile.proteinTargetGrams || 0} g/die`,
+        `Contesto pranzo abituale del profilo: ${getLunchContextLabel(payload.profile.lunchContextPreference)}`,
+        `Preferenza proteica serale del profilo: ${getDinnerProteinPreferenceLabel(payload.profile.dinnerProteinPreference)}`,
         `Ingredienti esclusi a monte: ${payload.excludedIngredients.join(', ') || 'nessuno'}`,
         `Archetipi di piatto piu promettenti per questa richiesta: ${JSON.stringify(relevantKnowledge.dishArchetypes)}`,
         `Slot obbligatori e template interni da usare come ispirazione strutturale, non da copiare parola per parola: ${JSON.stringify(selectedTemplates)}`,
@@ -1649,10 +1846,20 @@ async function generateRecipesWithAI(payload) {
         `Riferimenti CREA su ingredienti e valori nutrizionali compatibili con questa richiesta: ${JSON.stringify(relevantKnowledge.foodCompositionRefs)}`,
         `Riferimenti CREA Tabella C su resa e variazione peso in cottura: ${JSON.stringify(relevantKnowledge.yieldFactorRefs)}`,
         `Segnali nutrizionali CREA utili per orientare le scelte: ${JSON.stringify(relevantKnowledge.nutritionSignals)}`,
+        `Schema clinico-pratico aggiuntivo: ${JSON.stringify(clinicalContext.recipePromptLines)}`,
         'Genera 4 ricette realistiche e diverse fra loro, nell ordine obbligatorio base, media, chef, salvafrigo.',
         'Per Cucina base: resta su ricette fondamentali e leggibili, con pochi passaggi e una sola tecnica dominante.',
         'Per Cucina media: costruisci un piatto domestico con almeno due elementi coerenti tra loro, per esempio proteina o polpetta piu crema, salsa o verdura.',
         'Per Chef mode: scegli la ricetta piu sfidante che gli ingredienti consentono davvero, sfruttando i seed caricati e la knowledge base tecnica; non deve sembrare una media con nome piu elegante.',
+        'Se sono presenti IMC, fabbisogno, piano calorico e proteine g/kg, usali come struttura del ragionamento: non limitarti a citare i numeri, fai in modo che influenzino porzioni, densita energetica, scelta della proteina e composizione del piatto.',
+        'Distingui chiaramente il fabbisogno di mantenimento dall apporto del piano: una ricetta non deve per forza coprire tutto il fabbisogno, ma deve essere coerente con il piano giornaliero e con la quota proteica del profilo.',
+        'Se la richiesta o gli ingredienti fanno pensare a una colazione o a un pasto rapido, puoi usare la logica professionale delle alternative equivalenti: una base proteica, una quota carboidrati selezionata, eventuale frutta o grassi buoni, e almeno 2-3 varianti coerenti nello stesso ragionamento.',
+        'Non trattare supplementi, attesa della fame o equivalenze di frutta come obblighi: usali solo come spunti contestualizzati, prudenti e coerenti con il profilo.',
+        'Se il contesto suggerisce un pranzo o piatto unico, puoi usare la logica professionale del pranzo: ordine del pasto, cereali o pasta o equivalenti, legumi o edamame o altra quota compatibile, verdure e olio EVO dichiarato. L eventuale nota dolce finale non e mai automatica.',
+        'Se il contesto suggerisce una cena o un secondo piatto, puoi usare la logica professionale della cena: apertura con verdure crude, nucleo proteico scelto in una famiglia ruotabile tra uova, tofu, tempeh, latticini light o burger vegetali proteici, quota glucidica semplice e olio EVO dichiarato.',
+        'Se la preferenza serale privilegia tofu o tempeh, puoi richiamare mini-template tecnici come tofu limone e pepe rosa, tempeh tahina e limone o polpette di tofu e spinaci, adattandoli agli ingredienti reali senza copiarli in modo rigido.',
+        'Nel campo whyItFits non fermarti al riepilogo nutrizionale: collega anche la ricetta al contesto pranzo abituale del profilo, distinguendo in modo naturale tra giorno lavorativo e giorno libero quando questo rende la proposta piu coerente.',
+        'Anche il campo summary deve riflettere quel contesto: non deve essere un riassunto neutro o intercambiabile se il profilo suggerisce un tono piu pratico oppure piu disteso.',
         'Usa archetipi e moduli rilevanti qui sopra e trasformali in decisioni concrete: taglio, tecnica, sostituzione, gestione dell umidita, sicurezza, equilibrio nutrizionale, anti-spreco.',
         'Se i riferimenti CREA contengono ingredienti pertinenti, usali come ancore nutrizionali e di identita dell ingrediente senza copiare dati irrilevanti o incompatibili.',
         'Se i riferimenti di resa indicano una variazione peso per bollitura, padella, forno, griglia o microonde, usali per non confondere crudo e cotto nella stima dei nutrienti.',
@@ -1708,6 +1915,7 @@ async function generateRecipesWithAI(payload) {
     const parsed = extractJson(content);
     const recipes = Array.isArray(parsed?.recipes)
         ? assignRecipeSlots(parsed.recipes.map((recipe, index) => normalizeRecipe(recipe, index, relevantKnowledge.foodCompositionRefs)).filter(Boolean).slice(0, 4))
+            .map((recipe) => applyLunchContextToneToRecipe(recipe, payload.profile.lunchContextPreference))
         : [];
 
     if (recipes.length !== 4) {
@@ -1718,7 +1926,8 @@ async function generateRecipesWithAI(payload) {
         recipes,
         meta: {
             source: 'ai',
-            model
+            model,
+            lunchContext: payload.profile.lunchContextPreference
         }
     };
 }
@@ -1768,7 +1977,8 @@ exports.handler = async (event) => {
             meta: {
                 source: 'fallback',
                 reason: 'AI live temporaneamente non disponibile',
-                excludedIngredients: payload.excludedIngredients
+                excludedIngredients: payload.excludedIngredients,
+                lunchContext: payload.profile.lunchContextPreference
             }
         });
     }

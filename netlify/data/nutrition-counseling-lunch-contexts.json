@@ -1,0 +1,48 @@
+{
+  "version": "1.0",
+  "category": "contesto-pranzo-lavorativo-libero",
+  "overview": {
+    "summary": "Il pranzo non va costruito allo stesso modo in un giorno lavorativo e in un giorno libero. Il contesto cambia tempi, praticita, possibilita di preparazione, comfort digestivo e aderenza.",
+    "principles": [
+      "La differenza tra pranzo lavorativo e pranzo libero non cambia il metodo nutrizionale di fondo, ma cambia la forma pratica del pasto.",
+      "Il pranzo lavorativo richiede spesso piu semplicita, trasportabilita, stabilita energetica e velocita di preparazione o consumo.",
+      "Il pranzo del giorno libero puo essere piu disteso, piu strutturato e con una tecnica leggermente piu articolata, restando coerente con il profilo."
+    ]
+  },
+  "workday_lunch": {
+    "summary": "Il pranzo da giorno lavorativo deve essere concreto, semplice da organizzare e facile da gestire anche con tempi stretti.",
+    "patterns": [
+      "Piatto unico leggibile e trasportabile, come bowl, pasta semplice, cous-cous o cereale con legumi e verdure.",
+      "Apertura con verdure crude semplice e rapida, se praticabile.",
+      "Ingredienti che si preparano in anticipo o si assemblano facilmente, senza eccessiva complessita."
+    ],
+    "guardrails": [
+      "Evitare strutture troppo laboriose o difficili da portare fuori casa.",
+      "Evitare pasti troppo pesanti se rischiano di peggiorare energia e lucidita nel pomeriggio."
+    ]
+  },
+  "free_day_lunch": {
+    "summary": "Il pranzo del giorno libero puo avere una costruzione piu calma e leggermente piu ricca sul piano dell esperienza, pur restando coerente con il piano.",
+    "patterns": [
+      "Primo piatto o piatto unico piu curato, con tempi un po piu distesi.",
+      "Maggiore spazio a verdure, cotture piu piacevoli e una fruizione meno frettolosa del pasto.",
+      "Se il profilo lo richiede, si puo inserire in modo contestuale una piccola nota dolce finale come leva comportamentale e non automatica."
+    ],
+    "guardrails": [
+      "Non trasformare il giorno libero in un pasto automaticamente piu abbondante o meno coerente.",
+      "Non usare il maggior tempo disponibile come giustificazione per perdere struttura nutrizionale."
+    ]
+  },
+  "chef_use": {
+    "when_relevant": [
+      "Quando l IA costruisce un piano giornaliero con distinzione esplicita del pranzo.",
+      "Quando l utente vuole capire come cambia il pranzo tra routine lavorativa e giorno libero.",
+      "Quando serve adattare il medesimo metodo nutrizionale a due contesti pratici diversi."
+    ],
+    "how_to_use": [
+      "Usa il modulo per cambiare il formato pratico del pranzo, non per cambiare arbitrariamente le logiche nutrizionali di base.",
+      "Nel giorno lavorativo privilegia praticita, digeribilita e trasportabilita.",
+      "Nel giorno libero puoi permettere una struttura un po piu distesa e curata, senza rompere la coerenza del piano."
+    ]
+  }
+}

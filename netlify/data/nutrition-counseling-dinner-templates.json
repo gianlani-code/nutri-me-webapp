@@ -1,0 +1,82 @@
+{
+  "version": "1.0",
+  "category": "mini-template-cena-proteica",
+  "overview": {
+    "summary": "Mini-template tecnici per rendere piu precise e richiamabili alcune cene proteiche a base di tofu o tempeh.",
+    "principles": [
+      "I template servono come tracce tecniche adattabili, non come ricette da copiare alla lettera.",
+      "Il valore del template sta nella struttura: taglio, tecnica, salsa breve, finitura e accompagnamento coerente.",
+      "La praticita domestica resta prioritaria: pochi passaggi, ingredienti leggibili e buon potenziale di ripetizione."
+    ]
+  },
+  "templates": [
+    {
+      "key": "tempeh-tahina-limone",
+      "title": "Tempeh tahina e limone",
+      "protein_family": "tofu-tempeh",
+      "structure": [
+        "Taglia il tempeh a striscioline o bocconi per aumentare superficie e rosolatura.",
+        "Piastra o rosola in padella con poco olio fino a dare colore e consistenza.",
+        "Prepara a parte una salsa breve con tahina, succo di limone, sale, pepe e poca acqua calda.",
+        "Usa la salsa come finitura o accompagnamento, non come copertura pesante.",
+        "Completa con verdure e quota glucidica semplice coerente con il piano."
+      ],
+      "why_it_works": [
+        "Il contrasto tra tostatura del tempeh e salsa acida-grassa breve rende il piatto piu appagante.",
+        "La struttura e domestica, rapida e ripetibile senza perdere identita.",
+        "Si adatta bene a una cena vegetale strutturata ma non complicata."
+      ]
+    },
+    {
+      "key": "tofu-limone-pepe-rosa",
+      "title": "Tofu limone e pepe rosa",
+      "protein_family": "tofu-tempeh",
+      "structure": [
+        "Taglia il tofu a fettine o rettangoli regolari e asciugalo bene.",
+        "Usa una panatura leggera, per esempio farina di riso o amido, per migliorare rosolatura e consistenza.",
+        "Rosola in padella con poco olio fino a ottenere superficie dorata.",
+        "Chiudi con succo di limone e pepe rosa per dare identita aromatica e freschezza.",
+        "Abbina verdure e una quota glucidica semplice, senza appesantire il piatto."
+      ],
+      "why_it_works": [
+        "La panatura leggera aiuta il tofu a non risultare neutro o umido.",
+        "Limone e pepe rosa creano una finitura riconoscibile senza aumentare molto la complessita.",
+        "Funziona bene quando serve una cena vegetale ordinata e veloce."
+      ]
+    },
+    {
+      "key": "polpette-tofu-spinaci",
+      "title": "Polpette di tofu e spinaci",
+      "protein_family": "tofu-tempeh",
+      "structure": [
+        "Asciuga il tofu e frullalo o lavoralo fino a ottenere una base compatta.",
+        "Cuoci gli spinaci, strizzali bene e tagliali fini per evitare eccesso di acqua.",
+        "Usa un elemento sapido come pomodori secchi per aumentare profondita e identita.",
+        "Forma polpette, passale in amido o panatura leggera e rosolale in padella con poco olio.",
+        "Se utile, chiudi con salsa di pomodoro breve e cottura dolce finale."
+      ],
+      "why_it_works": [
+        "E una soluzione piu domestica e meal-prep friendly, utile anche in doppia porzione.",
+        "Migliora consistenza e aderenza per chi tollera meno il tofu in forma semplice.",
+        "Permette una cena piu strutturata senza diventare tecnicamente pesante."
+      ]
+    }
+  ],
+  "chef_use": {
+    "when_relevant": [
+      "Quando il profilo o la richiesta privilegiano tofu o tempeh per la cena.",
+      "Quando l IA costruisce una cena vegetale o un secondo piatto proteico con ingredienti compatibili.",
+      "Quando serve rendere il tofu o il tempeh piu riconoscibili, appaganti e facili da ripetere."
+    ],
+    "how_to_use": [
+      "Usa il mini-template come direzione tecnica, non come copione rigido.",
+      "Mantieni leggibile la struttura: proteina, verdure, carboidrato semplice e condimento coerente.",
+      "Adatta tagli, salsa e finiture agli ingredienti realmente disponibili."
+    ],
+    "guardrails": [
+      "Non copiare parola per parola i passaggi del template se gli ingredienti non lo permettono.",
+      "Non trasformare ogni cena vegetale nello stesso piatto.",
+      "Mantieni il tono pratico e domestico, non restaurant-only."
+    ]
+  }
+}

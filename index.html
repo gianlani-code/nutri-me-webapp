@@ -41,13 +41,14 @@
                     <option value="neutro">Altro/Preferisco non specificare</option>
                 </select>
                 <label>Età<span style="color:#000;">*</span></label>
-                <input type="number" id="wizard-age" placeholder="Età" min="8" max="120" />
+                <input type="number" id="wizard-age" placeholder="Età" min="0" max="120" />
                 <label>Peso (kg)<span style="color:#000;">*</span></label>
-                <input type="number" id="wizard-weight" placeholder="Peso in kg" min="20" max="300" />
+                <input type="number" id="wizard-weight" placeholder="Peso in kg" min="0" max="300" />
                 <label>Altezza (cm)<span style="color:#000;">*</span></label>
-                <input type="number" id="wizard-height" placeholder="Altezza in cm" min="80" max="250" />
+                <input type="number" id="wizard-height" placeholder="Altezza in cm" min="0" max="300" />
                 <label>Quanta acqua bevi al giorno (L)?<span style="color:#000;">*</span></label>
-                <input type="number" id="wizard-water" placeholder="Litri/giorno" step="0.1" min="0" max="10" />
+                <input type="number" id="wizard-water" placeholder="Litri/giorno" step="0.1" min="0" max="20" />
+                <small class="required-note">*i seguenti campi sono obbligatori.</small>
             </div>
 
             <div class="wizard-step" data-step="2">
@@ -55,6 +56,8 @@
                 <input type="text" id="wizard-allergies" placeholder="lattosio, glutine" />
                 <label>Intolleranze</label>
                 <input type="text" id="wizard-intolerances" placeholder="frutta, uova" />
+                    <label>Altri tipi di patologie</label>
+                    <input type="text" id="wizard-other-pathologies" placeholder="Es. insulino-resistenza, ipotiroidismo" />
                 <label>Regime alimentare specifico</label>
                 <input type="text" id="wizard-diet" placeholder="vegetariano, vegano, paleo" />
             </div>
@@ -68,14 +71,27 @@
                     <option value="attivo">Attivo</option>
                 </select>
                 <label>Quante volte ti alleni a settimana?<span style="color:#000;">*</span></label>
-                <input type="number" id="wizard-workouts" placeholder="Numero allenamenti" min="0" max="14" />
+                <input type="number" id="wizard-workouts" placeholder="Numero allenamenti" min="0" max="10" />
+                <div id="wizard-sport-details" class="wizard-conditional-block" style="display:none;">
+                    <label>Vuoi specificare lo sport?</label>
+                    <select id="wizard-sport-toggle" data-optional="true">
+                        <option value="">Seleziona</option>
+                        <option value="no">No</option>
+                        <option value="si">Si</option>
+                    </select>
+                    <div id="wizard-sport-name-wrap" style="display:none;">
+                        <label>Quale sport pratichi?</label>
+                        <input type="text" id="wizard-sport-name" data-optional="true" placeholder="Es. corsa, palestra, nuoto" />
+                    </div>
+                </div>
                 <label>Obiettivo<span style="color:#000;">*</span></label>
                 <select id="wizard-goal">
                     <option value="">Seleziona</option>
-                    <option value="dimagrire">Dimagrire</option>
-                    <option value="mantenere">Mantenere</option>
-                    <option value="massa">Massa</option>
+                    <option value="dimagrire">Vorrei perdere peso</option>
+                    <option value="mantenere">Vorrei mantenere il mio peso forma</option>
+                    <option value="massa">Vorrei aumentare la massa muscolare</option>
                 </select>
+                <small class="required-note">*i seguenti campi sono obbligatori.</small>
             </div>
 
             <div class="wizard-step" data-step="4">
@@ -89,6 +105,13 @@
                     <option value="si">Si</option>
                     <option value="no">No</option>
                     <option value="qualche_volta">Qualche volta</option>
+                </select>
+                <label>Perchè vuoi tenere traccia dei nutrienti che assumi?</label>
+                <select id="wizard-motivation">
+                    <option value="">Seleziona</option>
+                    <option value="Voglio sentirmi meglio con me stesso">Voglio sentirmi meglio con me stesso</option>
+                    <option value="Voglio iniziare a seguire uno stile di vita piu sano">Voglio iniziare a seguire uno stile di vita piu sano</option>
+                    <option value="Non so mai cosa mangiare e vorrei equilibrare i nutrienti">Non so mai cosa mangiare e vorrei equilibrare i nutrienti</option>
                 </select>
             </div>
 
@@ -203,11 +226,10 @@
                     <h3>Target Micronutrienti</h3>
 
                     <div class="micro-row">
-                        <div class="micro-row-top">
-                            <div class="micro-row-title"><i data-lucide="droplets" class="micro-icon"></i><span>Acqua</span></div>
-                            <strong id="val-water">0.0 / 7000 ml</strong>
+                        <div class="water-recommendation-panel">
+                            <span class="water-icon">💧</span>
+                            <p>In base ai tuoi dati, dovresti bere circa <strong id="water-liters-target">--</strong> litri di acqua al giorno per mantenere un'idratazione ottimale.</p>
                         </div>
-                        <div class="micro-progress"><div id="bar-water" style="width:0%"></div></div>
                     </div>
 
                     <div class="micro-row">
@@ -333,7 +355,7 @@
 
         <section id="pasti-rapidi" class="tab-content" style="display:none;">
             <div class="organic-panel chef-mode-panel" style="margin: 20px auto; background: #f8f9fa; border-radius: 15px; border-left: 4px solid var(--info);">
-                <h3 class="panel-title">Chef Mode: Crea il tuo Piatto</h3>
+                <h3 class="panel-title">Modalita Manuale</h3>
                 <input type="text" id="recipe-name" class="main-input" placeholder="Nome della tua ricetta...">
                 <div class="search-box">
                     <input type="text" id="recipe-search" placeholder="Aggiungi ingrediente..." oninput="cercaAlimento(event, 'ricetta')">
@@ -349,7 +371,9 @@
                 <button onclick="salvaRicettaDefinitiva()" class="btn-main orange">SALVA RICETTA NEI MIEI PIATTI</button>
             </div>
 
-            <div class="organic-panel curiosity-panel" style="margin: 20px auto; background: #f8f9fa; border-radius: 15px; border-left: 4px solid var(--info);">
+            <hr class="spacer">
+
+            <div id="saved-recipes-panel" class="organic-panel curiosity-panel" style="display:none; margin: 20px auto; background: #f8f9fa; border-radius: 15px; border-left: 4px solid var(--info);">
                 <details class="curiosity-details">
                     <summary class="curiosity-summary">I Tuoi Piatti Salvati</summary>
                     <div class="curiosity-content saved-dishes-content">
@@ -358,7 +382,9 @@
                 </details>
             </div>
 
-            <div class="organic-panel curiosity-panel" style="margin: 20px auto; background: #f8f9fa; border-radius: 15px; border-left: 4px solid var(--info);">
+            <hr class="spacer">
+
+            <div class="organic-panel curiosity-panel" style="display: none; margin: 20px auto; background: #f8f9fa; border-radius: 15px; border-left: 4px solid var(--info);">
                 <details class="curiosity-details">
                     <summary class="curiosity-summary">Curiosita</summary>
                     <div class="chef-mode-guide curiosity-content">
@@ -392,19 +418,83 @@
                 </details>
             </div>
 
+            <div class="organic-panel curiosity-panel" style="display: none; margin: 20px auto; background: #f8f9fa; border-radius: 15px; border-left: 4px solid var(--info);">
+                <details class="curiosity-details">
+                    <summary class="curiosity-summary">Linee guida lifestyle</summary>
+                    <div class="chef-mode-guide curiosity-content">
+                        <div id="lifestyle-guidance-grid" class="chef-mode-guide-grid"></div>
+                    </div>
+                </details>
+            </div>
+
             <hr class="spacer">
-            <div class="organic-panel" style="margin: 20px auto; background: #f8f9fa; border-radius: 15px; border-left: 4px solid var(--info);">
-                <h3 class="panel-title">AI Mode: 4 modalita su misura</h3>
-                <input type="hidden" id="discover-ingredients" class="main-input" placeholder="Ingredienti a disposizione (es. Zucchine, uova...)" style="display:none;">
-                <div class="search-box" style="margin-top: 10px;">
-                    <input type="text" id="discover-ingredient-search" placeholder="Cerca ingrediente da aggiungere..." oninput="cercaAlimento(event, 'ai')">
-                    <div id="ai-results" class="search-dropdown"></div>
+            <div class="organic-panel ai-mode-panel" style="margin: 20px auto; background: #f8f9fa; border-radius: 15px; border-left: 4px solid var(--info);">
+                <h3 class="panel-title">CHEF MODE</h3>
+                <p class="ai-mode-subtitle">Componi il tuo piatto con un flusso guidato: scegli il risultato che vuoi ottenere e completa solo i campi pertinenti.</p>
+
+                <label for="ai-mode-selector" class="ai-mode-field-label">Seleziona cosa vuoi generare</label>
+                <select id="ai-mode-selector" class="main-input" onchange="toggleAiMode()">
+                    <option value="recipe">Ricetta su misura</option>
+                    <option value="daily">Piano giornaliero</option>
+                    <option value="weekly">Piano settimanale</option>
+                </select>
+
+                <div id="ai-mode-recipes-fields" class="ai-mode-fields">
+                    <div id="chef-mode-recipe-options" class="ai-mode-fields">
+                        <label for="chef-recipe-meal-type" class="ai-mode-field-label">Tipo di pasto</label>
+                        <select id="chef-recipe-meal-type" class="main-input">
+                            <option value="colazione">Colazione</option>
+                            <option value="pranzo">Pranzo</option>
+                            <option value="cena">Cena</option>
+                            <option value="spuntino">Spuntino</option>
+                        </select>
+
+                        <label for="chef-recipe-difficulty" class="ai-mode-field-label">Difficolta</label>
+                        <select id="chef-recipe-difficulty" class="main-input">
+                            <option value="semplice">Semplice</option>
+                            <option value="media">Media</option>
+                            <option value="chef">Chef</option>
+                            <option value="salvafrigo">Salvafrigo</option>
+                        </select>
+                    </div>
+
+                    <input type="hidden" id="discover-ingredients" class="main-input" placeholder="Ingredienti a disposizione (es. Zucchine, uova...)" style="display:none;">
+                    <div class="search-box" style="margin-top: 10px;">
+                        <input type="text" id="discover-ingredient-search" placeholder="Cerca ingrediente da aggiungere..." oninput="cercaAlimento(event, 'ai')">
+                        <div id="ai-results" class="search-dropdown"></div>
+                    </div>
+                    <ul id="ai-ingredient-list" class="recipe-build-list" style="margin-top: 10px;"></ul>
+                    <label for="discover-people" class="ai-mode-field-label">Numero di persone</label>
+                    <input type="number" id="discover-people" class="main-input" placeholder="Numero di persone" style="margin-top: 10px;" min="1" value="1">
+                    <button id="chef-generate-recipe-btn" onclick="generaRicettaAI()" class="btn-main orange" style="margin-top: 15px;">GENERA RICETTA</button>
                 </div>
-                <ul id="ai-ingredient-list" class="recipe-build-list" style="margin-top: 10px;"></ul>
-                <label for="discover-people" class="ai-mode-field-label">Numero di persone</label>
-                <input type="number" id="discover-people" class="main-input" placeholder="Numero di persone" style="margin-top: 10px;" min="1" value="1">
-                <button onclick="generaRicettaAI()" class="btn-main orange" style="margin-top: 15px;">GENERA 4 RICETTE</button>
-                <div id="ai-recipe-result" style="display:none; margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 15px; border-left: 4px solid var(--info);"></div>
+
+                <div id="ai-mode-daily-fields" class="ai-mode-fields" style="display:none;">
+                    <p class="ai-mode-subtitle">Genera un piano giornaliero coerente con il tuo profilo e con il contesto della giornata.</p>
+                    <label for="day-plan-lunch-context" class="ai-mode-field-label">Contesto pranzo</label>
+                    <select id="day-plan-lunch-context" class="main-input">
+                        <option value="workday">Giorno lavorativo</option>
+                        <option value="free-day">Giorno libero</option>
+                    </select>
+                    <input type="text" id="day-plan-ai-notes" class="main-input" placeholder="Preferenze, timing o richieste del giorno (opzionale)">
+                    <button id="chef-generate-daily-btn" onclick="generaPianoGiornalieroAI()" class="btn-main orange">GENERA PIANO GIORNALIERO</button>
+                </div>
+
+                <div id="ai-mode-weekly-fields" class="ai-mode-fields" style="display:none;">
+                    <p class="ai-mode-subtitle">Imposta un prompt sintetico per un piano settimanale. Il flusso resta unificato nello stesso box risultati.</p>
+                    <label for="weekly-plan-lunch-context" class="ai-mode-field-label">Contesto pranzo</label>
+                    <select id="weekly-plan-lunch-context" class="main-input">
+                        <option value="workday">Giorno lavorativo</option>
+                        <option value="free-day">Giorno libero</option>
+                    </select>
+                    <input type="text" id="weekly-plan-ai-notes" class="main-input" placeholder="Preferenze, vincoli o richieste per la settimana (opzionale)">
+                    <button id="chef-generate-weekly-btn" onclick="generaPianoSettimanaleAI()" class="btn-main orange">GENERA PIANO SETTIMANALE</button>
+                </div>
+
+                <div id="chef-mode-results" class="ai-mode-results" style="display:none;">
+                    <div id="ai-recipe-result" class="ai-extra-result" style="display:none;"></div>
+                    <div id="ai-day-plan-result" class="ai-extra-result" style="display:none;"></div>
+                </div>
             </div>
 
             <div class="section-brand-footer" aria-label="Nutri-Me">NUTRI-ME</div>
@@ -455,7 +545,22 @@
                             <input type="text" id="profilo-diet" class="main-input" placeholder="Dieta">
                             <input type="text" id="profilo-allergies" class="main-input" placeholder="Allergie">
                             <input type="text" id="profilo-intolerances" class="main-input" placeholder="Intolleranze">
+                                <input type="text" id="profilo-other-pathologies" class="main-input" placeholder="Altri tipi di patologie">
                             <input type="number" id="profilo-meals" class="main-input" placeholder="Pasti al giorno">
+                            <select id="profilo-dinner-protein-preference">
+                                <option value="variata">Cena proteica: nessuna preferenza</option>
+                                <option value="uova">Cena proteica: preferisco uova</option>
+                                <option value="tofu-tempeh">Cena proteica: preferisco tofu o tempeh</option>
+                                <option value="latticini-light">Cena proteica: preferisco latticini light</option>
+                                <option value="burger-vegetali">Cena proteica: preferisco burger vegetali o lupini</option>
+                            </select>
+                            <select id="profilo-dinner-protein-frequency">
+                                <option value="libera">Cena proteica: frequenza libera</option>
+                                <option value="1-2">Cena proteica: circa 1-2 volte a settimana</option>
+                                <option value="2-3">Cena proteica: circa 2-3 volte a settimana</option>
+                                <option value="3-4">Cena proteica: circa 3-4 volte a settimana</option>
+                                <option value="5+">Cena proteica: quasi ogni giorno</option>
+                            </select>
                             <input type="text" id="profilo-weakpoint" class="main-input" placeholder="Punto debole">
                             <input type="number" step="0.1" id="profilo-water" class="main-input" placeholder="Acqua giornaliera (L)">
                         </div>
@@ -504,6 +609,7 @@
     </main>
 
     <script src="avatar-assets.js"></script>
+    <script src="data/clinical-nutrition-overweight-50plus.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

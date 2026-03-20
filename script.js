@@ -1,3 +1,478 @@
+const wizardJobLabels = {
+    sedentario: 'Sedentario',
+    moderato: 'Moderato',
+    attivo: 'Attivo'
+};
+
+const wizardGoalLabels = {
+    dimagrire: 'Vorrei perdere peso',
+    mantenere: 'Vorrei mantenere il mio peso forma',
+    massa: 'Vorrei aumentare la massa muscolare'
+};
+
+const avatarMoodLabels = {
+    'avatars/1.jpg': 'determinato e pronto a partire con energia',
+    'avatars/2.jpg': 'sereno e concentrato sul tuo benessere',
+    'avatars/3.jpg': 'carico e con una bella spinta positiva',
+    'avatars/4.jpg': 'equilibrato e motivato a fare bene',
+    'avatars/5.jpg': 'grintoso e pieno di voglia di rimetterti in gioco',
+    'avatars/6.jpg': 'lucido e pronto a dare continuita alle tue abitudini',
+    'avatars/7.jpg': 'riflessivo ma con la giusta energia per iniziare',
+    'avatars/8.jpg': 'positivo e deciso a prenderti cura di te'
+};
+
+function getWizardJobLabel(value) {
+    return wizardJobLabels[value] || value || 'Non specificato';
+}
+
+function getWizardJobDescription(value) {
+    const descriptions = {
+        sedentario: 'passi la maggior parte del tuo tempo lavorativo seduto',
+        moderato: 'alterni momenti di attivita e momenti di sedentarieta',
+        attivo: 'passi la maggior parte del tuo tempo lavorativo in piedi o in modo attivo'
+    };
+
+    return descriptions[value] || 'non hai specificato il tuo tipo di lavoro';
+}
+
+function getWizardGoalLabel(value) {
+    return wizardGoalLabels[value] || value || 'Non specificato';
+}
+
+function formatSportLabel(name) {
+    const cleanName = (name || '').toString().trim();
+
+    if (cleanName) {
+        return cleanName;
+    }
+
+    return '-';
+}
+
+function getAvatarMoodLabel(path) {
+    return avatarMoodLabels[normalizeAvatarPath(path)] || 'positivo e pronto a iniziare questo percorso';
+}
+
+function getDietNarrative(diet) {
+    if (!diet || diet === 'regime alimentare non specificato') {
+        return 'un regime alimentare non ancora specificato';
+    }
+
+    return `un regime alimentare ${diet}`;
+}
+
+function getAllergyNarrative(allergies, intolerances) {
+    const hasAllergies = allergies && allergies !== 'non allergico a sostanze o alimenti';
+    const hasIntolerances = intolerances && intolerances !== 'non intollerante ad alimenti';
+
+    if (hasAllergies && hasIntolerances) {
+        return `Hai indicato allergie a ${allergies} e intolleranze a ${intolerances}`;
+    }
+
+    if (hasAllergies) {
+        return `Hai indicato allergie a ${allergies}, mentre non hai segnalato intolleranze`;
+    }
+
+    if (hasIntolerances) {
+        return `Non hai segnalato allergie, ma hai indicato intolleranze a ${intolerances}`;
+    }
+
+    return 'Non hai indicato allergie o intolleranze';
+}
+
+function getOtherPathologiesNarrative(otherPathologies) {
+    const text = String(otherPathologies || '').trim();
+
+    if (!text || text === 'non specificato') {
+        return 'Non hai indicato altre patologie';
+    }
+
+    return `Hai indicato queste altre patologie o condizioni cliniche: ${text}`;
+}
+
+function getSmokeNarrative(smoke) {
+    const smokeLabels = {
+        si: 'Hai indicato di fumare attualmente.',
+        no: 'Hai indicato di non fumare.',
+        qualche_volta: 'Hai indicato di fumare qualche volta.'
+    };
+
+    return smokeLabels[smoke] || 'Non hai specificato il tuo rapporto con il fumo.';
+}
+
+function getMotivationNarrative(motivation) {
+    if (!motivation || motivation === 'non specificato') {
+        return 'Stai ancora definendo la motivazione principale che ti spinge a intraprendere questo percorso.';
+    }
+
+    return `La motivazione che ti spinge a intraprendere questo percorso e: ${motivation}.`;
+}
+
+function buildLifestyleGuidanceContent(draftProfile) {
+    const weight = Number(draftProfile?.weight) || 0;
+    const workouts = Number(draftProfile?.workoutsPerWeek) || 0;
+    const goal = draftProfile?.goal || 'mantenere';
+    const diet = (draftProfile?.diet || '').toString().toLowerCase();
+    const waterTarget = Number(draftProfile?.acquaObiettivo) > 0
+        ? `${draftProfile.acquaObiettivo} L`
+        : '2,5-3 L';
+    const waterFocus = workouts >= 4
+        ? 'Con la tua frequenza di allenamento conviene stare nella parte alta del target, distribuendo bene l acqua tra mattina, pre workout e recupero.'
+        : workouts >= 2
+            ? 'Nei giorni di allenamento concentrane una quota tra mattina, pre allenamento e ore successive allo sforzo.'
+            : 'La priorita resta la costanza quotidiana, evitando di concentrare tutta l acqua nelle ore serali.';
+    const sodiumFocus = workouts >= 4
+        ? 'Con una sudorazione piu frequente, un piccolo pizzico di sale marino integrale per pietanza puo migliorare anche tolleranza e recupero.'
+        : 'Un piccolo pizzico di sale marino integrale per pietanza puo essere una strategia semplice per migliorare gusto e aderenza al piano.';
+
+    let goalFocus = 'Mantieni una struttura alimentare regolare e sostenibile, usando i pasti liberi come flessibilita e non come compensazione.';
+    let creatineFocus = 'La creatina puo restare a 3-5 g quotidiani al mattino come supporto pratico a energia muscolare e recupero.';
+
+    if (goal === 'dimagrire') {
+        goalFocus = 'Nel tuo caso il pasto libero va gestito con lucidita: meglio 1-2 pasti liberi veri, ma senza trasformarli in un intero weekend fuori traccia, cosi proteggi deficit, sazieta e continuita.';
+        creatineFocus = 'La creatina puo restare a 3-5 g quotidiani al mattino anche in fase di dimagrimento, per proteggere performance, tono e massa magra.';
+    } else if (goal === 'massa') {
+        goalFocus = 'Se il focus e aumentare massa muscolare, anche il pasto libero dovrebbe mantenere una base proteica chiara e una quota energetica utile, senza diventare disordinato o casuale.';
+        creatineFocus = 'La creatina a 3-5 g quotidiani al mattino e particolarmente sensata se il focus e performance, recupero e crescita muscolare.';
+    }
+
+    const caffeineFocus = weight >= 85 || workouts >= 4
+        ? 'Limita comunque il caffe a 2 massimo 3 al giorno, concentrandolo nella prima parte della giornata per non peggiorare recupero e sonno.'
+        : 'Anche se ben tollerato, il caffe resta piu utile se contenuto entro 2 massimo 3 al giorno e concentrato nella prima parte della giornata.';
+    const fatigueFocus = workouts >= 3
+        ? 'Nei periodi di stanchezza marcata, turni notturni o jet lag si puo valutare un breve carico di creatina da 15-20 g al giorno in 4 dosi per 5-7 giorni.'
+        : 'Nei periodi di stanchezza marcata, turni notturni o jet lag si puo comunque valutare un breve carico di creatina da 15-20 g al giorno in 4 dosi per 5-7 giorni.';
+    const b12Focus = /vegan|vegano|vegetarian|vegetariano/.test(diet)
+        ? 'Con un regime vegetale o vegetariano, la regolarita dell integrazione di vitamina B12 merita ancora piu attenzione.'
+        : 'Anche in un regime onnivoro la vitamina B12 puo rimanere utile se gia prevista dal protocollo che stai seguendo.';
+
+    return {
+        summary: {
+            hydration: `Per il tuo profilo il riferimento idrico realistico e vicino a <strong>${escapeHtml(waterTarget)}</strong> al giorno, una quota coerente con il tuo peso corporeo e utile anche per una migliore funzionalita intestinale. ${waterFocus} Durante i pasti conviene bere poco: 2 bicchieri 15-20 minuti prima e di nuovo dopo circa 30 minuti.`,
+            meals: `A tavola puoi usare liberamente erbe aromatiche e spezie, con ottime rotazioni come cannella, curcuma e zenzero. ${sodiumFocus} Evita succhi di frutta, te confezionati, bibite e alcolici. ${caffeineFocus}`,
+            supplements: `${goalFocus} Sul piano integrativo, la vitamina B12 puo restare su 1 compressa al giorno oppure B12 50 mcg LongLife 1 al giorno. ${creatineFocus} ${fatigueFocus}`
+        },
+        cards: [
+            {
+                title: 'Apporto idrico e salino',
+                text: `${sodiumFocus} Le spezie restano una leva libera e intelligente per dare gusto senza appesantire la giornata: cannella, curcuma e zenzero sono ottime rotazioni.`
+            },
+            {
+                title: 'Acqua durante la giornata',
+                text: `Per il tuo profilo il riferimento pratico e circa ${waterTarget} al giorno. ${waterFocus} Durante i pasti mantieni una quota piu contenuta: 2 bicchieri 15-20 minuti prima e poi di nuovo dopo circa 30 minuti.`
+            },
+            {
+                title: 'Bevande da limitare',
+                text: `Evita succhi di frutta, te confezionati, bibite e alcolici, perche le calorie liquide peggiorano facilmente fame e controllo. ${caffeineFocus}`
+            },
+            {
+                title: 'Pasti liberi gestiti bene',
+                text: goalFocus
+            },
+            {
+                title: 'Vitamina B12',
+                text: `${b12Focus} Se gia prevista, puoi mantenere 1 compressa al giorno oppure B12 50 mcg LongLife 1 al giorno.`
+            },
+            {
+                title: 'Creatina',
+                text: `${creatineFocus} ${fatigueFocus}`
+            }
+        ]
+    };
+}
+
+function getLifestyleGuidanceNarrative(draftProfile) {
+    return buildLifestyleGuidanceContent(draftProfile).summary;
+}
+
+function renderLifestyleGuidancePanel(profileData) {
+    const guidanceGrid = document.getElementById('lifestyle-guidance-grid');
+
+    if (!guidanceGrid) {
+        return;
+    }
+
+    const sourceProfile = profileData || JSON.parse(localStorage.getItem('nv_profilo')) || userProfile || {};
+    const guidanceCards = buildLifestyleGuidanceContent(sourceProfile).cards;
+
+    guidanceGrid.innerHTML = guidanceCards.map((card) => `
+        <article class="chef-mode-guide-card">
+            <strong>${escapeHtml(card.title)}</strong>
+            <p>${escapeHtml(card.text)}</p>
+        </article>
+    `).join('');
+}
+
+function calculateImc(weight, heightCm) {
+    if (!(weight > 0) || !(heightCm > 0)) {
+        return 0;
+    }
+
+    const heightMeters = heightCm / 100;
+    return weight / (heightMeters * heightMeters);
+}
+
+function getImcCategory(imc) {
+    if (!(imc > 0)) {
+        return 'non disponibile';
+    }
+
+    if (imc < 18.5) {
+        return 'sottopeso';
+    }
+
+    if (imc < 25) {
+        return 'normopeso';
+    }
+
+    if (imc < 30) {
+        return 'sovrappeso';
+    }
+
+    return 'obesita';
+}
+
+function getImcAdjustmentFactor(imc) {
+    if (!(imc > 0)) {
+        return 1;
+    }
+
+    if (imc < 18.5) {
+        return 1.06;
+    }
+
+    if (imc >= 30) {
+        return 0.94;
+    }
+
+    if (imc >= 25) {
+        return 0.97;
+    }
+
+    return 1;
+}
+
+function getProteinTargetPerKg(profile, imc) {
+    const activityTier = getActivityTier(profile);
+
+    if (profile.goal === 'massa') {
+        if (activityTier === 'high') {
+            return 2.0;
+        }
+
+        if (activityTier === 'medium') {
+            return 1.8;
+        }
+
+        return 1.6;
+    }
+
+    if (profile.goal === 'dimagrire') {
+        if (activityTier === 'high') {
+            return 1.8;
+        }
+
+        if (activityTier === 'medium') {
+            return 1.6;
+        }
+
+        if (imc >= 30) {
+            return 1.3;
+        }
+
+        if (imc >= 25) {
+            return 1.2;
+        }
+
+        return 1.4;
+    }
+
+    if (activityTier === 'high') {
+        return 1.6;
+    }
+
+    if (activityTier === 'medium') {
+        return 1.4;
+    }
+
+    if (imc < 18.5) {
+        return 1.3;
+    }
+
+    if (imc >= 25) {
+        return 1.2;
+    }
+
+    return 1.2;
+}
+
+function getActivityTier(profile) {
+    const workouts = Number(profile.workoutsPerWeek || 0);
+
+    if (workouts >= 5 || profile.jobType === 'attivo') {
+        return 'high';
+    }
+
+    if (workouts >= 3 || profile.jobType === 'moderato') {
+        return 'medium';
+    }
+
+    return 'low';
+}
+
+function getGoalCalorieAdjustment(profile, maintenanceCalories, imc) {
+    const activityTier = getActivityTier(profile);
+
+    if (profile.goal === 'massa') {
+        let surplus = 250;
+
+        if (activityTier === 'high') {
+            surplus = 350;
+        } else if (activityTier === 'medium') {
+            surplus = 300;
+        }
+
+        if (imc >= 25) {
+            surplus = Math.max(150, surplus - 100);
+        }
+
+        return surplus;
+    }
+
+    if (profile.goal === 'dimagrire') {
+        let deficit = maintenanceCalories >= 2800 ? 500 : (maintenanceCalories >= 2200 ? 400 : 300);
+
+        if (activityTier === 'high') {
+            deficit -= 100;
+        } else if (activityTier === 'low') {
+            deficit += 50;
+        }
+
+        if (imc >= 30) {
+            deficit += 100;
+        } else if (imc >= 25) {
+            deficit += 50;
+        }
+
+        return -Math.min(700, Math.max(200, deficit));
+    }
+
+    return 0;
+}
+
+function getFatTargetRatio(profile) {
+    if (profile.goal === 'massa') {
+        return 0.28;
+    }
+
+    if (profile.goal === 'dimagrire') {
+        return 0.3;
+    }
+
+    return 0.3;
+}
+
+function calculateEnergyProfile(profile) {
+    const weight = Number(profile.weight || 0);
+    const height = Number(profile.height || 0);
+    const age = Number(profile.age || 0);
+    const workouts = Number(profile.workoutsPerWeek || 0);
+    const imc = calculateImc(weight, height);
+
+    const baseActivityFactor = {
+        sedentario: 1.2,
+        moderato: 1.55,
+        attivo: 1.725
+    }[profile.jobType] || 1.2;
+
+    let activityFactor = baseActivityFactor;
+    if (workouts >= 5) {
+        activityFactor = Math.min(1.9, baseActivityFactor + 0.05);
+    } else if (workouts >= 3) {
+        activityFactor = Math.min(1.7, baseActivityFactor + 0.03);
+    }
+
+    const imcAdjustmentFactor = getImcAdjustmentFactor(imc);
+    const proteinTargetPerKg = getProteinTargetPerKg(profile, imc);
+    const fatTargetRatio = getFatTargetRatio(profile);
+    const bmr = Math.round((10 * weight) + (6.25 * height) - (5 * age) + (profile.sex === 'uomo' ? 5 : -161));
+    const maintenanceCalories = Math.max(1200, Math.round(bmr * activityFactor * imcAdjustmentFactor));
+    const goalCalorieDelta = getGoalCalorieAdjustment(profile, maintenanceCalories, imc);
+    const goalMultiplier = maintenanceCalories > 0
+        ? Number(((maintenanceCalories + goalCalorieDelta) / maintenanceCalories).toFixed(3))
+        : 1;
+    const planCalories = Math.max(1200, maintenanceCalories + goalCalorieDelta);
+    const proteinTarget = Math.round(weight * proteinTargetPerKg);
+    const fatTarget = Math.round((planCalories * fatTargetRatio) / 9);
+    const remainingCalories = Math.max(0, planCalories - (proteinTarget * 4) - (fatTarget * 9));
+    const carbsTarget = Math.round(remainingCalories / 4);
+
+    return {
+        imc: Number(imc.toFixed(1)),
+        imcCategory: getImcCategory(imc),
+        imcAdjustmentFactor,
+        maintenanceCalories,
+        planCalories,
+        goalCalorieDelta,
+        bmr,
+        activityFactor,
+        goalMultiplier,
+        proteinTargetPerKg: Number(proteinTargetPerKg.toFixed(1)),
+        fatTargetRatio: Number(fatTargetRatio.toFixed(2)),
+        target: planCalories,
+        carbsTarget,
+        proteinTarget,
+        fatTarget
+    };
+}
+
+function buildWizardProfileDraft() {
+    const weight = parseFloat(document.getElementById('wizard-weight').value);
+    const height = parseFloat(document.getElementById('wizard-height').value);
+    const age = parseInt(document.getElementById('wizard-age').value, 10);
+
+    const profile = {
+        username: document.getElementById('username').value,
+        sex: document.getElementById('user-sex').value,
+        age: age,
+        weight: weight,
+        height: height,
+        jobType: document.getElementById('wizard-job').value,
+        workoutsPerWeek: parseInt(document.getElementById('wizard-workouts').value, 10),
+        sportPreference: document.getElementById('wizard-sport-toggle')?.value || 'non specificato',
+        sportName: document.getElementById('wizard-sport-name')?.value.trim() || 'non specificato',
+        goal: document.getElementById('wizard-goal').value,
+        diet: document.getElementById('wizard-diet').value || 'regime alimentare non specificato',
+        allergies: document.getElementById('wizard-allergies').value || 'non allergico a sostanze o alimenti',
+        intolerances: document.getElementById('wizard-intolerances').value || 'non intollerante ad alimenti',
+        otherPathologies: document.getElementById('wizard-other-pathologies').value.trim(),
+        mealsPerDay: parseInt(document.getElementById('wizard-meals').value, 10) || 0,
+        weakPoint: document.getElementById('wizard-weakpoint').value || 'non specificato',
+        smoke: document.getElementById('wizard-smoke').value || 'non specificato',
+        motivation: document.getElementById('wizard-motivation').value || 'non specificato',
+        waterIntake: parseFloat(document.getElementById('wizard-water').value),
+        lunchContextPreference: 'workday',
+        dinnerProteinPreference: 'variata',
+        dinnerProteinFrequency: 'libera'
+    };
+
+    profile.acquaObiettivo = parseFloat((weight * 0.035).toFixed(1));
+    const energyProfile = calculateEnergyProfile(profile);
+
+    return {
+        ...profile,
+        ...energyProfile,
+        acquaTarget: profile.acquaObiettivo * 1000,
+        micronutrients: {
+            fe: 14,
+            ca: 1000,
+            mg: 350,
+            b12: 2.4,
+            fol: 400
+        }
+    };
+}
+
 // --- Step 8: Riepilogo ---
 function mostraRiepilogo() {
         // Abilita il pulsante Indietro nello step 6
@@ -8,42 +483,42 @@ function mostraRiepilogo() {
                 prevStep();
             };
         }
-    // Recupera dati utente
-    const username = document.getElementById('username').value;
-    const eta = document.getElementById('wizard-age').value;
-    const peso = document.getElementById('wizard-weight').value;
-    const altezza = document.getElementById('wizard-height').value;
-    const job = document.getElementById('wizard-job').value;
-    const allenamenti = document.getElementById('wizard-workouts').value;
-    const obiettivo = document.getElementById('wizard-goal').value;
+    const draftProfile = buildWizardProfileDraft();
+    const username = draftProfile.username;
     const avatarUrl = selectedAvatarPath || 'avatars/1.jpg';
+    const avatarMood = getAvatarMoodLabel(avatarUrl);
+    const dietNarrative = getDietNarrative(draftProfile.diet);
+    const allergyNarrative = getAllergyNarrative(draftProfile.allergies, draftProfile.intolerances);
+    const pathologyNarrative = getOtherPathologiesNarrative(draftProfile.otherPathologies);
+    const trainingNarrative = draftProfile.workoutsPerWeek > 0
+        ? `Nell'ultimo periodo segui uno stile di vita ${getWizardJobLabel(draftProfile.jobType).toLowerCase()}, ${getWizardJobDescription(draftProfile.jobType)}. Ti alleni ${draftProfile.workoutsPerWeek} volte a settimana${draftProfile.sportName !== 'non specificato' ? ` e hai indicato come attivita principale ${formatSportLabel(draftProfile.sportName)}` : ''}.`
+        : `Nell'ultimo periodo segui uno stile di vita ${getWizardJobLabel(draftProfile.jobType).toLowerCase()}, ${getWizardJobDescription(draftProfile.jobType)}, e al momento non hai indicato allenamenti settimanali.`;
+    const mealsNarrative = draftProfile.mealsPerDay > 0
+        ? `Hai indicato ${draftProfile.mealsPerDay} pasti giornalieri. Il tuo fabbisogno calorico giornaliero stimato e di ${draftProfile.maintenanceCalories} kcal, mentre il piano iniziale e impostato su circa ${draftProfile.target} kcal al giorno.`
+        : `Non hai ancora indicato quanti pasti fai al giorno, ma il tuo fabbisogno calorico giornaliero stimato e di ${draftProfile.maintenanceCalories} kcal e il piano iniziale e impostato su circa ${draftProfile.target} kcal al giorno.`;
+    const smokeNarrative = getSmokeNarrative(draftProfile.smoke);
+    const motivationNarrative = getMotivationNarrative(draftProfile.motivation);
+    const imcNarrative = draftProfile.imc > 0
+        ? `Il tuo IMC stimato e <strong>${escapeHtml(draftProfile.imc)}</strong>, in fascia <strong>${escapeHtml(draftProfile.imcCategory)}</strong>. Questo valore viene considerato nel calcolo del tuo fabbisogno energetico.`
+        : 'Il tuo IMC non e disponibile, quindi non viene applicata alcuna correzione al fabbisogno energetico.';
+    const proteinNarrative = draftProfile.proteinTargetPerKg > 0
+        ? `L apporto proteico di riferimento e <strong>${escapeHtml(draftProfile.proteinTargetPerKg)} g/kg</strong>, pari a circa <strong>${escapeHtml(draftProfile.proteinTarget)} g</strong> di proteine al giorno.`
+        : 'Non e stato possibile stimare un apporto proteico personalizzato.';
+    const lifestyleGuidance = getLifestyleGuidanceNarrative(draftProfile);
+    const frase = `Ciao <b>${escapeHtml(username)}</b>, sono felice che oggi ti senti ${escapeHtml(avatarMood)}.`;
 
-    // Stile di vita
-    let stileVita = '';
-    if (job === 'sedentario') stileVita = 'Stile di vita sedentario';
-    else if (job === 'moderato') stileVita = 'Stile di vita moderato';
-    else if (job === 'attivo') stileVita = 'Stile di vita attivo';
-    else stileVita = 'Stile di vita non specificato';
-    if (allenamenti > 0) stileVita += `, ${allenamenti} allenamenti/settimana`;
-
-    // Frase ironica base
-    const frasi = [
-        'Hai scelto un avatar che trasmette energia! Pronto a conquistare la giornata?',
-        'Oggi la tua foto profilo è più cool del solito. Non farla invidiare troppo!',
-        'Sei il protagonista della tua storia, anche se l’avatar non lo sa!',
-        'Un avatar così non si vede tutti i giorni. Complimenti per la scelta!',
-        'Ironia e stile: la tua combinazione vincente oggi!'
-    ];
-    const frase = frasi[Math.floor(Math.random() * frasi.length)];
-
-    // Riepilogo dati
-    const dati = `Ciao <b>${escapeHtml(username)}</b>, sono felice che oggi ti senti così!<br><br>
-        <b>Età:</b> ${escapeHtml(eta)}<br>
-        <b>Peso:</b> ${escapeHtml(peso)} kg<br>
-        <b>Altezza:</b> ${escapeHtml(altezza)} cm<br>
-        <b>${escapeHtml(stileVita)}</b><br>
-        <b>Obiettivo:</b> ${escapeHtml(obiettivo)}<br><br>
-        Informazioni che troverai nella home.<br>`;
+    const dati = `
+        <div class="wizard-summary-copy">
+            <p>Nei tuoi dati hai raccontato di avere <strong>${escapeHtml(draftProfile.age)}</strong> anni, di essere alto <strong>${escapeHtml(draftProfile.height)} cm</strong> e di avere attualmente un peso di <strong>${escapeHtml(draftProfile.weight)} kg</strong>.</p>
+            <p>Segui ${escapeHtml(dietNarrative)}. ${escapeHtml(allergyNarrative)}. ${escapeHtml(pathologyNarrative)}. Al momento hai indicato di bere <strong>${escapeHtml(draftProfile.waterIntake)} L</strong> di acqua al giorno, mentre per il tuo profilo il target consigliato e di circa <strong>${escapeHtml(draftProfile.acquaObiettivo)} L</strong> al giorno.</p>
+            <p>${escapeHtml(trainingNarrative)} Il tuo obiettivo attuale e <strong>${escapeHtml(getWizardGoalLabel(draftProfile.goal).toLowerCase())}</strong>.</p>
+            <p>${imcNarrative}</p>
+            <p>${proteinNarrative}</p>
+            <p>${escapeHtml(mealsNarrative)} ${escapeHtml(smokeNarrative)} ${escapeHtml(motivationNarrative)}</p>
+            <p>${lifestyleGuidance.hydration}</p>
+            <p>${lifestyleGuidance.meals}</p>
+            <p>${lifestyleGuidance.supplements}</p>
+        </div>`;
 
     // Mostra step 6 senza nascondere la barra dei tasti
     document.querySelectorAll('.wizard-step').forEach(s => s.style.display = 'none');
@@ -2060,10 +2535,13 @@ function initApp(profile) {
     document.getElementById('main-app').style.display = 'block';
     setupAvatarFallbacks();
     loadSavedAvatar();
+    applyLunchContextPreference(profile);
     renderUserProfileSummary();
+    renderLifestyleGuidancePanel(profile);
     mostraSezione('home');
     aggiornaUI();
     aggiornaListaRicetteSalvate();
+    toggleAiMode();
 }
 
 window.onload = () => {
@@ -2078,6 +2556,8 @@ window.onload = () => {
     if (typeof lucide !== 'undefined') lucide.createIcons();
 
     setupAvatarFallbacks();
+    setupWizardNumericFieldFeedback();
+    setupWizardStepThreeLogic();
     const storedProfile = JSON.parse(localStorage.getItem('nv_profilo'));
     if (!storedProfile || isFirstAccess()) {
         document.getElementById('setup-screen').style.display = 'block';
@@ -2088,6 +2568,7 @@ window.onload = () => {
     }
 
     initApp(storedProfile);
+    toggleAiMode();
 };
 
 function salvaProfilo() {
@@ -2099,6 +2580,125 @@ function initWizard() {
     showWizardStep(wizardCurrentStep);
     document.getElementById('setup-screen').style.display = 'block';
     document.getElementById('main-app').style.display = 'none';
+}
+
+function updateWizardNumericFieldState(input) {
+    if (!input) return;
+
+    const rawValue = (input.value || '').trim();
+    const errorEl = document.getElementById(`${input.id}-error`);
+    const hasBadInput = Boolean(input.validity && input.validity.badInput);
+
+    if (hasBadInput) {
+        input.classList.add('wizard-input-invalid');
+        input.setAttribute('aria-invalid', 'true');
+        if (errorEl) {
+            errorEl.textContent = 'Inserisci solo valori numerici.';
+            errorEl.classList.add('visible');
+        }
+        return;
+    }
+
+    if (rawValue === '') {
+        input.classList.remove('wizard-input-invalid');
+        input.removeAttribute('aria-invalid');
+        if (errorEl) {
+            errorEl.textContent = '';
+            errorEl.classList.remove('visible');
+        }
+        return;
+    }
+
+    const numericValue = Number(rawValue);
+    const minAttr = input.getAttribute('min');
+    const maxAttr = input.getAttribute('max');
+    const isBelowMin = minAttr !== null && numericValue < Number(minAttr);
+    const isAboveMax = maxAttr !== null && numericValue > Number(maxAttr);
+    const hasInvalidValue = !isFinite(numericValue) || isBelowMin || isAboveMax;
+    let errorMessage = '';
+
+    if (!isFinite(numericValue)) {
+        errorMessage = 'Valore non valido.';
+    } else if (isBelowMin || isAboveMax) {
+        if (minAttr !== null && maxAttr !== null) {
+            errorMessage = `Valore non valido. Inserisci un numero tra ${minAttr} e ${maxAttr}.`;
+        } else if (minAttr !== null) {
+            errorMessage = `Valore non valido. Inserisci un numero maggiore o uguale a ${minAttr}.`;
+        } else if (maxAttr !== null) {
+            errorMessage = `Valore non valido. Inserisci un numero minore o uguale a ${maxAttr}.`;
+        }
+    }
+
+    input.classList.toggle('wizard-input-invalid', hasInvalidValue);
+    input.toggleAttribute('aria-invalid', hasInvalidValue);
+
+    if (errorEl) {
+        errorEl.textContent = errorMessage;
+        errorEl.classList.toggle('visible', hasInvalidValue && errorMessage !== '');
+    }
+}
+
+function setupWizardNumericFieldFeedback() {
+    const constrainedFields = document.querySelectorAll('#wizard-age, #wizard-weight, #wizard-height, #wizard-water');
+
+    constrainedFields.forEach((input) => {
+        let errorEl = document.getElementById(`${input.id}-error`);
+        if (!errorEl) {
+            errorEl = document.createElement('small');
+            errorEl.id = `${input.id}-error`;
+            errorEl.className = 'wizard-input-error';
+            input.insertAdjacentElement('afterend', errorEl);
+        }
+
+        input.addEventListener('input', () => updateWizardNumericFieldState(input));
+        input.addEventListener('blur', () => updateWizardNumericFieldState(input));
+        updateWizardNumericFieldState(input);
+    });
+}
+
+function updateWizardSportFieldState() {
+    const workoutsInput = document.getElementById('wizard-workouts');
+    const sportDetails = document.getElementById('wizard-sport-details');
+    const sportToggle = document.getElementById('wizard-sport-toggle');
+    const sportNameWrap = document.getElementById('wizard-sport-name-wrap');
+    const sportNameInput = document.getElementById('wizard-sport-name');
+
+    if (!workoutsInput || !sportDetails || !sportToggle || !sportNameWrap || !sportNameInput) return;
+
+    const workoutsValue = Number(workoutsInput.value);
+    const shouldShowSportQuestion = Number.isFinite(workoutsValue) && workoutsValue >= 1;
+
+    sportDetails.style.display = shouldShowSportQuestion ? 'block' : 'none';
+
+    if (!shouldShowSportQuestion) {
+        sportToggle.value = '';
+        sportNameInput.value = '';
+        sportNameWrap.style.display = 'none';
+        return;
+    }
+
+    const shouldShowSportName = sportToggle.value === 'si';
+    sportNameWrap.style.display = shouldShowSportName ? 'block' : 'none';
+
+    if (!shouldShowSportName) {
+        sportNameInput.value = '';
+    }
+}
+
+function setupWizardStepThreeLogic() {
+    const workoutsInput = document.getElementById('wizard-workouts');
+    const sportToggle = document.getElementById('wizard-sport-toggle');
+
+    if (workoutsInput) {
+        workoutsInput.addEventListener('input', updateWizardSportFieldState);
+        workoutsInput.addEventListener('blur', updateWizardSportFieldState);
+    }
+
+    if (sportToggle) {
+        sportToggle.addEventListener('change', updateWizardSportFieldState);
+    }
+
+    updateWizardSportFieldState();
 }
 
 function showWizardStep(step) {
@@ -2160,6 +2760,21 @@ function validateStep(step) {
 
     for (const input of inputs) {
         const value = (input.value || '').toString().trim();
+
+        if (input.disabled) {
+            continue;
+        }
+
+        if (input.dataset.optional === 'true' && value === '') {
+            continue;
+        }
+
+        if (input.type === 'number' && input.validity && input.validity.badInput) {
+            alert('Inserisci solo valori numerici.');
+            input.focus();
+            return false;
+        }
+
         if (value === '') {
             alert('Compila tutti i campi obbligatori prima di procedere.');
             input.focus();
@@ -2169,6 +2784,23 @@ function validateStep(step) {
             alert('Inserisci un numero valido.');
             input.focus();
             return false;
+        }
+        if (input.type === 'number') {
+            const numericValue = Number(input.value);
+            const minAttr = input.getAttribute('min');
+            const maxAttr = input.getAttribute('max');
+
+            if (minAttr !== null && numericValue < Number(minAttr)) {
+                alert(`Il valore minimo consentito e ${minAttr}.`);
+                input.focus();
+                return false;
+            }
+
+            if (maxAttr !== null && numericValue > Number(maxAttr)) {
+                alert(`Il valore massimo consentito e ${maxAttr}.`);
+                input.focus();
+                return false;
+            }
         }
     }
     return true;
@@ -2249,75 +2881,7 @@ function prevStep() {
 }
 
 function finalizzaProfilo() {
-    const weight = parseFloat(document.getElementById('wizard-weight').value);
-    const height = parseFloat(document.getElementById('wizard-height').value);
-    const age = parseInt(document.getElementById('wizard-age').value, 10);
-
-    const profile = {
-        username: document.getElementById('username').value,
-        sex: document.getElementById('user-sex').value,
-        age: age,
-        weight: weight,
-        height: height,
-        jobType: document.getElementById('wizard-job').value,
-        workoutsPerWeek: parseInt(document.getElementById('wizard-workouts').value, 10),
-        goal: document.getElementById('wizard-goal').value,
-        diet: document.getElementById('wizard-diet').value || 'regime alimentare non specificato',
-        allergies: document.getElementById('wizard-allergies').value || 'non allergico a sostanze o alimenti',
-        intolerances: document.getElementById('wizard-intolerances').value || 'non intollerante ad alimenti',
-        mealsPerDay: parseInt(document.getElementById('wizard-meals').value, 10) || 0,
-        weakPoint: document.getElementById('wizard-weakpoint').value || 'non specificato',
-        smoke: document.getElementById('wizard-smoke').value || 'non specificato',
-        waterIntake: parseFloat(document.getElementById('wizard-water').value)
-    };
-
-    profile.acquaObiettivo = parseFloat((weight * 0.035).toFixed(1));
-
-    const baseActivityFactor = {
-        sedentario: 1.2,
-        moderato: 1.55,
-        attivo: 1.725
-    }[profile.jobType] || 1.2;
-
-    let activityFactor = baseActivityFactor;
-    const workouts = Number(profile.workoutsPerWeek || 0);
-    if (workouts >= 5) {
-        activityFactor = Math.min(1.9, baseActivityFactor + 0.05);
-    } else if (workouts >= 3) {
-        activityFactor = Math.min(1.7, baseActivityFactor + 0.03);
-    }
-
-    const goalMultiplier = {
-        dimagrire: 0.85,
-        mantenere: 1.0,
-        massa: 1.15
-    }[profile.goal] || 1.0;
-
-    const bmr = Math.round((10 * weight) + (6.25 * height) - (5 * age) + (profile.sex === 'uomo' ? 5 : -161));
-    const tdee = Math.max(1200, Math.round(bmr * activityFactor * goalMultiplier));
-
-    const carbsGrams = Math.round((tdee * 0.5) / 4);
-    const proteinGrams = Math.round((tdee * 0.25) / 4);
-    const fatGrams = Math.round((tdee * 0.25) / 9);
-
-    const newProfile = {
-        ...profile,
-        target: tdee,
-        bmr: bmr,
-        activityFactor: activityFactor,
-        goalMultiplier: goalMultiplier,
-        carbsTarget: carbsGrams,
-        proteinTarget: proteinGrams,
-        fatTarget: fatGrams,
-        acquaTarget: profile.acquaObiettivo * 1000,
-        micronutrients: {
-            fe: 14,
-            ca: 1000,
-            mg: 350,
-            b12: 2.4,
-            fol: 400
-        }
-    };
+    const newProfile = buildWizardProfileDraft();
 
     userProfile = newProfile;
     localStorage.setItem('nv_profilo', JSON.stringify(newProfile));
@@ -2355,9 +2919,13 @@ function caricaDatiProfilo() {
     setValue('profilo-diet', datiProfilo.diet);
     setValue('profilo-allergies', datiProfilo.allergies);
     setValue('profilo-intolerances', datiProfilo.intolerances);
+    setValue('profilo-other-pathologies', datiProfilo.otherPathologies);
     setValue('profilo-meals', datiProfilo.mealsPerDay);
+    setValue('profilo-dinner-protein-preference', normalizeDinnerProteinPreference(datiProfilo.dinnerProteinPreference));
+    setValue('profilo-dinner-protein-frequency', normalizeDinnerProteinFrequency(datiProfilo.dinnerProteinFrequency));
     setValue('profilo-weakpoint', datiProfilo.weakPoint);
     setValue('profilo-water', datiProfilo.waterIntake);
+    applyLunchContextPreference(datiProfilo);
 
     const summary = document.getElementById('profilo-summary-content');
     if (summary) {
@@ -2366,10 +2934,20 @@ function caricaDatiProfilo() {
             <div><strong>Età:</strong> ${escapeHtml(datiProfilo.age || '-')} anni</div>
             <div><strong>Peso:</strong> ${escapeHtml(datiProfilo.weight || '-')} kg</div>
             <div><strong>Altezza:</strong> ${escapeHtml(datiProfilo.height || '-')} cm</div>
-            <div><strong>Obiettivo:</strong> ${escapeHtml(datiProfilo.goal || '-')}</div>
-            <div><strong>Attività:</strong> ${escapeHtml(datiProfilo.jobType || '-')}</div>
+            <div><strong>IMC:</strong> ${escapeHtml(datiProfilo.imc || '-')} ${datiProfilo.imcCategory ? `(${escapeHtml(datiProfilo.imcCategory)})` : ''}</div>
+            <div><strong>Fabbisogno:</strong> ${escapeHtml(datiProfilo.maintenanceCalories || '-')} kcal</div>
+            <div><strong>Piano calorico:</strong> ${escapeHtml(datiProfilo.target || '-')} kcal</div>
+            <div><strong>Proteine:</strong> ${escapeHtml(datiProfilo.proteinTargetPerKg || '-')} g/kg (${escapeHtml(datiProfilo.proteinTarget || '-')} g)</div>
+            <div><strong>Obiettivo:</strong> ${escapeHtml(getWizardGoalLabel(datiProfilo.goal))}</div>
+            <div><strong>Attività:</strong> ${escapeHtml(getWizardJobLabel(datiProfilo.jobType))}</div>
             <div><strong>Allenamenti:</strong> ${escapeHtml(datiProfilo.workoutsPerWeek ?? '-')} / settimana</div>
+            <div><strong>Sport:</strong> ${escapeHtml(formatSportLabel(datiProfilo.sportName))}</div>
+            <div><strong>Altre patologie:</strong> ${escapeHtml(datiProfilo.otherPathologies || '-')}</div>
+            <div><strong>Motivazione:</strong> ${escapeHtml(datiProfilo.motivation || '-')}</div>
             <div><strong>Acqua:</strong> ${escapeHtml(datiProfilo.waterIntake || '-')} L</div>
+            <div><strong>Pranzo preferito:</strong> ${escapeHtml(getLunchContextLabel(datiProfilo.lunchContextPreference || 'workday'))}</div>
+            <div><strong>Rotazione proteica cena:</strong> ${escapeHtml(getDinnerProteinPreferenceLabel(datiProfilo.dinnerProteinPreference || 'variata'))}</div>
+            <div><strong>Frequenza cena suggerita:</strong> ${escapeHtml(getDinnerProteinFrequencyLabel(datiProfilo.dinnerProteinFrequency || 'libera'))}</div>
         `;
     }
 
@@ -2384,8 +2962,10 @@ function salvaModificheProfilo() {
     const weight = parseFloat(document.getElementById('profilo-weight').value);
     const height = parseFloat(document.getElementById('profilo-height').value);
     const age = parseInt(document.getElementById('profilo-age').value, 10);
+    const currentProfile = JSON.parse(localStorage.getItem('nv_profilo')) || userProfile || {};
 
     const profile = {
+        ...currentProfile,
         username: document.getElementById('profilo-username').value,
         sex: document.getElementById('profilo-sex').value,
         age: age,
@@ -2397,49 +2977,23 @@ function salvaModificheProfilo() {
         diet: document.getElementById('profilo-diet').value,
         allergies: document.getElementById('profilo-allergies').value,
         intolerances: document.getElementById('profilo-intolerances').value,
+        otherPathologies: document.getElementById('profilo-other-pathologies').value.trim(),
         mealsPerDay: parseInt(document.getElementById('profilo-meals').value, 10),
+        dinnerProteinPreference: normalizeDinnerProteinPreference(document.getElementById('profilo-dinner-protein-preference')?.value),
+        dinnerProteinFrequency: normalizeDinnerProteinFrequency(document.getElementById('profilo-dinner-protein-frequency')?.value),
         weakPoint: document.getElementById('profilo-weakpoint').value,
-        waterIntake: parseFloat(document.getElementById('profilo-water').value)
+        waterIntake: parseFloat(document.getElementById('profilo-water').value),
+        lunchContextPreference: document.getElementById('day-plan-lunch-context')?.value === 'free-day'
+            ? 'free-day'
+            : (currentProfile.lunchContextPreference || 'workday')
     };
 
     profile.acquaObiettivo = parseFloat((weight * 0.035).toFixed(1));
-
-    const baseActivityFactor = {
-        sedentario: 1.2,
-        moderato: 1.55,
-        attivo: 1.725
-    }[profile.jobType] || 1.2;
-
-    let activityFactor = baseActivityFactor;
-    const workouts = Number(profile.workoutsPerWeek || 0);
-    if (workouts >= 5) {
-        activityFactor = Math.min(1.9, baseActivityFactor + 0.05);
-    } else if (workouts >= 3) {
-        activityFactor = Math.min(1.7, baseActivityFactor + 0.03);
-    }
-
-    const goalMultiplier = {
-        dimagrire: 0.85,
-        mantenere: 1.0,
-        massa: 1.15
-    }[profile.goal] || 1.0;
-
-    const bmr = Math.round((10 * weight) + (6.25 * height) - (5 * age) + (profile.sex === 'uomo' ? 5 : -161));
-    const tdee = Math.max(1200, Math.round(bmr * activityFactor * goalMultiplier));
-
-    const carbsGrams = Math.round((tdee * 0.5) / 4);
-    const proteinGrams = Math.round((tdee * 0.25) / 4);
-    const fatGrams = Math.round((tdee * 0.25) / 9);
+    const energyProfile = calculateEnergyProfile(profile);
 
     const profiloAggiornato = {
         ...profile,
-        target: tdee,
-        bmr: bmr,
-        activityFactor: activityFactor,
-        goalMultiplier: goalMultiplier,
-        carbsTarget: carbsGrams,
-        proteinTarget: proteinGrams,
-        fatTarget: fatGrams,
+        ...energyProfile,
         acquaTarget: profile.acquaObiettivo * 1000,
         micronutrients: {
             fe: 14,
@@ -2496,6 +3050,7 @@ function mostraSezione(tabId) {
     }
     if (tabId === 'pasti-rapidi') {
         aggiornaListaRicetteSalvate();
+        toggleAiMode();
     }
     if (tabId === 'profilo') {
         caricaDatiProfilo();
@@ -2576,10 +3131,14 @@ function renderUserProfileSummary() {
 
     if (!homeProfileSummary) return;
 
+    renderLifestyleGuidancePanel(diaryData?.profilo || profilo || userProfile || {});
+
     if (diaryData && diaryData.profilo) {
+        const dinnerPreferenceLabel = getDinnerProteinPreferenceLabel(diaryData.profilo.dinnerProteinPreference || 'variata');
+        const dinnerFrequencyLabel = getDinnerProteinFrequencyLabel(diaryData.profilo.dinnerProteinFrequency || 'libera');
         homeProfileSummary.innerHTML = `
             <div style="margin-bottom: 10px; padding: 10px 12px; background: #f4f9ff; border: 1px solid #dce9f5; border-radius: 14px; text-align: center;">
-                <strong>${escapeHtml(diaryData.profilo.username || 'Utente')}</strong> • ${escapeHtml(diaryData.profilo.sex || '-')} • ${escapeHtml(diaryData.profilo.age || '-')} anni • TDEE: ${escapeHtml(diaryData.profilo.target || '-')} kcal
+                <strong>${escapeHtml(diaryData.profilo.username || 'Utente')}</strong> • ${escapeHtml(diaryData.profilo.sex || '-')} • ${escapeHtml(diaryData.profilo.age || '-')} anni • IMC: ${escapeHtml(diaryData.profilo.imc || '-')} • Fabbisogno: ${escapeHtml(diaryData.profilo.maintenanceCalories || '-')} kcal • Piano: ${escapeHtml(diaryData.profilo.target || '-')} kcal • Cena: ${escapeHtml(dinnerPreferenceLabel)} • Frequenza: ${escapeHtml(dinnerFrequencyLabel)}
             </div>
         `;
         return;
@@ -3083,9 +3642,91 @@ function eliminaRicetta(idx) {
     aggiornaListaRicetteSalvate();
 }
 
+function updateAiModeResultsVisibility(activeResultId) {
+    const resultsWrap = document.getElementById('chef-mode-results');
+    const resultIds = ['ai-recipe-result', 'ai-day-plan-result'];
+    let visibleResultFound = false;
+
+    resultIds.forEach((resultId) => {
+        const resultEl = document.getElementById(resultId);
+        if (!resultEl) return;
+
+        const hasContent = resultEl.innerHTML.trim().length > 0;
+        const shouldShow = resultId === activeResultId && hasContent;
+        resultEl.style.display = shouldShow ? 'block' : 'none';
+        if (shouldShow) visibleResultFound = true;
+    });
+
+    if (resultsWrap) {
+        resultsWrap.style.display = visibleResultFound ? 'block' : 'none';
+    }
+}
+
+function toggleAiMode() {
+    const selector = document.getElementById('ai-mode-selector');
+    if (!selector) return;
+
+    const mode = selector.value || 'recipe';
+    const fieldGroups = {
+        recipe: document.getElementById('ai-mode-recipes-fields'),
+        daily: document.getElementById('ai-mode-daily-fields'),
+        weekly: document.getElementById('ai-mode-weekly-fields')
+    };
+    const resultByMode = {
+        recipe: 'ai-recipe-result',
+        daily: 'ai-day-plan-result',
+        weekly: 'ai-day-plan-result'
+    };
+    const recipeOptions = document.getElementById('chef-mode-recipe-options');
+    const dailyButton = document.getElementById('chef-generate-daily-btn');
+    const weeklyButton = document.getElementById('chef-generate-weekly-btn');
+    const dailyNotes = document.getElementById('day-plan-ai-notes');
+    const weeklyNotes = document.getElementById('weekly-plan-ai-notes');
+    const dailyLunchContext = document.getElementById('day-plan-lunch-context');
+    const weeklyLunchContext = document.getElementById('weekly-plan-lunch-context');
+
+    Object.entries(fieldGroups).forEach(([key, element]) => {
+        if (!element) return;
+        element.style.display = key === mode ? 'flex' : 'none';
+    });
+
+    if (recipeOptions) {
+        recipeOptions.style.display = mode === 'recipe' ? 'flex' : 'none';
+    }
+
+    if (dailyButton) {
+        dailyButton.style.display = mode === 'daily' ? 'block' : 'none';
+    }
+
+    if (weeklyButton) {
+        weeklyButton.style.display = mode === 'weekly' ? 'block' : 'none';
+    }
+
+    if (mode === 'weekly' && dailyNotes && weeklyNotes) {
+        dailyNotes.value = weeklyNotes.value;
+    }
+
+    if (mode === 'weekly' && dailyLunchContext && weeklyLunchContext) {
+        dailyLunchContext.value = weeklyLunchContext.value;
+    }
+
+    updateAiModeResultsVisibility(resultByMode[mode]);
+}
+
 function aggiornaListaRicetteSalvate() {
     const list = document.getElementById('preset-list');
+    const panel = document.getElementById('saved-recipes-panel');
     if (!list) return;
+
+    const hasSavedRecipes = Array.isArray(ricetteSalvate) && ricetteSalvate.length > 0;
+    if (panel) {
+        panel.style.display = hasSavedRecipes ? 'block' : 'none';
+    }
+
+    if (!hasSavedRecipes) {
+        list.innerHTML = '';
+        return;
+    }
 
     list.innerHTML = ricetteSalvate.map((r, i) => `
         <li style="background:#fff;margin-bottom:8px;padding:10px;border-radius:15px;box-shadow:0 6px 14px rgba(31,57,87,0.08);">
@@ -3164,6 +3805,32 @@ function aggiornaBarra(id, attuale, target) {
     document.getElementById(`${id}-val`).innerText = `${Math.round(attuale)} / ${target}g`;
 }
 
+function aggiornaRaccomandazioneAcqua(pesoUtenteKg) {
+    const waterElement = document.getElementById('water-liters-target');
+    if (!waterElement) {
+        return;
+    }
+
+    const peso = Number(pesoUtenteKg);
+    if (!(peso > 0)) {
+        waterElement.innerText = '--';
+        return;
+    }
+
+    const litriConsigliati = ((peso * 30) / 1000).toFixed(1);
+    waterElement.innerText = litriConsigliati;
+
+    const homeWater = document.getElementById('home-water');
+    if (homeWater) {
+        homeWater.innerText = `${litriConsigliati} L`;
+    }
+
+    const waterGoalDisplay = document.getElementById('water-goal-display');
+    if (waterGoalDisplay) {
+        waterGoalDisplay.innerText = `${litriConsigliati} L`;
+    }
+}
+
 function aggiornaAcqua(v) {
     acqua = Math.max(0, acqua + v);
     localStorage.setItem('nv_acqua', acqua);
@@ -3194,10 +3861,251 @@ function getAIProfilePayload() {
         diet: storedProfile.diet || '',
         allergies: storedProfile.allergies || '',
         intolerances: storedProfile.intolerances || '',
+        otherPathologies: storedProfile.otherPathologies || '',
         jobType: storedProfile.jobType || '',
         workoutsPerWeek: storedProfile.workoutsPerWeek || 0,
-        targetCalories: storedProfile.target || 0
+        weight: storedProfile.weight || 0,
+        height: storedProfile.height || 0,
+        age: storedProfile.age || 0,
+        sex: storedProfile.sex || '',
+        imc: storedProfile.imc || 0,
+        imcCategory: storedProfile.imcCategory || '',
+        maintenanceCalories: storedProfile.maintenanceCalories || storedProfile.target || 0,
+        targetCalories: storedProfile.target || 0,
+        goalCalorieDelta: storedProfile.goalCalorieDelta || 0,
+        proteinTargetPerKg: storedProfile.proteinTargetPerKg || 0,
+        proteinTargetGrams: storedProfile.proteinTarget || 0,
+        mealsPerDay: storedProfile.mealsPerDay || 0,
+        waterIntake: storedProfile.waterIntake || 0,
+        waterTargetLiters: storedProfile.acquaObiettivo || 0,
+        lunchContextPreference: storedProfile.lunchContextPreference === 'free-day' ? 'free-day' : 'workday',
+        dinnerProteinPreference: normalizeDinnerProteinPreference(storedProfile.dinnerProteinPreference),
+        dinnerProteinFrequency: normalizeDinnerProteinFrequency(storedProfile.dinnerProteinFrequency)
     };
+}
+
+function formatDeltaKcal(value) {
+    const numeric = Number(value || 0);
+    if (!numeric) {
+        return '0 kcal';
+    }
+
+    return `${numeric > 0 ? '+' : ''}${Math.round(numeric)} kcal`;
+}
+
+function renderAICardList(items) {
+    return (items || []).map((item) => `<li>${escapeHtml(item)}</li>`).join('');
+}
+
+function getLunchContextLabel(value) {
+    return value === 'free-day' ? 'Giorno libero' : 'Giorno lavorativo';
+}
+
+function normalizeDinnerProteinPreference(value) {
+    return ['uova', 'tofu-tempeh', 'latticini-light', 'burger-vegetali'].includes(value)
+        ? value
+        : 'variata';
+}
+
+function normalizeDinnerProteinFrequency(value) {
+    return ['1-2', '2-3', '3-4', '5+'].includes(value)
+        ? value
+        : 'libera';
+}
+
+function getDinnerProteinPreferenceLabel(value) {
+    const normalized = normalizeDinnerProteinPreference(value);
+
+    return {
+        variata: 'Rotazione serale varia',
+        uova: 'Preferenza serale per uova',
+        'tofu-tempeh': 'Preferenza serale per tofu o tempeh',
+        'latticini-light': 'Preferenza serale per latticini light',
+        'burger-vegetali': 'Preferenza serale per burger vegetali o lupini'
+    }[normalized] || 'Rotazione serale varia';
+}
+
+function getDinnerProteinFrequencyLabel(value) {
+    const normalized = normalizeDinnerProteinFrequency(value);
+
+    return {
+        libera: 'Frequenza libera, senza obiettivo settimanale fisso',
+        '1-2': 'Circa 1-2 volte a settimana',
+        '2-3': 'Circa 2-3 volte a settimana',
+        '3-4': 'Circa 3-4 volte a settimana',
+        '5+': 'Quasi ogni giorno'
+    }[normalized] || 'Frequenza libera, senza obiettivo settimanale fisso';
+}
+
+function getDinnerProteinPreferencePrompt(value) {
+    const normalized = normalizeDinnerProteinPreference(value);
+
+    return {
+        variata: 'mantieni una rotazione flessibile tra fonti proteiche serali diverse',
+        uova: 'puoi dare priorita alle uova come opzione serale piu spontanea, senza renderle obbligatorie',
+        'tofu-tempeh': 'puoi dare priorita a tofu o tempeh come base proteica serale, richiamando tecniche semplici ma identitarie',
+        'latticini-light': 'puoi dare priorita a ricotta light, feta light o mozzarella proteica come opzioni serali pratiche',
+        'burger-vegetali': 'puoi dare priorita a burger vegetali proteici o burger di lupini come soluzione serale pratica'
+    }[normalized] || 'mantieni una rotazione flessibile tra fonti proteiche serali diverse';
+}
+
+function getDinnerProteinFrequencyPrompt(value) {
+    const normalized = normalizeDinnerProteinFrequency(value);
+
+    return {
+        libera: 'usa la preferenza serale come orientamento morbido, senza trasformarla in una frequenza obbligatoria',
+        '1-2': 'mantieni questa scelta serale solo in circa 1 o 2 cene settimanali, lasciando ampia rotazione nelle altre',
+        '2-3': 'mantieni questa scelta serale in circa 2 o 3 cene settimanali, distinguendo chiaramente preferenza e frequenza d uso',
+        '3-4': 'puoi usare questa scelta serale come asse di circa 3 o 4 cene settimanali, senza renderla esclusiva',
+        '5+': 'puoi usare questa scelta serale molto spesso durante la settimana, pur lasciando piccole variazioni utili'
+    }[normalized] || 'usa la preferenza serale come orientamento morbido, senza trasformarla in una frequenza obbligatoria';
+}
+
+function buildDinnerPreferencePlanNote(profile) {
+    return `Preferenza proteica serale considerata: ${getDinnerProteinPreferenceLabel(profile?.dinnerProteinPreference || 'variata')}. Frequenza suggerita: ${getDinnerProteinFrequencyLabel(profile?.dinnerProteinFrequency || 'libera')}.`;
+}
+
+function cloneClinicalGuidanceValue(value) {
+    return JSON.parse(JSON.stringify(value));
+}
+
+function getClinicalGuidanceProfiles() {
+    return Object.entries(window.clinicalNutritionGuidance || {})
+        .map(([key, profile]) => ({ key, ...(profile || {}) }))
+        .sort((left, right) => Number(right.priority || 0) - Number(left.priority || 0));
+}
+
+function matchesClinicalGuidanceCriteria(profile, criteria) {
+    const age = Number(profile?.age || 0);
+    const imc = Number(profile?.imc || 0);
+    const targetCalories = Number(profile?.targetCalories || 0);
+    const goal = String(profile?.goal || '').toLowerCase();
+    const sex = String(profile?.sex || '').toLowerCase();
+    const otherPathologies = String(profile?.otherPathologies || '').toLowerCase();
+    const signals = Array.isArray(criteria?.goalSignals) ? criteria.goalSignals : [];
+    const sexSignals = Array.isArray(criteria?.sexSignals) ? criteria.sexSignals : [];
+    const pathologySignals = Array.isArray(criteria?.pathologySignals) ? criteria.pathologySignals : [];
+
+    return age >= Number(criteria?.ageMin || 0)
+        && age <= Number(criteria?.ageMax || 200)
+        && imc >= Number(criteria?.imcMin || 0)
+        && (criteria?.imcMax == null || imc <= Number(criteria.imcMax))
+        && (targetCalories === 0 || ((criteria?.targetCaloriesMin == null || targetCalories >= Number(criteria.targetCaloriesMin))
+            && (criteria?.targetCaloriesMax == null || targetCalories <= Number(criteria.targetCaloriesMax))))
+        && (!signals.length || signals.some((signal) => goal.includes(String(signal).toLowerCase())) || !goal)
+        && (!sexSignals.length || sexSignals.some((signal) => sex.includes(String(signal).toLowerCase())) || !sex)
+        && (!pathologySignals.length || pathologySignals.some((signal) => otherPathologies.includes(String(signal).toLowerCase())));
+}
+
+function getClinicalNutritionContext(profile) {
+    const profiles = getClinicalGuidanceProfiles();
+    const match = profiles.find((source) => matchesClinicalGuidanceCriteria(profile, source.criteria || {}));
+
+    if (!match) {
+        return { applicable: false };
+    }
+
+    return {
+        ...cloneClinicalGuidanceValue(match),
+        applicable: true,
+        selectedProfileKey: match.key
+    };
+}
+
+function getLunchContextRecipeNote(value) {
+    return value === 'free-day'
+        ? 'Il tuo profilo indica un pranzo da giorno libero: qui la proposta puo essere un po piu distesa e piacevole, senza perdere struttura nutrizionale.'
+        : 'Il tuo profilo indica un pranzo da giorno lavorativo: qui la proposta resta pratica, leggibile e facile da inserire nella routine.';
+}
+
+function getLunchContextSnackStrategy(value) {
+    if (value === 'free-day') {
+        return {
+            morningTitle: 'Spuntino mattina leggero e ordinato',
+            morningWhy: 'Tiene ordinata la fame senza caricare troppo una giornata in cui il pranzo puo essere piu comodo o piu ricco.',
+            morningItems: ['1 yogurt proteico leggero oppure kefir', 'frutto piccolo solo se serve'],
+            morningFat: 1,
+            afternoonTitle: 'Spuntino pomeriggio leggero di riequilibrio',
+            afternoonWhy: 'Aiuta a non spostare troppa fame sulla cena dopo un pranzo piu disteso, ma senza aggiungere peso inutile.',
+            afternoonItems: ['1 frutto oppure yogurt greco piccolo', 'eventuale tisana o bevanda non zuccherata'],
+            afternoonFat: 4,
+            guidance: 'Con pranzo da giorno libero gli spuntini restano piu leggeri e di riequilibrio.'
+        };
+    }
+
+    return {
+        morningTitle: 'Spuntino mattina pratico e protettivo',
+        morningWhy: 'Aiuta a distribuire fame e proteine in una giornata in cui il pranzo deve restare rapido e funzionale.',
+        morningItems: ['1 yogurt proteico o skyr', 'frutto piccolo se serve'],
+        morningFat: 2,
+        afternoonTitle: 'Spuntino pomeriggio ponte verso la cena',
+        afternoonWhy: 'Serve a non arrivare scarico a cena e a mantenere stabilita in una giornata piu compressa.',
+        afternoonItems: ['1 frutto', 'yogurt greco oppure piccola quota di frutta secca'],
+        afternoonFat: 6,
+        guidance: 'Con pranzo da giorno lavorativo gli spuntini restano piu pratici e protettivi.'
+    };
+}
+
+function getLunchContextDinnerStrategy(value, dinnerProteinPreference = 'variata') {
+    const normalizedPreference = normalizeDinnerProteinPreference(dinnerProteinPreference);
+
+    if (value === 'free-day') {
+        return {
+            title: 'Cena con apertura vegetale e proteina vegetale o uova',
+            why: 'Dopo un pranzo piu disteso, la cena puo restare piu pulita ma strutturata: apertura con verdure crude, proteina ben leggibile, carboidrato semplice e frutta solo se serve davvero.',
+            items: ['Inizio con insalata oppure carota o finocchio da sgranocchiare', normalizedPreference === 'tofu-tempeh' ? '250 g tofu oppure 150 g tempeh come base proteica, con idea guida tipo tofu limone e pepe rosa o tempeh tahina e limone' : (normalizedPreference === 'uova' ? '3 uova intere come base proteica, anche in frittata con contorno vegetale' : (normalizedPreference === 'latticini-light' ? '150 g ricotta light oppure feta light o mozzarella proteica come base proteica' : (normalizedPreference === 'burger-vegetali' ? '2 burger vegetali proteici oppure burger di lupini come base proteica' : '250 g tofu oppure 150 g tempeh, oppure 3 uova intere come base proteica'))), '1 patata americana oppure 2 patate medio-grandi come quota glucidica', 'verdure di accompagnamento', '2 cucchiai di olio EVO ben dichiarati', 'eventuale 1 porzione di frutta a fine pasto se coerente con fame e giornata'],
+            carbs: 34,
+            fat: 14
+        };
+    }
+
+    return {
+        title: 'Cena pratica con apertura vegetale e quota proteica ruotabile',
+        why: 'Dopo un pranzo piu pratico e rapido, la cena puo restare organizzabile ma completa: apertura vegetale, proteina chiara, carboidrato semplice e condimento dichiarato.',
+        items: ['Inizio con insalata oppure carota o finocchio da sgranocchiare', normalizedPreference === 'tofu-tempeh' ? 'Tofu o tempeh come scelta principale, con idea guida tipo tofu limone e pepe rosa oppure polpette di tofu e spinaci' : (normalizedPreference === 'uova' ? '3 uova intere come scelta principale, anche in frittata pratica' : (normalizedPreference === 'latticini-light' ? 'Ricotta light, feta light o mozzarella proteica come scelta principale' : (normalizedPreference === 'burger-vegetali' ? '2 burger vegetali proteici oppure burger di lupini come scelta principale' : '3 uova intere oppure tofu/tempeh, oppure ricotta light o burger vegetali proteici come alternativa'))), '60 g riso a chicco lungo o altri cereali gia pronti, oppure 2-3 fette di pane scuro', 'verdure cotte o crude di accompagnamento', '2 cucchiai di olio EVO ben dichiarati', 'eventuale 1 porzione di frutta a fine pasto se coerente con il profilo'],
+        carbs: 40,
+        fat: 16
+    };
+}
+
+function getSnackContextBadge(value) {
+    return value === 'free-day'
+        ? { label: 'Riequilibrio giorno libero', className: 'ai-recipe-tag-free-day' }
+        : { label: 'Snack giorno lavorativo', className: 'ai-recipe-tag-workday' };
+}
+
+function applyLunchContextPreference(profileData) {
+    const lunchContextSelect = document.getElementById('day-plan-lunch-context');
+    if (!lunchContextSelect) return;
+
+    lunchContextSelect.value = profileData?.lunchContextPreference === 'free-day' ? 'free-day' : 'workday';
+}
+
+function persistLunchContextPreference(lunchContext) {
+    const normalizedLunchContext = lunchContext === 'free-day' ? 'free-day' : 'workday';
+    const currentProfile = JSON.parse(localStorage.getItem('nv_profilo')) || userProfile || null;
+    if (!currentProfile) return normalizedLunchContext;
+
+    const updatedProfile = {
+        ...currentProfile,
+        lunchContextPreference: normalizedLunchContext
+    };
+
+    profilo = updatedProfile;
+    userProfile = updatedProfile;
+    localStorage.setItem('nv_profilo', JSON.stringify(updatedProfile));
+
+    const diaryProfile = JSON.parse(localStorage.getItem('userDiaryProfile')) || {};
+    localStorage.setItem('userDiaryProfile', JSON.stringify({
+        ...diaryProfile,
+        dataCreazione: diaryProfile.dataCreazione || new Date().toLocaleDateString(),
+        profilo: {
+            ...(diaryProfile.profilo || {}),
+            ...updatedProfile
+        }
+    }));
+
+    return normalizedLunchContext;
 }
 
 const AI_RECIPE_MODE_SLOTS = [
@@ -3341,6 +4249,12 @@ function getAIFallbackRecipes(ingredients, people, profile) {
     const goal = profile.goal || 'mantenere';
     const diet = profile.diet || 'equilibrato';
     const jobType = profile.jobType || 'moderato';
+    const lunchContext = profile.lunchContextPreference === 'free-day' ? 'free-day' : 'workday';
+    const lunchContextNote = getLunchContextRecipeNote(lunchContext);
+    const clinicalContext = getClinicalNutritionContext(profile);
+    const clinicalRecipeTail = clinicalContext.applicable
+        ? ` ${clinicalContext.recipeTail}`
+        : '';
 
     const goalHintMap = {
         dimagrire: 'con porzioni sazianti e una struttura leggera',
@@ -3363,7 +4277,7 @@ function getAIFallbackRecipes(ingredients, people, profile) {
             title: `Pasta o padellata base con ${lead[0] || 'frigo'} e ${lead[1] || 'dispensa'}`,
             style: 'Cucina base',
             summary: `Una proposta fondamentale per ${people} ${people === 1 ? 'persona' : 'persone'} che valorizza ${leadText} con una tecnica sola e leggibile.`,
-            whyItFits: `Ideata per l'obiettivo ${goal} ${goalHintMap[goal] || goalHintMap.mantenere}. ${dietHint} ${jobHintMap[jobType] || jobHintMap.moderato}`,
+            whyItFits: `Ideata per l'obiettivo ${goal} ${goalHintMap[goal] || goalHintMap.mantenere}. ${dietHint} ${jobHintMap[jobType] || jobHintMap.moderato} ${lunchContextNote}${clinicalRecipeTail}`,
             ingredients: [...lead, 'olio EVO', 'aglio o cipolla', 'erbe aromatiche'],
             steps: [
                 'Prepara un fondo semplice oppure una cottura diretta senza costruire piu componenti.',
@@ -3377,7 +4291,7 @@ function getAIFallbackRecipes(ingredients, people, profile) {
             title: `Versione media con ${lead[0] || 'ingrediente principale'} e accompagnamento`,
             style: 'Cucina media',
             summary: `Una ricetta piu costruita della base, con elemento principale piu crema, salsa o verdura di supporto per ${people} ${people === 1 ? 'persona' : 'persone'}.`,
-            whyItFits: `Pensata per darti un gradino tecnico in piu ma restare ancora dentro una cucina domestica concreta.`,
+            whyItFits: `Pensata per darti un gradino tecnico in piu ma restare ancora dentro una cucina domestica concreta. ${lunchContextNote}${clinicalRecipeTail}`,
             ingredients: [...safeIngredients.slice(0, 4), 'pangrattato o semi', 'olio EVO', 'spezie a piacere'],
             steps: [
                 'Prepara un elemento principale con una lavorazione in piu rispetto alla base.',
@@ -3391,7 +4305,7 @@ function getAIFallbackRecipes(ingredients, people, profile) {
             title: `Chef mode con ${lead[0] || 'ingrediente guida'}`,
             style: 'Chef mode',
             summary: 'Una terza opzione che mette davvero alla prova: piu tecnica, piu precisa e meno perdonante della modalita media.',
-            whyItFits: 'Ti lascia un piatto che richiede controllo e mano, non solo un nome piu elegante della versione media.',
+            whyItFits: `Ti lascia un piatto che richiede controllo e mano, non solo un nome piu elegante della versione media. ${lunchContextNote}${clinicalRecipeTail}`,
             ingredients: [...safeIngredients.slice(0, 3), 'elemento croccante', 'finitura aromatica'],
             steps: [
                 'Cuoci separatamente l ingrediente principale con controllo preciso di tempo e temperatura.',
@@ -3405,7 +4319,7 @@ function getAIFallbackRecipes(ingredients, people, profile) {
             title: `Salvafrigo con ${lead[0] || 'avanzi utili'} e ${lead[1] || 'dispensa'}`,
             style: 'Salvafrigo',
             summary: 'La modalita piu facile e diretta: pochi passaggi, utilita massima e zero pretese estetiche.',
-            whyItFits: 'Serve quando vuoi la soluzione piu banale in senso pratico: usare quello che hai e cucinare senza pensare troppo.',
+            whyItFits: `Serve quando vuoi la soluzione piu banale in senso pratico: usare quello che hai e cucinare senza pensare troppo. ${lunchContextNote}${clinicalRecipeTail}`,
             ingredients: [...safeIngredients.slice(0, 3), 'condimento essenziale', 'pane, riso o legumi se servono'],
             steps: [
                 'Riunisci gli ingredienti piu semplici da usare subito.',
@@ -3433,6 +4347,8 @@ function renderAIRecipeResults(recipes, metadata = {}) {
     const sourceNote = metadata.source === 'fallback'
         ? `<p class="ai-mode-subtitle"><strong>Nota:</strong> in questo momento stai vedendo il motore di backup e non la AI live.${metadata.reason ? ` Motivo: ${escapeHtml(metadata.reason)}.` : ''}</p>`
         : '<p class="ai-mode-subtitle">AI live attiva: le ricette sono divise in Cucina base, Cucina media, Chef mode e Salvafrigo.</p>';
+    const lunchContext = metadata.lunchContext === 'free-day' ? 'free-day' : 'workday';
+    const lunchContextNote = `<p class="ai-mode-subtitle"><strong>Contesto profilo:</strong> ${escapeHtml(getLunchContextRecipeNote(lunchContext))}</p>`;
 
     resultBox.style.display = 'block';
     resultBox.innerHTML = `
@@ -3440,6 +4356,7 @@ function renderAIRecipeResults(recipes, metadata = {}) {
             <div>
                 <h4 class="ai-mode-title">${escapeHtml(sourceLabel)}</h4>
                 ${sourceNote}
+                ${lunchContextNote}
             </div>
         </div>
         <div class="ai-recipe-grid">
@@ -3533,6 +4450,7 @@ function renderAIRecipeResults(recipes, metadata = {}) {
         </div>
         ${hasNutritionTables ? renderAINutritionMethodology() : ''}
     `;
+    updateAiModeResultsVisibility('ai-recipe-result');
 }
 
 function renderAIRecipeLoading(ingredients, people) {
@@ -3546,6 +4464,7 @@ function renderAIRecipeLoading(ingredients, people) {
             <p class="ai-mode-subtitle">Ingredienti analizzati: <strong>${escapeHtml(ingredients.join(', ') || 'dispensa di casa')}</strong> per <strong>${people}</strong> ${people === 1 ? 'persona' : 'persone'}.</p>
         </div>
     `;
+    updateAiModeResultsVisibility('ai-recipe-result');
 }
 
 function renderAIRecipeError(message) {
@@ -3561,6 +4480,7 @@ function renderAIRecipeError(message) {
             <p class="ai-mode-subtitle">${escapeHtml(message)}</p>
         </div>
     `;
+    updateAiModeResultsVisibility('ai-recipe-result');
 }
 
 async function generaRicettaAI() {
@@ -3572,6 +4492,8 @@ async function generaRicettaAI() {
             .filter(Boolean);
 
     const persone = parseInt(document.getElementById('discover-people').value, 10) || 1;
+    const mealType = document.getElementById('chef-recipe-meal-type')?.value || 'pranzo';
+    const difficulty = document.getElementById('chef-recipe-difficulty')?.value || 'semplice';
     const profilePayload = getAIProfilePayload();
 
     if (persone < 1) {
@@ -3595,6 +4517,8 @@ async function generaRicettaAI() {
             body: JSON.stringify({
                 ingredients: ingredienti,
                 people: persone,
+                mealType,
+                difficulty,
                 profile: profilePayload
             })
         });
@@ -3610,14 +4534,731 @@ async function generaRicettaAI() {
 
         renderAIRecipeResults(payload.recipes.slice(0, 4), {
             ...(payload.meta || {}),
-            people: persone
+            people: persone,
+            lunchContext: profilePayload.lunchContextPreference
         });
     } catch (error) {
         console.error('AI Mode error:', error);
         const fallbackRecipes = getAIFallbackRecipes(ingredienti, persone, profilePayload);
         renderAIRecipeResults(fallbackRecipes, {
             source: 'fallback',
-            people: persone
+            people: persone,
+            lunchContext: profilePayload.lunchContextPreference
+        });
+    }
+}
+
+function getAIBreakfastSnackFallback(profile, preferences) {
+    const proteinTarget = Number(profile.proteinTargetGrams || 0);
+    const breakfastProtein = proteinTarget > 0 ? Math.max(20, Math.round(proteinTarget * 0.22)) : 25;
+    const snackProtein = proteinTarget > 0 ? Math.max(12, Math.round(proteinTarget * 0.12)) : 15;
+    const preferenceNote = preferences ? `Ho considerato questa preferenza: ${preferences}.` : 'Le proposte restano flessibili e adattabili alla tua routine reale.';
+    const lunchContext = profile.lunchContextPreference === 'free-day' ? 'free-day' : 'workday';
+    const snackStrategy = getLunchContextSnackStrategy(lunchContext);
+    const clinicalContext = getClinicalNutritionContext(profile);
+
+    if (clinicalContext.applicable) {
+        const breakfastOptions = cloneClinicalGuidanceValue(clinicalContext.breakfastOptions || []);
+        const snackOptions = cloneClinicalGuidanceValue(clinicalContext.snackOptions || []);
+
+        return {
+            breakfastOptions: breakfastOptions.map((option, index) => ({
+                ...option,
+                whyItFits: index === 0
+                    ? `Riprende una struttura classica, semplice e sostenibile per un profilo adulto con deficit moderato. ${preferenceNote}`
+                    : (index === 1
+                        ? 'Versione equivalente piu fresca ma sempre ordinata sul piano calorico e sulla sazieta.'
+                        : 'Utile se preferisci una colazione calda ma con densita energetica ancora controllata.'),
+                macros: {
+                    ...option.macros,
+                    protein: index === 0 ? 11 : (index === 1 ? Math.max(10, breakfastProtein - 4) : Math.max(10, breakfastProtein - 3))
+                }
+            })),
+            snackOptions: snackOptions.map((option, index) => ({
+                ...option,
+                whyItFits: index === 0
+                    ? snackStrategy.morningWhy
+                    : (index === 1
+                        ? 'Spuntino essenziale che aiuta ad arrivare alla cena con piu controllo e meno fame impulsiva.'
+                        : (lunchContext === 'free-day'
+                            ? 'Alternativa utile quando vuoi uno spuntino piu leggero e voluminoso.'
+                            : 'Alternativa utile quando cerchi leggerezza e idratazione senza appesantire il pomeriggio.'))
+            })),
+            guidance: [
+                `Schema clinico-pratico attivato: circa 1600 kcal con ripartizione orientativa ${clinicalContext.macroSplit}.`,
+                clinicalContext.weightNote,
+                'Gli spuntini possono restare semplici, con frutta come base e verdure crude come supporto se compare fame extra.',
+                'L olio EVO e preferibile a crudo e i condimenti restano misurati.',
+                clinicalContext.avoidFoods
+            ]
+        };
+    }
+
+    return {
+        breakfastOptions: [
+            {
+                title: 'Yogurt greco, cereali controllati e frutta',
+                whyItFits: `Tiene una quota proteica solida al mattino senza appesantire. ${preferenceNote}`,
+                items: ['150-170 g yogurt greco 0%', '35-45 g granola o fiocchi a basso contenuto di zuccheri', '1 porzione di frutta'],
+                notes: ['Opzione pratica e veloce', 'Buona se vuoi sazieta e continuita'],
+                macros: { kcal: 320, protein: breakfastProtein, carbs: 34, fat: 7 }
+            },
+            {
+                title: 'Yogurt greco, frutta e frutta secca',
+                whyItFits: 'Equilibrio semplice tra proteine, fibra e grassi buoni, utile quando vuoi una colazione ordinata e sostenibile.',
+                items: ['150 g yogurt greco 0%', '1 porzione di frutta', '15-20 g frutta secca'],
+                notes: ['Piacevole anche fuori casa', 'Aiuta a non concentrare tutti i carboidrati all inizio della giornata'],
+                macros: { kcal: 300, protein: breakfastProtein - 2, carbs: 24, fat: 11 }
+            },
+            {
+                title: 'Porridge proteico con avena e albume',
+                whyItFits: 'Molto utile quando vuoi una colazione piu calda, saziante e con un controllo migliore della quota proteica.',
+                items: ['40 g fiocchi di avena', '80 ml albume', '1 frutto o mela a pezzi', '1 cucchiaino crema 100% di frutta secca'],
+                notes: ['Versione piu cremosa e saziante', 'Adatta quando hai piu fame o vuoi un ritmo piu regolare'],
+                macros: { kcal: 340, protein: breakfastProtein + 2, carbs: 36, fat: 9 }
+            }
+        ],
+        snackOptions: [
+            {
+                title: snackStrategy.morningTitle,
+                whyItFits: snackStrategy.morningWhy,
+                items: snackStrategy.morningItems,
+                notes: ['Molto pratico', 'Buono anche pre o post allenamento leggero'],
+                macros: { kcal: lunchContext === 'free-day' ? 145 : 170, protein: snackProtein, carbs: lunchContext === 'free-day' ? 10 : 18, fat: snackStrategy.morningFat }
+            },
+            {
+                title: 'Frutta secca e frutto fresco',
+                whyItFits: lunchContext === 'free-day'
+                    ? 'Spuntino semplice e molto misurato, utile quando il pranzo della giornata e stato piu disteso.'
+                    : 'Spuntino semplice e gestibile se il pasto successivo non e troppo lontano.',
+                items: ['1 porzione di frutta', '15-20 g frutta secca'],
+                notes: ['Piacevole e rapido', 'Meno proteico, ma utile in giornate piu leggere'],
+                macros: { kcal: lunchContext === 'free-day' ? 160 : 180, protein: 5, carbs: 18, fat: lunchContext === 'free-day' ? 8 : 10 }
+            },
+            {
+                title: snackStrategy.afternoonTitle,
+                whyItFits: snackStrategy.afternoonWhy,
+                items: snackStrategy.afternoonItems,
+                notes: ['Piacevole anche come spuntino serale', 'Molto utile in fasi di dimagrimento'],
+                macros: { kcal: lunchContext === 'free-day' ? 125 : 140, protein: snackProtein, carbs: lunchContext === 'free-day' ? 8 : 9, fat: snackStrategy.afternoonFat }
+            }
+        ],
+        guidance: [
+            `Fabbisogno stimato: ${Math.round(profile.maintenanceCalories || 0)} kcal; piano attuale: ${Math.round(profile.targetCalories || 0)} kcal (${formatDeltaKcal(profile.goalCalorieDelta)}).`,
+            `Target proteico: ${Number(profile.proteinTargetPerKg || 0).toFixed(1)} g/kg, circa ${Math.round(profile.proteinTargetGrams || 0)} g al giorno.`,
+            `Preferenza pranzo considerata: ${getLunchContextLabel(lunchContext)}. ${snackStrategy.guidance}`,
+            'Le opzioni sono equivalenti come logica nutrizionale, non copie rigide da seguire sempre nello stesso modo.'
+        ]
+    };
+}
+
+function getAIDailyPlanFallback(profile, preferences, lunchContext = 'workday') {
+    const goal = profile.goal || 'mantenere';
+    const targetCalories = Math.round(profile.targetCalories || 0);
+    const proteinGrams = Math.round(profile.proteinTargetGrams || 0);
+    const breakfastKcal = Math.round(targetCalories * 0.22);
+    const lunchKcal = Math.round(targetCalories * 0.3);
+    const dinnerKcal = Math.round(targetCalories * 0.28);
+    const snackKcal = Math.max(120, Math.round((targetCalories - breakfastKcal - lunchKcal - dinnerKcal) / 2));
+    const isFreeDayLunch = lunchContext === 'free-day';
+    const snackStrategy = getLunchContextSnackStrategy(lunchContext);
+    const dinnerStrategy = getLunchContextDinnerStrategy(lunchContext, profile.dinnerProteinPreference);
+    const clinicalContext = getClinicalNutritionContext(profile);
+
+    if (clinicalContext.applicable) {
+        const dailyPattern = cloneClinicalGuidanceValue(clinicalContext.dailyPattern || {});
+
+        return {
+            title: 'Giornata alimentare ispirata a uno schema clinico-pratico personalizzato',
+            rationale: `Esempio di giornata per profilo adulto in sovrappeso con deficit moderato, costruito distinguendo fabbisogno e piano calorico e mantenendo una struttura semplice e aderente nel tempo.${preferences ? ` Nota considerata: ${preferences}.` : ''}`,
+            lunchContext,
+            targets: {
+                maintenanceCalories: Math.round(profile.maintenanceCalories || 0),
+                targetCalories,
+                deltaCalories: Math.round(profile.goalCalorieDelta || 0),
+                proteinGrams,
+                proteinPerKg: Number(profile.proteinTargetPerKg || 0).toFixed(1),
+                hydrationLiters: Number(profile.waterTargetLiters || 0).toFixed(1)
+            },
+            meals: [
+                {
+                    slot: 'Colazione',
+                    ...dailyPattern.breakfast
+                },
+                {
+                    slot: 'Spuntino mattina',
+                    ...dailyPattern.morningSnack
+                },
+                {
+                    slot: 'Pranzo',
+                    title: isFreeDayLunch ? dailyPattern.lunch.titleFreeDay : dailyPattern.lunch.titleWorkday,
+                    whyItFits: isFreeDayLunch ? dailyPattern.lunch.whyFreeDay : dailyPattern.lunch.whyWorkday,
+                    items: dailyPattern.lunch.items,
+                    kcal: lunchKcal || 520,
+                    protein: Math.max(24, Math.round(proteinGrams * 0.3)),
+                    carbs: dailyPattern.lunch.carbs,
+                    fat: dailyPattern.lunch.fat
+                },
+                {
+                    slot: 'Spuntino pomeriggio',
+                    ...dailyPattern.afternoonSnack,
+                    items: [...(dailyPattern.afternoonSnack.items || []), clinicalContext.hungerStrategy]
+                },
+                {
+                    slot: 'Cena',
+                    ...dailyPattern.dinner,
+                    kcal: dinnerKcal || 470,
+                    protein: Math.max(28, Math.round(proteinGrams * 0.28)),
+                    carbs: dailyPattern.dinner.carbs,
+                    fat: dailyPattern.dinner.fat
+                }
+            ],
+            notes: [
+                clinicalContext.weightNote,
+                'Per la fame, le verdure crude possono essere usate liberamente come supporto di sazieta.',
+                clinicalContext.proteinRotation,
+                ...(dailyPattern.notes || []),
+                clinicalContext.avoidFoods,
+            ]
+        };
+    }
+
+    return {
+        title: 'Giornata alimentare ragionata sul tuo profilo',
+        rationale: `Esempio di giornata costruito per l obiettivo ${goal}, distinguendo fabbisogno, piano calorico e distribuzione della quota proteica, con pranzo da ${getLunchContextLabel(lunchContext).toLowerCase()}. ${preferences ? `Nota considerata: ${preferences}.` : ''}`.trim(),
+        lunchContext,
+        targets: {
+            maintenanceCalories: Math.round(profile.maintenanceCalories || 0),
+            targetCalories,
+            deltaCalories: Math.round(profile.goalCalorieDelta || 0),
+            proteinGrams,
+            proteinPerKg: Number(profile.proteinTargetPerKg || 0).toFixed(1),
+            hydrationLiters: Number(profile.waterTargetLiters || 0).toFixed(1)
+        },
+        meals: [
+            {
+                slot: 'Colazione',
+                title: 'Yogurt greco, avena e frutta',
+                whyItFits: 'Apre la giornata con una quota proteica ordinata e una struttura facile da mantenere.',
+                items: ['Yogurt greco 0%', 'fiocchi di avena o cereali semplici', '1 porzione di frutta'],
+                kcal: breakfastKcal,
+                protein: Math.max(20, Math.round(proteinGrams * 0.22)),
+                carbs: 35,
+                fat: 8
+            },
+            {
+                slot: 'Spuntino mattina',
+                title: snackStrategy.morningTitle,
+                whyItFits: snackStrategy.morningWhy,
+                items: snackStrategy.morningItems,
+                kcal: isFreeDayLunch ? Math.max(110, snackKcal - 20) : snackKcal,
+                protein: Math.max(12, Math.round(proteinGrams * 0.1)),
+                carbs: isFreeDayLunch ? 10 : 14,
+                fat: snackStrategy.morningFat
+            },
+            {
+                slot: 'Pranzo',
+                title: isFreeDayLunch
+                    ? 'Pranzo da giorno libero con apertura vegetale e piatto piu disteso'
+                    : 'Pranzo da giorno lavorativo pratico e strutturato',
+                whyItFits: isFreeDayLunch
+                    ? 'Sfrutta un ritmo piu calmo e una struttura piu curata, senza perdere coerenza con il piano.'
+                    : 'Tiene insieme energia, sazieta e praticita in una pausa pranzo piu rapida e gestibile.',
+                items: isFreeDayLunch
+                    ? ['Inizio con verdure crude semplici come insalata, carota o finocchio', 'base amidacea come farro, riso integrale, pasta, quinoa o cous-cous', 'legumi gia cotti o edamame come quota proteico-fibrosa', 'verdure cotte o crude piu presenti', 'olio EVO ben dichiarato', 'eventuale piccola nota dolce finale solo se coerente con il profilo']
+                    : ['Inizio con verdure crude semplici se praticabile', 'base amidacea come farro, riso integrale, pasta, quinoa o cous-cous', 'legumi gia cotti o edamame come quota proteico-fibrosa', 'verdure di accompagnamento', 'olio EVO ben dichiarato', 'struttura facile da preparare o portare fuori casa'],
+                kcal: lunchKcal,
+                protein: Math.max(28, Math.round(proteinGrams * 0.3)),
+                carbs: 55,
+                fat: 16
+            },
+            {
+                slot: 'Spuntino pomeriggio',
+                title: snackStrategy.afternoonTitle,
+                whyItFits: snackStrategy.afternoonWhy,
+                items: snackStrategy.afternoonItems,
+                kcal: isFreeDayLunch ? Math.max(110, snackKcal - 15) : snackKcal,
+                protein: Math.max(10, Math.round(proteinGrams * 0.1)),
+                carbs: isFreeDayLunch ? 12 : 16,
+                fat: snackStrategy.afternoonFat
+            },
+            {
+                slot: 'Cena',
+                title: dinnerStrategy.title,
+                whyItFits: dinnerStrategy.why,
+                items: dinnerStrategy.items,
+                kcal: dinnerKcal,
+                protein: Math.max(28, Math.round(proteinGrams * 0.28)),
+                carbs: dinnerStrategy.carbs,
+                fat: dinnerStrategy.fat
+            }
+        ],
+        notes: [
+            'Le porzioni reali vanno adattate ai cibi scelti e alla tua routine del giorno.',
+            'Il piano non e una prescrizione clinica: e un esempio ragionato coerente con il profilo inserito.',
+            'Se la fame al mattino e bassa, una parte dell energia puo essere spostata tra colazione e spuntino.',
+            isFreeDayLunch
+                ? 'Nel giorno libero il pranzo puo essere un po piu disteso e curato, ma non deve perdere struttura nutrizionale.'
+                : 'Nel giorno lavorativo il pranzo deve restare pratico, digeribile e sostenibile anche fuori casa.',
+            `Preferenza proteica serale considerata: ${getDinnerProteinPreferenceLabel(profile.dinnerProteinPreference || 'variata')}.`
+            ,`Frequenza serale suggerita: ${getDinnerProteinFrequencyLabel(profile.dinnerProteinFrequency || 'libera')}.`
+        ]
+    };
+}
+
+function renderAIBoxLoading(resultId, title, subtitle) {
+    const resultBox = document.getElementById(resultId);
+    if (!resultBox) return;
+
+    resultBox.style.display = 'block';
+    resultBox.innerHTML = `
+        <div class="ai-mode-loading">
+            <h4 class="ai-mode-title">${escapeHtml(title)}</h4>
+            <p class="ai-mode-subtitle">${escapeHtml(subtitle)}</p>
+        </div>
+    `;
+    updateAiModeResultsVisibility(resultId);
+}
+
+function renderAIBoxError(resultId, title, message) {
+    const resultBox = document.getElementById(resultId);
+    if (!resultBox) return;
+
+    resultBox.style.display = 'block';
+    resultBox.innerHTML = `
+        <div class="ai-mode-error">
+            <h4 class="ai-mode-title">${escapeHtml(title)}</h4>
+            <p class="ai-mode-subtitle">${escapeHtml(message)}</p>
+        </div>
+    `;
+    updateAiModeResultsVisibility(resultId);
+}
+
+function renderAIBreakfastSnackResults(payload) {
+    const resultBox = document.getElementById('ai-breakfast-result');
+    if (!resultBox) return;
+
+    const breakfastOptions = Array.isArray(payload.breakfastOptions) ? payload.breakfastOptions : [];
+    const snackOptions = Array.isArray(payload.snackOptions) ? payload.snackOptions : [];
+    const guidance = Array.isArray(payload.guidance) ? payload.guidance : [];
+    const lunchContext = payload?.meta?.lunchContext === 'free-day' ? 'free-day' : 'workday';
+    const snackBadge = getSnackContextBadge(lunchContext);
+    const sourceNote = payload?.meta?.source === 'fallback'
+        ? `<p class="ai-mode-subtitle"><strong>Nota:</strong> stai vedendo il motore di backup.${payload?.meta?.reason ? ` ${escapeHtml(payload.meta.reason)}` : ''}</p>`
+        : '<p class="ai-mode-subtitle">AI live attiva: le opzioni sono equivalenti come logica nutrizionale, non rigide.</p>';
+    const lunchContextNote = `<p class="ai-mode-subtitle"><strong>Contesto profilo:</strong> ${escapeHtml(getLunchContextRecipeNote(lunchContext))}</p>`;
+
+    resultBox.style.display = 'block';
+    resultBox.innerHTML = `
+        <div class="ai-plan-block">
+            <div class="ai-mode-header">
+                <div>
+                    <h4 class="ai-mode-title">Colazioni e spuntini su misura</h4>
+                    ${sourceNote}
+                    ${lunchContextNote}
+                </div>
+            </div>
+
+            <div class="ai-recipe-grid">
+                ${breakfastOptions.map((option, index) => `
+                    <article class="ai-recipe-card">
+                        <div class="ai-recipe-card-top">
+                            <span class="ai-recipe-index">Colazione ${index + 1}</span>
+                            <span class="ai-recipe-tag">Opzione equivalente</span>
+                        </div>
+                        <h5>${escapeHtml(option.title || `Colazione ${index + 1}`)}</h5>
+                        <p class="ai-recipe-fit"><strong>Perche ti puo aiutare:</strong> ${escapeHtml(option.whyItFits || '')}</p>
+                        <div class="ai-recipe-section">
+                            <strong>Componenti</strong>
+                            <ul>${renderAICardList(option.items || [])}</ul>
+                        </div>
+                        ${(option.notes && option.notes.length > 0) ? `
+                            <div class="ai-recipe-section">
+                                <strong>Note pratiche</strong>
+                                <ul>${renderAICardList(option.notes)}</ul>
+                            </div>
+                        ` : ''}
+                        ${option.macros ? `<p class="ai-recipe-fit"><strong>Stima:</strong> ${escapeHtml(option.macros.kcal)} kcal • P ${escapeHtml(option.macros.protein)} g • C ${escapeHtml(option.macros.carbs)} g • G ${escapeHtml(option.macros.fat)} g</p>` : ''}
+                    </article>
+                `).join('')}
+            </div>
+
+            <div class="ai-recipe-grid">
+                ${snackOptions.map((option, index) => `
+                    <article class="ai-recipe-card">
+                        <div class="ai-recipe-card-top">
+                            <span class="ai-recipe-index">Spuntino ${index + 1}</span>
+                            <span class="ai-recipe-tag ${escapeHtml(snackBadge.className)}">${escapeHtml(snackBadge.label)}</span>
+                        </div>
+                        <h5>${escapeHtml(option.title || `Spuntino ${index + 1}`)}</h5>
+                        <p class="ai-recipe-fit"><strong>Perche ti puo aiutare:</strong> ${escapeHtml(option.whyItFits || '')}</p>
+                        <div class="ai-recipe-section">
+                            <strong>Componenti</strong>
+                            <ul>${renderAICardList(option.items || [])}</ul>
+                        </div>
+                        ${(option.notes && option.notes.length > 0) ? `
+                            <div class="ai-recipe-section">
+                                <strong>Note pratiche</strong>
+                                <ul>${renderAICardList(option.notes)}</ul>
+                            </div>
+                        ` : ''}
+                        ${option.macros ? `<p class="ai-recipe-fit"><strong>Stima:</strong> ${escapeHtml(option.macros.kcal)} kcal • P ${escapeHtml(option.macros.protein)} g • C ${escapeHtml(option.macros.carbs)} g • G ${escapeHtml(option.macros.fat)} g</p>` : ''}
+                    </article>
+                `).join('')}
+            </div>
+
+            ${(guidance.length > 0) ? `
+                <div class="ai-recipe-card">
+                    <h5>Logica usata</h5>
+                    <ul class="ai-plan-note-list">${renderAICardList(guidance)}</ul>
+                </div>
+            ` : ''}
+        </div>
+    `;
+    updateAiModeResultsVisibility('ai-breakfast-result');
+}
+
+function renderAIDailyPlanResults(payload) {
+    const resultBox = document.getElementById('ai-day-plan-result');
+    if (!resultBox) return;
+
+    const plan = payload.plan || payload;
+    const profilePayload = getAIProfilePayload();
+    const targets = plan.targets || {};
+    const meals = Array.isArray(plan.meals) ? plan.meals : [];
+    const notes = Array.isArray(plan.notes) ? [...plan.notes] : [];
+    const lunchContext = plan.lunchContext || 'workday';
+    const dinnerPreferenceNote = buildDinnerPreferencePlanNote(profilePayload);
+    const dinnerProfileContext = `Contesto serale del profilo: ${dinnerPreferenceNote}`;
+    if (!notes.includes(dinnerPreferenceNote)) {
+        notes.push(dinnerPreferenceNote);
+    }
+    const rationale = [plan.rationale, dinnerPreferenceNote].filter(Boolean).join(' ');
+    const sourceNote = payload?.meta?.source === 'fallback'
+        ? `<p class="ai-mode-subtitle"><strong>Nota:</strong> stai vedendo il motore di backup.${payload?.meta?.reason ? ` ${escapeHtml(payload.meta.reason)}` : ''}</p>`
+        : '<p class="ai-mode-subtitle">AI live attiva: il piano e organizzato come esempio di giornata completa.</p>';
+
+    resultBox.style.display = 'block';
+    resultBox.innerHTML = `
+        <div class="ai-plan-block">
+            <div class="ai-mode-header">
+                <div>
+                    <h4 class="ai-mode-title">${escapeHtml(plan.title || 'Piano giornaliero su misura')}</h4>
+                    ${sourceNote}
+                    <p class="ai-mode-subtitle"><strong>Contesto serale:</strong> ${escapeHtml(dinnerProfileContext)}</p>
+                </div>
+            </div>
+
+            ${rationale ? `<p class="ai-recipe-fit"><strong>Ragionamento:</strong> ${escapeHtml(rationale)}</p>` : ''}
+
+            <div class="ai-plan-meta">
+                <div class="ai-plan-stat"><strong>Fabbisogno</strong><span>${escapeHtml(targets.maintenanceCalories || 0)} kcal</span></div>
+                <div class="ai-plan-stat"><strong>Piano</strong><span>${escapeHtml(targets.targetCalories || 0)} kcal</span></div>
+                <div class="ai-plan-stat"><strong>Delta</strong><span>${escapeHtml(formatDeltaKcal(targets.deltaCalories || 0))}</span></div>
+                <div class="ai-plan-stat"><strong>Proteine</strong><span>${escapeHtml(targets.proteinGrams || 0)} g (${escapeHtml(targets.proteinPerKg || 0)} g/kg)</span></div>
+                <div class="ai-plan-stat"><strong>Acqua</strong><span>${escapeHtml(targets.hydrationLiters || 0)} L</span></div>
+                <div class="ai-plan-stat"><strong>Pranzo</strong><span>${escapeHtml(getLunchContextLabel(lunchContext))}</span></div>
+            </div>
+
+            <div class="ai-recipe-grid">
+                ${meals.map((meal) => `
+                    <article class="ai-plan-day">
+                        <div class="ai-plan-day-top">
+                            <span class="ai-recipe-index">${escapeHtml(meal.slot || 'Pasto')}</span>
+                            <span class="ai-recipe-tag">${escapeHtml(meal.kcal || 0)} kcal</span>
+                        </div>
+                        <h5>${escapeHtml(meal.title || 'Pasto')}</h5>
+                        <p class="ai-recipe-fit"><strong>Perche ti puo aiutare:</strong> ${escapeHtml(meal.whyItFits || '')}</p>
+                        <ul class="ai-plan-items">${renderAICardList(meal.items || [])}</ul>
+                        <p class="ai-recipe-fit"><strong>Stima:</strong> P ${escapeHtml(meal.protein || 0)} g • C ${escapeHtml(meal.carbs || 0)} g • G ${escapeHtml(meal.fat || 0)} g</p>
+                    </article>
+                `).join('')}
+            </div>
+
+            ${(notes.length > 0) ? `
+                <div class="ai-recipe-card">
+                    <h5>Note del piano</h5>
+                    <ul class="ai-plan-note-list">${renderAICardList(notes)}</ul>
+                </div>
+            ` : ''}
+        </div>
+    `;
+    updateAiModeResultsVisibility('ai-day-plan-result');
+}
+
+function getAIWeeklyPlanFallback(profile, preferences, lunchContext = 'workday') {
+    const clinicalContext = getClinicalNutritionContext(profile);
+    const weeklyPattern = cloneClinicalGuidanceValue(clinicalContext.weeklyPattern || {});
+    const dailyPattern = cloneClinicalGuidanceValue(clinicalContext.dailyPattern || {});
+    const targetCalories = Math.round(profile.targetCalories || 0);
+    const proteinGrams = Math.round(profile.proteinTargetGrams || 0);
+
+    const days = (weeklyPattern.days || []).map((day, index) => ({
+        day: day.day,
+        focus: day.focus,
+        meals: [
+            {
+                slot: 'Colazione',
+                title: dailyPattern.breakfast?.title || 'Colazione semplice',
+                items: dailyPattern.breakfast?.items || []
+            },
+            {
+                slot: 'Spuntini',
+                title: 'Frutta fresca come base degli spuntini',
+                items: ['Mattina: 200 g frutta fresca', 'Pomeriggio: 200 g frutta fresca', clinicalContext.hungerStrategy]
+            },
+            {
+                slot: 'Pranzo',
+                title: day.lunch,
+                items: index === 5 || index === 6
+                    ? [
+                        '80 g pasta o riso o farro o orzo con condimenti vegetali',
+                        'verdure cotte o crude a piacere',
+                        '20 g olio EVO preferibilmente a crudo',
+                        '20 g pane semplice senza sale'
+                    ]
+                    : (dailyPattern.lunch?.items || [])
+            },
+            {
+                slot: 'Cena',
+                title: `Cena con ${day.dinnerProtein}`,
+                items: [
+                    'brodo o passato di verdure senza patate o legumi a piacere',
+                    `fonte proteica prioritaria: ${day.dinnerProtein}`,
+                    'verdura cotta o cruda a piacere',
+                    '10 g olio EVO preferibilmente a crudo',
+                    '60 g pane semplice senza sale'
+                ]
+            }
+        ],
+        notes: [
+            `Focus del giorno: ${day.focus}`,
+            index === 5 || index === 6
+                ? 'Nel fine settimana la struttura puo essere un po piu distesa, ma senza perdere ordine nutrizionale.'
+                : `Nel contesto ${getLunchContextLabel(lunchContext).toLowerCase()} la priorita resta la praticita.`
+        ]
+    }));
+
+    return {
+        title: weeklyPattern.title || 'Settimana alimentare coerente con il profilo',
+        rationale: `${weeklyPattern.rationale || 'Schema settimanale costruito per dare continuita e organizzazione.'}${preferences ? ` Nota considerata: ${preferences}.` : ''}`,
+        targets: {
+            maintenanceCalories: Math.round(profile.maintenanceCalories || 0),
+            targetCalories,
+            deltaCalories: Math.round(profile.goalCalorieDelta || 0),
+            proteinGrams,
+            proteinPerKg: Number(profile.proteinTargetPerKg || 0).toFixed(1),
+            hydrationLiters: Number(profile.waterTargetLiters || 0).toFixed(1)
+        },
+        days,
+        notes: [
+            clinicalContext.weightNote,
+            clinicalContext.proteinRotation,
+            ...(weeklyPattern.notes || []),
+            clinicalContext.avoidFoods
+        ]
+    };
+}
+
+function renderAIWeeklyPlanResults(payload) {
+    const resultBox = document.getElementById('ai-day-plan-result');
+    if (!resultBox) return;
+
+    const week = payload.week || payload;
+    const targets = week.targets || {};
+    const days = Array.isArray(week.days) ? week.days : [];
+    const notes = Array.isArray(week.notes) ? week.notes : [];
+    const sourceNote = payload?.meta?.source === 'fallback'
+        ? `<p class="ai-mode-subtitle"><strong>Nota:</strong> stai vedendo il motore di backup.${payload?.meta?.reason ? ` ${escapeHtml(payload.meta.reason)}` : ''}</p>`
+        : '<p class="ai-mode-subtitle">AI live attiva: il piano e organizzato come schema settimanale coerente con il profilo.</p>';
+
+    resultBox.style.display = 'block';
+    resultBox.innerHTML = `
+        <div class="ai-plan-block">
+            <div class="ai-mode-header">
+                <div>
+                    <h4 class="ai-mode-title">${escapeHtml(week.title || 'Piano settimanale su misura')}</h4>
+                    ${sourceNote}
+                </div>
+            </div>
+
+            ${week.rationale ? `<p class="ai-recipe-fit"><strong>Ragionamento:</strong> ${escapeHtml(week.rationale)}</p>` : ''}
+
+            <div class="ai-plan-meta">
+                <div class="ai-plan-stat"><strong>Fabbisogno</strong><span>${escapeHtml(targets.maintenanceCalories || 0)} kcal</span></div>
+                <div class="ai-plan-stat"><strong>Piano</strong><span>${escapeHtml(targets.targetCalories || 0)} kcal</span></div>
+                <div class="ai-plan-stat"><strong>Delta</strong><span>${escapeHtml(formatDeltaKcal(targets.deltaCalories || 0))}</span></div>
+                <div class="ai-plan-stat"><strong>Proteine</strong><span>${escapeHtml(targets.proteinGrams || 0)} g (${escapeHtml(targets.proteinPerKg || 0)} g/kg)</span></div>
+                <div class="ai-plan-stat"><strong>Acqua</strong><span>${escapeHtml(targets.hydrationLiters || 0)} L</span></div>
+                <div class="ai-plan-stat"><strong>Giorni</strong><span>${escapeHtml(days.length || 0)}</span></div>
+            </div>
+
+            <div class="ai-recipe-grid">
+                ${days.map((day) => `
+                    <article class="ai-plan-day">
+                        <div class="ai-plan-day-top">
+                            <span class="ai-recipe-index">${escapeHtml(day.day || 'Giorno')}</span>
+                            <span class="ai-recipe-tag">Settimana</span>
+                        </div>
+                        <h5>${escapeHtml(day.focus || 'Struttura del giorno')}</h5>
+                        ${(Array.isArray(day.meals) ? day.meals : []).map((meal) => `
+                            <div class="ai-recipe-section">
+                                <strong>${escapeHtml(meal.slot || 'Pasto')}</strong>
+                                <p class="ai-recipe-fit">${escapeHtml(meal.title || '')}</p>
+                                <ul>${renderAICardList(meal.items || [])}</ul>
+                            </div>
+                        `).join('')}
+                        ${(Array.isArray(day.notes) && day.notes.length > 0) ? `<ul class="ai-plan-note-list">${renderAICardList(day.notes)}</ul>` : ''}
+                    </article>
+                `).join('')}
+            </div>
+
+            ${(notes.length > 0) ? `
+                <div class="ai-recipe-card">
+                    <h5>Note della settimana</h5>
+                    <ul class="ai-plan-note-list">${renderAICardList(notes)}</ul>
+                </div>
+            ` : ''}
+        </div>
+    `;
+    updateAiModeResultsVisibility('ai-day-plan-result');
+}
+
+async function generaColazioniSpuntiniAI() {
+    const profilePayload = getAIProfilePayload();
+    const preferences = (document.getElementById('breakfast-ai-notes')?.value || '').trim();
+
+    renderAIBoxLoading(
+        'ai-breakfast-result',
+        'Sto preparando colazioni e spuntini...',
+        'Uso il tuo profilo per costruire opzioni equivalenti e sostenibili.'
+    );
+
+    try {
+        const response = await fetch('/.netlify/functions/ai-meal-plan', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                mode: 'breakfast-snacks',
+                preferences,
+                profile: profilePayload
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Endpoint AI non raggiungibile in questo deploy.');
+        }
+
+        const payload = await response.json();
+        if (!payload || !Array.isArray(payload.breakfastOptions) || !Array.isArray(payload.snackOptions)) {
+            throw new Error('La risposta AI non contiene opzioni valide.');
+        }
+
+        renderAIBreakfastSnackResults(payload);
+    } catch (error) {
+        console.error('AI breakfast mode error:', error);
+        renderAIBreakfastSnackResults({
+            ...getAIBreakfastSnackFallback(profilePayload, preferences),
+            meta: {
+                source: 'fallback',
+                reason: 'AI live temporaneamente non disponibile'
+            }
+        });
+    }
+}
+
+async function generaPianoGiornalieroAI() {
+    const profilePayload = getAIProfilePayload();
+    const preferences = (document.getElementById('day-plan-ai-notes')?.value || '').trim();
+    const lunchContext = persistLunchContextPreference(document.getElementById('day-plan-lunch-context')?.value || 'workday');
+
+    renderAIBoxLoading(
+        'ai-day-plan-result',
+        'Sto costruendo il piano giornaliero...',
+        `Distinguo fabbisogno, piano calorico, quota proteica e pranzo da ${getLunchContextLabel(lunchContext).toLowerCase()}.`
+    );
+
+    try {
+        const response = await fetch('/.netlify/functions/ai-meal-plan', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                mode: 'daily-plan',
+                preferences,
+                lunchContext,
+                profile: profilePayload
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Endpoint AI non raggiungibile in questo deploy.');
+        }
+
+        const payload = await response.json();
+        if (!payload || !payload.plan || !Array.isArray(payload.plan.meals)) {
+            throw new Error('La risposta AI non contiene un piano valido.');
+        }
+
+        renderAIDailyPlanResults(payload);
+    } catch (error) {
+        console.error('AI daily plan error:', error);
+        renderAIDailyPlanResults({
+            plan: getAIDailyPlanFallback(profilePayload, preferences, lunchContext),
+            meta: {
+                source: 'fallback',
+                reason: 'AI live temporaneamente non disponibile'
+            }
+        });
+    }
+}
+
+async function generaPianoSettimanaleAI() {
+    const profilePayload = getAIProfilePayload();
+    const preferences = (document.getElementById('weekly-plan-ai-notes')?.value || '').trim();
+    const lunchContext = document.getElementById('weekly-plan-lunch-context')?.value === 'free-day' ? 'free-day' : 'workday';
+
+    renderAIBoxLoading(
+        'ai-day-plan-result',
+        'Sto costruendo il piano settimanale...',
+        'Organizzo la settimana con una logica clinico-pratica, distinguendo struttura quotidiana e rotazione proteica.'
+    );
+
+    try {
+        const response = await fetch('/.netlify/functions/ai-meal-plan', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                mode: 'weekly-plan',
+                preferences,
+                lunchContext,
+                profile: profilePayload
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Endpoint AI non raggiungibile in questo deploy.');
+        }
+
+        const payload = await response.json();
+        if (!payload || !payload.week || !Array.isArray(payload.week.days)) {
+            throw new Error('La risposta AI non contiene un piano settimanale valido.');
+        }
+
+        renderAIWeeklyPlanResults(payload);
+    } catch (error) {
+        console.error('AI weekly plan error:', error);
+        renderAIWeeklyPlanResults({
+            week: getAIWeeklyPlanFallback(profilePayload, preferences, lunchContext),
+            meta: {
+                source: 'fallback',
+                reason: 'AI live temporaneamente non disponibile'
+            }
         });
     }
 }
@@ -3698,25 +5339,7 @@ function updateHomeStats() {
     if (barProt) barProt.style.width = `${Math.min(100, (protein / protTarget) * 100)}%`;
     if (barFat) barFat.style.width = `${Math.min(100, (fats / fatTarget) * 100)}%`;
 
-    const acquaMl = (giorno.w || (profilo && profilo.waterIntake ? profilo.waterIntake * 1000 : 0) || 0);
-    const acquaTargetMl = (profilo && profilo.acquaTarget) ? profilo.acquaTarget : ((profilo && profilo.acquaObiettivo) ? profilo.acquaObiettivo * 1000 : 7000);
-    const acquaPercent = acquaTargetMl ? Math.min(100, (acquaMl / acquaTargetMl) * 100) : 0;
-
-    const acquaDisplay = document.getElementById('val-water');
-    if (acquaDisplay) acquaDisplay.innerText = `${(acquaMl/1000).toFixed(1)} / ${(acquaTargetMl/1000).toFixed(1)} L`;
-
-    const acquaBar = document.getElementById('bar-water');
-    if (acquaBar) acquaBar.style.width = `${acquaPercent}%`;
-
-    const homeWater = document.getElementById('home-water');
-    if (homeWater && profilo && profilo.acquaObiettivo) {
-        homeWater.innerText = `${profilo.acquaObiettivo.toFixed(1)} L`;
-    }
-
-    const waterGoalDisplay = document.getElementById('water-goal-display');
-    if (waterGoalDisplay && profilo && profilo.acquaObiettivo) {
-        waterGoalDisplay.innerText = `${profilo.acquaObiettivo.toFixed(1)} L`;
-    }
+    aggiornaRaccomandazioneAcqua((profilo && profilo.weight) || (userProfile && userProfile.weight) || 0);
 
     const valFe = document.getElementById('val-fe');
     if (valFe) valFe.innerText = `${(giorno.fe||0).toFixed(1)} / 14 mg`;
