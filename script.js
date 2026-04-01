@@ -1041,6 +1041,7 @@ function buildGeminiEndpointCandidates() {
     const override = getConfiguredGeminiEndpointOverride();
     if (override) {
         pushCandidate(override);
+        return candidates;
     }
 
     if (typeof window !== 'undefined') {
@@ -1086,6 +1087,7 @@ async function readGeminiErrorDetails(response) {
 }
 
 async function fetchGeminiJsonPayload(prompt, mode = 'generic') {
+    const configuredEndpointOverride = getConfiguredGeminiEndpointOverride();
     const endpoints = buildGeminiEndpointCandidates();
     let lastError = 'Servizio Gemini non raggiungibile.';
 
@@ -1119,6 +1121,10 @@ async function fetchGeminiJsonPayload(prompt, mode = 'generic') {
             lastError = message ? `${message} [endpoint: ${endpoint}]` : `NetworkError [endpoint: ${endpoint}]`;
             continue;
         }
+    }
+
+    if (configuredEndpointOverride) {
+        throw new Error(`${lastError} Controlla che la function pubblica configurata sia raggiungibile, che l'origin sia autorizzato e che la quota Gemini non sia esaurita.`);
     }
 
     throw new Error(`${lastError} Avvia Netlify Dev su porta 8888, oppure configura window.NUTRIME_GEMINI_FUNCTION_URL / localStorage.nutrime_gemini_function_url o window.NUTRIME_CONFIG.geminiFunctionUrl con l'URL assoluto della tua function pubblica.`);
@@ -6481,6 +6487,89 @@ const AI_RECIPE_MODE_SLOTS = [
     { key: 'salvafrigo', label: 'Salvafrigo', difficulty: 'Salvafrigo' }
 ];
 
+const AI_DAILY_RECIPE_GUARANTEE_LIMIT = 5;
+const AI_DAILY_RECIPE_USAGE_STORAGE_KEY = 'nv_ai_recipe_daily_usage_v1';
+
+function getLocalIsoDateKey(date = new Date()) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+function getAiRecipeUserUsageKey(profile = {}) {
+    const username = String(profile?.username || profile?.name || 'utente').trim().toLowerCase();
+    const age = String(profile?.age || '').trim();
+    const sex = String(profile?.sex || '').trim().toLowerCase();
+    return [username || 'utente', sex || 'na', age || 'na'].join('|');
+}
+
+function readAiDailyRecipeUsageState() {
+    try {
+        const raw = window.localStorage?.getItem(AI_DAILY_RECIPE_USAGE_STORAGE_KEY) || '{}';
+        const parsed = JSON.parse(raw);
+        return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+    } catch (error) {
+        return {};
+    }
+}
+
+function writeAiDailyRecipeUsageState(state) {
+    try {
+        window.localStorage?.setItem(AI_DAILY_RECIPE_USAGE_STORAGE_KEY, JSON.stringify(state));
+    } catch (error) {
+        // no-op
+    }
+}
+
+function getAiDailyRecipeGuaranteeInfo(profile = {}) {
+    const state = readAiDailyRecipeUsageState();
+    const userKey = getAiRecipeUserUsageKey(profile);
+    const todayKey = getLocalIsoDateKey();
+    const entry = state[userKey] || {};
+    const used = entry.date === todayKey ? Math.min(AI_DAILY_RECIPE_GUARANTEE_LIMIT, Number(entry.count || 0)) : 0;
+    return {
+        userKey,
+        dateKey: todayKey,
+        used,
+        remaining: Math.max(0, AI_DAILY_RECIPE_GUARANTEE_LIMIT - used),
+        limit: AI_DAILY_RECIPE_GUARANTEE_LIMIT,
+        guaranteeActive: used < AI_DAILY_RECIPE_GUARANTEE_LIMIT
+    };
+}
+
+function consumeAiDailyRecipeGuarantee(profile = {}) {
+    const info = getAiDailyRecipeGuaranteeInfo(profile);
+    const state = readAiDailyRecipeUsageState();
+    state[info.userKey] = {
+        date: info.dateKey,
+        count: Math.min(info.limit, info.used + 1)
+    };
+    writeAiDailyRecipeUsageState(state);
+    return getAiDailyRecipeGuaranteeInfo(profile);
+}
+
+function buildAiRecipeDiagnosticText(metadata = {}) {
+    const guaranteeInfo = metadata.guaranteeInfo || null;
+    const guaranteeSuffix = guaranteeInfo
+        ? ` Ricette garantite oggi: ${guaranteeInfo.used}/${guaranteeInfo.limit}.`
+        : '';
+
+    if (metadata.source === 'guaranteed-fallback') {
+        return `Ricetta garantita del giorno generata con il motore locale.${guaranteeSuffix}`;
+    }
+
+    if (metadata.source === 'gemini') {
+        return `Ricetta generata da Gemini.${guaranteeSuffix}`;
+    }
+
+    if (metadata.sourceReason) {
+        return `Ricetta fallback locale. Motivo fallback: ${metadata.sourceReason}${guaranteeSuffix}`;
+    }
+
+    return `Ricetta fallback locale.${guaranteeSuffix}`;
+}
+
 function normalizeAIRecipeRequestedMode(value) {
     const normalized = String(value || '').trim().toLowerCase();
 
@@ -7117,12 +7206,7 @@ function renderAIRecipeResults(recipes, metadata = {}) {
     const safeRecipes = Array.isArray(recipes) ? recipes.filter(Boolean) : [];
     const requestedMode = normalizeAIRecipeRequestedMode(metadata.requestedMode || metadata.difficulty);
     const isSingleRecipe = safeRecipes.length === 1;
-    const sourceLabel = metadata.source === 'gemini'
-        ? 'Ricetta generata da Gemini'
-        : 'Ricetta fallback locale';
-    const diagnosticText = metadata.sourceReason
-        ? `${sourceLabel}. Motivo fallback: ${metadata.sourceReason}`
-        : sourceLabel;
+    const diagnosticText = buildAiRecipeDiagnosticText(metadata);
 
     aiGeneratedRecipes = isSingleRecipe
         ? safeRecipes.map((recipe) => {
@@ -7272,9 +7356,12 @@ async function generaRicettaAI() {
             profile: profilePayload
         });
 
+        const guaranteeInfo = consumeAiDailyRecipeGuarantee(profilePayload);
+
         renderAIRecipeResults([normalizedRecipe], {
             source: 'gemini',
             sourceReason: '',
+            guaranteeInfo,
             people: persone,
             mealType,
             requestedMode: difficulty,
@@ -7282,11 +7369,15 @@ async function generaRicettaAI() {
         });
     } catch (error) {
         console.error('AI Mode error:', error);
+        const guaranteeInfoBeforeFallback = getAiDailyRecipeGuaranteeInfo(profilePayload);
+        const guaranteeInfo = consumeAiDailyRecipeGuarantee(profilePayload);
+        const isGuaranteedFallback = guaranteeInfoBeforeFallback.guaranteeActive;
         const fallbackRecipes = getAIFallbackRecipes(ingredienti, persone, profilePayload, mealType)
             .filter((recipe) => recipe.mode_key === normalizeAIRecipeRequestedMode(difficulty));
         renderAIRecipeResults(fallbackRecipes, {
-            source: 'fallback',
-            sourceReason: error?.message || 'Errore non specificato nella pipeline Gemini',
+            source: isGuaranteedFallback ? 'guaranteed-fallback' : 'fallback',
+            sourceReason: isGuaranteedFallback ? '' : (error?.message || 'Errore non specificato nella pipeline Gemini'),
+            guaranteeInfo,
             people: persone,
             mealType,
             requestedMode: difficulty,
