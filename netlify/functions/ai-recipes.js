@@ -22,6 +22,9 @@ const nutritionCounselingBreakfastPatterns = require('../data/nutrition-counseli
 const nutritionCounselingDinnerPatterns = require('../data/nutrition-counseling-dinner-patterns.json');
 const nutritionCounselingDinnerTemplates = require('../data/nutrition-counseling-dinner-templates.json');
 const nutritionCounselingLunchPatterns = require('../data/nutrition-counseling-lunch-patterns.json');
+const nutritionCounselingWeeklyMenuPatterns = require('../data/nutrition-counseling-weekly-menu-patterns.json');
+const nutritionCounselingAntiAgePatterns = require('../data/nutrition-counseling-anti-age-patterns.json');
+const nutritionCounselingVeganMenuPatterns = require('../data/nutrition-counseling-vegan-menu-patterns.json');
 const premiumSeedManifest = require('../data/recipe-seed-premium.json');
 const chefFoodCompositionCrea = require('../data/chef-food-composition-crea.json');
 const chefFoodSynonyms = require('../data/chef-food-synonyms.json');
@@ -59,7 +62,7 @@ const RECIPE_SLOT_CONFIG = [
     {
         key: 'salvafrigo',
         label: 'Salvafrigo',
-        difficulty: 'Semplice',
+        difficulty: 'Salvafrigo',
         brief: 'soluzione piu facile e anti-spreco, utile prima di tutto',
         examples: ['padella unica', 'assemblaggio rapido', 'uso ingredienti aperti']
     }
@@ -229,6 +232,72 @@ function normalizeDinnerProteinPreference(value) {
         : 'variata';
 }
 
+function normalizeRequestedRecipeMode(value) {
+    const normalized = normalizeText(value);
+
+    if (normalized.includes('salvafrigo')) return 'salvafrigo';
+    if (normalized.includes('chef')) return 'chef';
+    if (normalized.includes('media')) return 'media';
+    return 'base';
+}
+
+function getRequestedRecipeSlotConfig(value) {
+    const requestedMode = normalizeRequestedRecipeMode(value);
+    return RECIPE_SLOT_CONFIG.find((slot) => slot.key === requestedMode) || RECIPE_SLOT_CONFIG[0];
+}
+
+function normalizeRecipeMealType(value) {
+    const normalized = normalizeText(value);
+
+    if (normalized.includes('colaz')) return 'colazione';
+    if (normalized.includes('spunt') || normalized.includes('snack')) return 'spuntino';
+    if (normalized.includes('cena')) return 'cena';
+    return 'pranzo';
+}
+
+function getRecipeMealTypeLabel(value) {
+    return {
+        colazione: 'Colazione',
+        pranzo: 'Pranzo',
+        cena: 'Cena',
+        spuntino: 'Spuntino'
+    }[normalizeRecipeMealType(value)] || 'Pranzo';
+}
+
+function getRecipeMealTypePromptBlock(value) {
+    const mealType = normalizeRecipeMealType(value);
+
+    if (mealType === 'colazione') {
+        return [
+            'La ricetta deve comportarsi davvero come una colazione: preparazione rapida o molto gestibile, quota energetica controllata, tono mattutino e ingredienti plausibili per l inizio giornata.',
+            'Privilegia basi come yogurt, latte, avena, cereali semplici, pane o fette biscottate, frutta, frutta secca, uova o pancake coerenti col profilo.',
+            'Evita di generare piatti da pranzo o cena travestiti da colazione.'
+        ];
+    }
+
+    if (mealType === 'spuntino') {
+        return [
+            'La ricetta deve essere davvero da spuntino: breve, essenziale, facilmente porzionabile e con pochi ingredienti.',
+            'Privilegia soluzioni pratiche, trasportabili o veloci da assemblare, senza trasformarle in un pasto completo mascherato.',
+            'La quota proteica puo essere presente ma senza caricare troppo volume, grassi o complessita tecnica.'
+        ];
+    }
+
+    if (mealType === 'cena') {
+        return [
+            'La ricetta deve comportarsi davvero come una cena: nucleo proteico leggibile, verdure ben presenti, densita energetica ordinata e chiusura serale coerente col profilo.',
+            'Se il profilo ha una preferenza proteica serale, qui conta ancora di piu e deve orientare in modo visibile la proposta.',
+            'Evita proposte da brunch o da colazione, anche se gli ingredienti lo permetterebbero.'
+        ];
+    }
+
+    return [
+        'La ricetta deve comportarsi davvero come un pranzo: piatto centrale della giornata, leggibile, saziante e compatibile con il contesto lavorativo o libero del profilo.',
+        'Privilegia struttura da piatto unico o piatto principale con buona tenuta di sazieta e organizzazione.',
+        'Evita soluzioni troppo piccole o troppo da snack.'
+    ];
+}
+
 function buildRestrictionTokens(profile) {
     return uniqueStrings([
         ...toList(profile.allergies),
@@ -256,6 +325,8 @@ function sanitizeInput(body) {
     return {
         ingredients: ingredients.slice(0, MAX_INGREDIENTS),
         people,
+        requestedMode: normalizeRequestedRecipeMode(body?.difficulty),
+        mealType: normalizeRecipeMealType(body?.mealType),
         profile: {
             username: limitString(profile.username, MAX_USERNAME_LENGTH),
             goal: limitString(profile.goal, MAX_PROFILE_FIELD_LENGTH),
@@ -276,6 +347,9 @@ function sanitizeInput(body) {
             goalCalorieDelta: limitNumber(profile.goalCalorieDelta, 0, -2000, 2000),
             proteinTargetPerKg: limitNumber(profile.proteinTargetPerKg, 0, 0, 4),
             proteinTargetGrams: limitNumber(profile.proteinTargetGrams, 0, 0, 400),
+            carbsTargetGrams: limitNumber(profile.carbsTargetGrams, 0, 0, 600),
+            fatTargetGrams: limitNumber(profile.fatTargetGrams, 0, 0, 250),
+            fiberTargetGrams: limitNumber(profile.fiberTargetGrams, 0, 0, 100),
             lunchContextPreference: profile?.lunchContextPreference === 'free-day' ? 'free-day' : 'workday',
             dinnerProteinPreference: normalizeDinnerProteinPreference(profile?.dinnerProteinPreference)
         },
@@ -351,6 +425,18 @@ function buildNutritionMethodSummary(profile) {
             : `proteine ${proteinText}`);
     }
 
+    if (Number(profile.carbsTargetGrams || 0) > 0) {
+        parts.push(`carboidrati ~${profile.carbsTargetGrams} g`);
+    }
+
+    if (Number(profile.fatTargetGrams || 0) > 0) {
+        parts.push(`grassi ~${profile.fatTargetGrams} g`);
+    }
+
+    if (Number(profile.fiberTargetGrams || 0) > 0) {
+        parts.push(`fibra ~${profile.fiberTargetGrams} g`);
+    }
+
     parts.push(`pranzo abituale da ${getLunchContextLabel(profile.lunchContextPreference)}`);
     parts.push(`rotazione proteica cena: ${getDinnerProteinPreferenceLabel(profile.dinnerProteinPreference)}`);
 
@@ -370,6 +456,145 @@ function getClinicalNutritionContext(profile) {
         selectedProfileKey: match.key,
         recipePromptLines: cloneClinicalGuidanceValue(match.recipePromptLines || match.promptLines || [])
     };
+}
+
+function getRecipeReferenceExamples() {
+    return [
+        {
+            label: 'settimana-riferimento-2000-kcal',
+            kcal: 2000,
+            macroSplit: '19% proteine, 30% lipidi, 52% carboidrati di cui 16% semplici, 32 g fibra',
+            corePatterns: [
+                'giornate organizzate in 5 momenti: colazione, spuntino mattina, pranzo, merenda, cena',
+                'colazioni semplici con latte o yogurt, cereali o fette biscottate e piccola quota dolce misurata',
+                'spuntini con frutta come base e piccoli supporti pratici come yogurt, frutta secca o gallette',
+                'pranzi con cereale o pasta, verdure, condimento dichiarato e proteina chiara o latticino magro',
+                'cene con zuppe o primi leggeri, proteina leggibile, verdure e quota semplice di pane o cracker'
+            ],
+            usefulSignals: [
+                'orzo primavera, minestrone di riso, risotto ai carciofi, cous cous di verdure',
+                'pollo, merluzzo, salmone, baccala, ricotta, Grana Padano',
+                'fine settimana piu disteso ma senza perdere ordine nutrizionale'
+            ]
+        },
+        {
+            label: 'settimana-riferimento-1600-kcal',
+            kcal: 1600,
+            macroSplit: '19% proteine, 33% lipidi, 48% glucidi di cui 14% semplici, 26 g fibra',
+            corePatterns: [
+                'giornate organizzate in 5 momenti: colazione, spuntino mattina, pranzo, merenda, cena',
+                'spuntini fissi con 150 g di frutta fresca sia al mattino sia al pomeriggio',
+                'colazioni sobrie con caffe o te, yogurt o latte, biscotti, muesli o fette biscottate',
+                'pranzi con pasta, riso, farro o orzo, verdure e fonte proteica magra o uova',
+                'cene piu leggere con passato di verdure, pesce, bresaola, Grana Padano o hamburger al forno'
+            ],
+            usefulSignals: [
+                'bigoli integrali alle verdure con coniglio, orzotto con uova, riso con crema di ceci',
+                'rana pescatrice, calamaretti, sogliola, spigola, bresaola',
+                'zucchero molto controllato e alcol solo limitato e contestualizzato'
+            ]
+        },
+        {
+            label: 'settimana-riferimento-domestica-organizzata',
+            corePatterns: [
+                'settimana costruita per ridurre il carico mentale della scelta quotidiana e limitare il ricorso a piatti pronti o processati',
+                'riuso intelligente degli ingredienti in piu ricette per contenere spreco e spesa',
+                'alternanza domestica tra cereali, legumi, pesce, pollo, uova, formaggi e carne senza perdere leggibilita del pasto'
+            ],
+            usefulSignals: [
+                'quinoa con fagioli rossi, avocado e verdure di stagione',
+                'insalata di farro con pomodorini, rucola, feta e olive',
+                'bastoncini di polenta con ragu di lenticchie',
+                'piadina con hummus di ceci e verdure grigliate',
+                'merluzzo con pomodorini e olive, insalata e pane',
+                'uova strapazzate con spinaci e pane bruschettato al rosmarino'
+            ]
+        },
+        {
+            label: 'settimana-riferimento-vegetale-mediterranea',
+            corePatterns: [
+                'settimana 100% vegetale con cereali o derivati a ogni pasto principale e legumi o altre proteine vegetali almeno due volte al giorno',
+                'uso della tradizione italiana naturalmente vegetale prima di ricorrere a sostituzioni artificiose',
+                'spesa organizzata per corsie e ingredienti riusati in piu ricette per ridurre spreco e carico mentale'
+            ],
+            usefulSignals: [
+                'bruschetta al pomodoro, ribollita, panzanella, minestrone, caponata',
+                'yogurt di soia con avena e frutta, pane integrale con crema di frutta secca',
+                'cous cous con ceci e verdure, farro con lenticchie, pasta e fagioli, tofu al forno con verdure',
+                'semi di lino o chia, frutta secca, olio EVO, cibi vegetali ricchi di calcio'
+            ]
+        }
+    ];
+}
+
+function getMealTypeReferenceExamples(mealType) {
+    const normalizedMealType = normalizeRecipeMealType(mealType);
+
+    if (normalizedMealType === 'colazione') {
+        return [
+            {
+                label: 'colazione-proteica-semplice',
+                patterns: [
+                    'yogurt o latte come base, cereale semplice o fette biscottate, frutta o piccola quota dolce misurata',
+                    'pancake o uova solo se restano rapidi, leggibili e coerenti con la mattina',
+                    'tono leggero, gestibile e ripetibile nella routine'
+                ]
+            },
+            {
+                label: 'colazione-ipocalorica-ordinata',
+                patterns: [
+                    'densita energetica controllata, volume ragionevole, quota proteica non trascurata',
+                    'evitare piatti troppo salati, troppo pesanti o da pranzo travestiti',
+                    'favorire semplicita di esecuzione e ingredienti plausibili per l inizio giornata'
+                ]
+            }
+        ];
+    }
+
+    if (normalizedMealType === 'spuntino') {
+        return [
+            {
+                label: 'spuntino-pratico-proteico',
+                patterns: [
+                    'spuntino breve, facilmente porzionabile e trasportabile',
+                    'yogurt, frutta, frutta secca, mini pancake, pudding o crema rapida sono formati plausibili',
+                    'deve controllare fame e aderenza senza diventare un pasto completo'
+                ]
+            },
+            {
+                label: 'spuntino-leggero-di-riequilibrio',
+                patterns: [
+                    'quando il profilo e piu ipocalorico, restare su pochi ingredienti e volume ordinato',
+                    'proteine presenti se utili, ma senza eccesso di grassi o complessita tecnica',
+                    'tono rapido, utile e ripetibile'
+                ]
+            }
+        ];
+    }
+
+    if (normalizedMealType === 'cena') {
+        return [
+            {
+                label: 'cena-proteina-leggibile',
+                patterns: [
+                    'verdure evidenti, fonte proteica chiara, struttura serale ordinata',
+                    'quota glucidica semplice e misurata se presente',
+                    'evitare formati da snack o da colazione'
+                ]
+            }
+        ];
+    }
+
+    return [
+        {
+            label: 'pranzo-piatto-centrale',
+            patterns: [
+                'piatto unico o piatto principale con buona tenuta di sazieta',
+                'base amidacea o struttura portante piu chiara rispetto a colazione e spuntino',
+                'tono pratico o piu disteso in base al contesto del profilo'
+            ]
+        }
+    ];
 }
 
 function goalHint(goal) {
@@ -654,6 +879,31 @@ function scoreRecipeTemplate(template, payload) {
 
     const premiumBonus = premiumSeedIds.has(String(template.id || '').trim()) ? 4 : 0;
 
+    const mealType = normalizeRecipeMealType(payload.mealType);
+    const mealTypeBonus = mealType === 'colazione'
+        ? (
+            hasSignal(templateSignals, ['colazione', 'yogurt', 'latte', 'pancake', 'porridge', 'muesli', 'granola', 'fette biscottate', 'biscotti'])
+                ? 12
+                : (hasSignal(templateSignals, ['arrosto', 'ragu', 'bistecca', 'filetto', 'burger']) ? -10 : -2)
+        )
+        : mealType === 'spuntino'
+            ? (
+                hasSignal(templateSignals, ['spuntino', 'snack', 'barrette', 'biscotti', 'pudding', 'yogurt', 'smoothie', 'frutta']) || templateArchetypes.includes('snack-dessert')
+                    ? 12
+                    : (templateArchetypes.includes('pasta') || templateArchetypes.includes('protein-main') ? -10 : -2)
+            )
+            : mealType === 'cena'
+                ? (
+                    templateArchetypes.includes('protein-main') || templateArchetypes.includes('egg-dish') || templateArchetypes.includes('soup')
+                        ? 8
+                        : (templateArchetypes.includes('snack-dessert') ? -12 : 0)
+                )
+                : (
+                    templateArchetypes.includes('pasta') || templateArchetypes.includes('grain-bowl') || templateArchetypes.includes('protein-main') || templateArchetypes.includes('baked-pasta')
+                        ? 8
+                        : (templateArchetypes.includes('snack-dessert') ? -10 : 0)
+                );
+
     const goalBonus = goal.includes('massa')
         ? (totalProtein >= 25 ? 3 : 0)
         : (goal.includes('dimagr')
@@ -662,7 +912,7 @@ function scoreRecipeTemplate(template, payload) {
 
     const dietPenalty = templateConflictsWithDiet(template, diet) ? -25 : 0;
 
-    return overlapScore + exclusionScore + difficultyBonus + archetypeBonus + restrictionCompatibilityBonus + dietBonus + premiumBonus + goalBonus + dietPenalty;
+    return overlapScore + exclusionScore + difficultyBonus + archetypeBonus + restrictionCompatibilityBonus + dietBonus + premiumBonus + mealTypeBonus + goalBonus + dietPenalty;
 }
 
 function normalizeTemplateRecipe(template) {
@@ -726,120 +976,417 @@ function buildGenericFallbackRecipes(payload) {
     const goal = payload.profile.goal || 'mantenere';
     const diet = payload.profile.diet || 'equilibrato';
     const activity = payload.profile.jobType || 'moderato';
+    const mealType = normalizeRecipeMealType(payload.mealType);
+    const useVeganGuidance = shouldApplyVeganGuidance(payload.profile, buildTextSignals(payload));
     const clinicalContext = getClinicalNutritionContext(payload.profile);
     const clinicalTail = clinicalContext.applicable
         ? ` ${clinicalContext.recipeTail || 'Per un profilo adulto 50+ in sovrappeso con deficit moderato, il piatto privilegia verdure, condimenti misurati, olio EVO preferibilmente a crudo e una struttura anti-fame ma non pesante.'}`
         : '';
 
+    if (mealType === 'colazione') {
+        return [
+            withRecipeSlot({
+                id: 'R001',
+                nome_ricetta: `Colazione base con ${lead[0] || 'yogurt'} e ${lead[1] || 'cereali'}`,
+                difficolta: 'Semplice',
+                tempo_prep_min: 8,
+                allergeni_esclusi: [...toList(payload.profile.allergies), ...toList(payload.profile.intolerances)],
+                tecnica_cottura: 'Assemblaggio rapido o cottura brevissima, con struttura davvero adatta alla mattina.',
+                anti_spreco: 'Frutta matura, yogurt aperto o cereali avanzati si integrano bene in una colazione semplice e misurata.',
+                ingredienti_tabella: [...lead.slice(0, 3), useVeganGuidance ? 'yogurt o bevanda di soia' : 'yogurt o latte', 'cereale semplice'].map((item) => ({ n: item, qty: 100, k: 0, p: 0, c: 0, g: 0 })),
+                totale_piatto: { k: 0, p: 0, c: 0, g: 0 },
+                procedimento: [
+                    'Scegli una base lattiero-casearia o equivalente vegetale coerente col profilo.',
+                    'Aggiungi una quota di cereali semplice e la frutta o l ingrediente principale disponibile.',
+                    'Completa con una finitura leggera, senza trasformare la colazione in un pasto pesante.'
+                ],
+                title: `Colazione base con ${lead[0] || 'yogurt'} e ${lead[1] || 'cereali'}`,
+                style: 'Cucina base',
+                summary: `Colazione molto semplice per ${payload.people} ${peopleLabel}, costruita per essere davvero gestibile al mattino.`,
+                whyItFits: `Tiene il tono della colazione: pratica, controllata e coerente con il profilo. ${goalHint(goal)} e ${dietHint(diet)}.${clinicalTail}`,
+                ingredients: [...lead.slice(0, 3), useVeganGuidance ? 'yogurt o bevanda di soia' : 'yogurt o latte', 'cereale semplice'],
+                steps: [
+                    'Prepara una base rapida e molto leggibile.',
+                    'Bilancia carboidrati e quota proteica senza appesantire il piatto.',
+                    'Servi subito con una finitura minima.'
+                ],
+                wasteTip: 'Frutta molto matura o yogurt aperto si usano bene qui senza spreco.',
+                goalTag: goal
+            }, 'base', 0),
+            withRecipeSlot({
+                id: 'R002',
+                nome_ricetta: `Colazione media con ${lead[0] || 'avena'} e ${lead[1] || 'frutta'}`,
+                difficolta: 'Media',
+                tempo_prep_min: 12,
+                allergeni_esclusi: [...toList(payload.profile.allergies), ...toList(payload.profile.intolerances)],
+                tecnica_cottura: 'Cottura breve o assemblaggio strutturato, mantenendo un formato chiaramente da colazione.',
+                anti_spreco: 'L impasto o la base puo diventare una seconda porzione per il giorno dopo.',
+                ingredienti_tabella: [...lead.slice(0, 3), useVeganGuidance ? 'yogurt di soia o semi di lino' : 'uova o yogurt', 'avena o farina'].map((item) => ({ n: item, qty: 100, k: 0, p: 0, c: 0, g: 0 })),
+                totale_piatto: { k: 0, p: 0, c: 0, g: 0 },
+                procedimento: ['Prepara una base da pancake, porridge o coppa strutturata.', 'Cuoci o assembla in pochi minuti.', 'Completa con topping misurato e coerente.'],
+                title: `Colazione media con ${lead[0] || 'avena'} e ${lead[1] || 'frutta'}`,
+                style: 'Cucina media',
+                summary: 'Una colazione un po piu costruita ma ancora assolutamente mattutina e ripetibile.',
+                whyItFits: `Aggiunge un po piu di struttura senza perdere il formato da colazione. Si abbina bene a uno stile di vita ${activity}.${clinicalTail}`,
+                ingredients: [...lead.slice(0, 3), useVeganGuidance ? 'yogurt di soia o semi di lino' : 'uova o yogurt', 'avena o farina'],
+                steps: ['Costruisci una base piu ricca ma semplice.', 'Mantieni porzione e densita sotto controllo.', 'Servi con finitura essenziale.'],
+                wasteTip: 'Ottima anche come base da preparare in anticipo per il mattino seguente.',
+                goalTag: goal
+            }, 'media', 1),
+            withRecipeSlot({
+                id: 'R003',
+                nome_ricetta: `Chef breakfast con ${lead[0] || 'frutta'} e ${lead[1] || 'cremosita'}`,
+                difficolta: 'Chef',
+                tempo_prep_min: 18,
+                allergeni_esclusi: [...toList(payload.profile.allergies), ...toList(payload.profile.intolerances)],
+                tecnica_cottura: 'Tecnica breve ma piu curata, con texture o finitura elegante pur restando nel perimetro della colazione.',
+                anti_spreco: 'Riduzioni leggere, frutta molto matura o creme residue possono diventare finiture da breakfast.',
+                ingredienti_tabella: [...lead.slice(0, 3), 'base cremosa', 'elemento croccante'].map((item) => ({ n: item, qty: 100, k: 0, p: 0, c: 0, g: 0 })),
+                totale_piatto: { k: 0, p: 0, c: 0, g: 0 },
+                procedimento: ['Prepara una base morbida o cremosa.', 'Aggiungi un contrasto croccante o una finitura fruttata.', 'Impiatta con precisione ma senza uscire dal formato breakfast.'],
+                title: `Chef breakfast con ${lead[0] || 'frutta'} e ${lead[1] || 'cremosita'}`,
+                style: 'Chef mode',
+                summary: 'Versione breakfast piu curata, con piu precisione tecnica ma ancora plausibile al mattino.',
+                whyItFits: `Alza il livello della colazione senza farla sembrare un dessert o un pranzo.${clinicalTail}`,
+                ingredients: [...lead.slice(0, 3), 'base cremosa', 'elemento croccante'],
+                steps: ['Costruisci due texture nette.', 'Mantieni dolcezza e grassi sotto controllo.', 'Chiudi con finitura pulita e mattutina.'],
+                wasteTip: 'Componenti avanzate si riusano bene in coppette o overnight breakfast.',
+                goalTag: goal
+            }, 'chef', 2),
+            withRecipeSlot({
+                id: 'R004',
+                nome_ricetta: `Salvafrigo breakfast di ${lead[0] || 'frigo'} e ${lead[1] || 'dispensa'}`,
+                difficolta: 'Semplice',
+                tempo_prep_min: 5,
+                allergeni_esclusi: [...toList(payload.profile.allergies), ...toList(payload.profile.intolerances)],
+                tecnica_cottura: 'Assemblaggio immediato, pensato per usare poco tempo e ingredienti gia aperti.',
+                anti_spreco: 'Formato ideale per recuperare piccole quantita di yogurt, frutta, latte o cereali aperti.',
+                ingredienti_tabella: [...lead.slice(0, 3), 'base rapida'].map((item) => ({ n: item, qty: 100, k: 0, p: 0, c: 0, g: 0 })),
+                totale_piatto: { k: 0, p: 0, c: 0, g: 0 },
+                procedimento: ['Assembla tutto in una ciotola o bicchiere.', 'Bilancia rapidamente consistenza e dolcezza.', 'Servi subito senza passaggi inutili.'],
+                title: `Salvafrigo breakfast di ${lead[0] || 'frigo'} e ${lead[1] || 'dispensa'}`,
+                style: 'Salvafrigo',
+                summary: 'La versione piu immediata e utile possibile per una colazione rapida e anti-spreco.',
+                whyItFits: `Riduce spreco e attrito decisionale nella mattina, restando coerente con il profilo.${clinicalTail}`,
+                ingredients: [...lead.slice(0, 3), 'base rapida'],
+                steps: ['Recupera gli ingredienti aperti.', 'Combinali in modo lineare.', 'Mantieni il risultato molto leggibile.'],
+                wasteTip: 'Perfetta per finire piccole porzioni senza accumulare avanzi inutili.',
+                goalTag: goal
+            }, 'salvafrigo', 3)
+        ];
+    }
+
+    if (mealType === 'spuntino') {
+        return [
+            withRecipeSlot({
+                id: 'R001',
+                nome_ricetta: `Spuntino base con ${lead[0] || 'frutta'} e ${lead[1] || 'supporto proteico'}`,
+                difficolta: 'Semplice',
+                tempo_prep_min: 6,
+                allergeni_esclusi: [...toList(payload.profile.allergies), ...toList(payload.profile.intolerances)],
+                tecnica_cottura: 'Assemblaggio rapido o preparazione minima, in formato davvero da spuntino.',
+                anti_spreco: 'Ottimo per usare piccole quantita residue senza creare un pasto in piu.',
+                ingredienti_tabella: [...lead.slice(0, 2), useVeganGuidance ? 'yogurt di soia o frutta secca' : 'yogurt o frutta secca'].map((item) => ({ n: item, qty: 100, k: 0, p: 0, c: 0, g: 0 })),
+                totale_piatto: { k: 0, p: 0, c: 0, g: 0 },
+                procedimento: ['Scegli una base breve e porzionabile.', 'Aggiungi solo gli elementi necessari a sazieta e praticita.', 'Mantieni il formato compatto.'],
+                title: `Spuntino base con ${lead[0] || 'frutta'} e ${lead[1] || 'supporto proteico'}`,
+                style: 'Cucina base',
+                summary: 'Spuntino semplice, rapido e controllato, pensato per stare davvero tra due pasti.',
+                whyItFits: `Controlla fame e aderenza senza trasformarsi in un pranzo nascosto. ${goalHint(goal)}.${clinicalTail}`,
+                ingredients: [...lead.slice(0, 2), useVeganGuidance ? 'yogurt di soia o frutta secca' : 'yogurt o frutta secca'],
+                steps: ['Prepara una porzione breve.', 'Evita eccessi di volume e condimenti.', 'Servi o porta con te facilmente.'],
+                wasteTip: 'Utile per finire piccole quantita di frutta, yogurt o creme residue.',
+                goalTag: goal
+            }, 'base', 0),
+            withRecipeSlot({
+                id: 'R002',
+                nome_ricetta: `Spuntino media consistenza con ${lead[0] || 'frutta'} e ${lead[1] || 'cremosita'}`,
+                difficolta: 'Media',
+                tempo_prep_min: 10,
+                allergeni_esclusi: [...toList(payload.profile.allergies), ...toList(payload.profile.intolerances)],
+                tecnica_cottura: 'Preparazione breve ma un po piu costruita, come coppetta, mini pancake o crema densa.',
+                anti_spreco: 'Le porzioni si preparano bene in anticipo e si consumano anche il giorno dopo.',
+                ingredienti_tabella: [...lead.slice(0, 2), 'base cremosa', 'elemento saziante'].map((item) => ({ n: item, qty: 100, k: 0, p: 0, c: 0, g: 0 })),
+                totale_piatto: { k: 0, p: 0, c: 0, g: 0 },
+                procedimento: ['Crea una base compatta e porzionata.', 'Aggiungi un contrasto lieve.', 'Mantieni la proposta sotto il livello di un pasto completo.'],
+                title: `Spuntino media consistenza con ${lead[0] || 'frutta'} e ${lead[1] || 'cremosita'}`,
+                style: 'Cucina media',
+                summary: 'Uno spuntino un po piu costruito, ma ancora molto chiaro e contenuto.',
+                whyItFits: `Utile quando serve qualcosa di piu stabile di un semplice frutto, ma senza sfondare la logica dello snack.${clinicalTail}`,
+                ingredients: [...lead.slice(0, 2), 'base cremosa', 'elemento saziante'],
+                steps: ['Lavora su una consistenza piacevole.', 'Non appesantire con troppe componenti.', 'Chiudi in formato piccolo e leggibile.'],
+                wasteTip: 'Si presta bene al batch piccolo e al recupero di ingredienti gia aperti.',
+                goalTag: goal
+            }, 'media', 1),
+            withRecipeSlot({
+                id: 'R003',
+                nome_ricetta: `Snack chef con ${lead[0] || 'contrasto'} e ${lead[1] || 'finitura'}`,
+                difficolta: 'Chef',
+                tempo_prep_min: 14,
+                allergeni_esclusi: [...toList(payload.profile.allergies), ...toList(payload.profile.intolerances)],
+                tecnica_cottura: 'Mini preparazione tecnica con formato piccolo, elegante e coerente con uno spuntino.',
+                anti_spreco: 'Anche qui le piccole componenti residue possono diventare topping o finiture.',
+                ingredienti_tabella: [...lead.slice(0, 2), 'finitura tecnica'].map((item) => ({ n: item, qty: 100, k: 0, p: 0, c: 0, g: 0 })),
+                totale_piatto: { k: 0, p: 0, c: 0, g: 0 },
+                procedimento: ['Crea un piccolo formato preciso.', 'Gioca su due texture al massimo.', 'Chiudi con una finitura pulita senza trasformarlo in dessert da ristorante.'],
+                title: `Snack chef con ${lead[0] || 'contrasto'} e ${lead[1] || 'finitura'}`,
+                style: 'Chef mode',
+                summary: 'Piccolo snack piu curato, ma ancora credibile come spuntino.',
+                whyItFits: `Aggiunge precisione e piacere senza perdere il controllo del formato e della funzione dello spuntino.${clinicalTail}`,
+                ingredients: [...lead.slice(0, 2), 'finitura tecnica'],
+                steps: ['Mantieni il formato piccolo.', 'Evita accumuli calorici inutili.', 'Rendi il gesto tecnico breve ma visibile.'],
+                wasteTip: 'Finiture e topping possono nascere da piccole quantita avanzate.',
+                goalTag: goal
+            }, 'chef', 2),
+            withRecipeSlot({
+                id: 'R004',
+                nome_ricetta: `Salvafrigo snack di ${lead[0] || 'frigo'} e ${lead[1] || 'dispensa'}`,
+                difficolta: 'Semplice',
+                tempo_prep_min: 4,
+                allergeni_esclusi: [...toList(payload.profile.allergies), ...toList(payload.profile.intolerances)],
+                tecnica_cottura: 'Nessuna vera cottura o una sola micro-preparazione, per uno snack immediato.',
+                anti_spreco: 'Formato ideale per piccole quantita che da sole non diventerebbero un pasto.',
+                ingredienti_tabella: [...lead.slice(0, 2), 'elemento rapido'].map((item) => ({ n: item, qty: 100, k: 0, p: 0, c: 0, g: 0 })),
+                totale_piatto: { k: 0, p: 0, c: 0, g: 0 },
+                procedimento: ['Recupera ingredienti aperti.', 'Assembla in una porzione piccola.', 'Servi subito o porta via facilmente.'],
+                title: `Salvafrigo snack di ${lead[0] || 'frigo'} e ${lead[1] || 'dispensa'}`,
+                style: 'Salvafrigo',
+                summary: 'Snack rapidissimo e utile, pensato per non sprecare e non complicare la giornata.',
+                whyItFits: `Riduce spreco e decisioni superflue, restando coerente con il ruolo di uno spuntino.${clinicalTail}`,
+                ingredients: [...lead.slice(0, 2), 'elemento rapido'],
+                steps: ['Usa solo il necessario.', 'Non costruire un piatto completo.', 'Chiudi in forma molto pratica.'],
+                wasteTip: 'Perfetto per finire porzioni piccole senza lasciarle in frigo.',
+                goalTag: goal
+            }, 'salvafrigo', 3)
+        ];
+    }
+
+    if (mealType === 'cena') {
+        return [
+            withRecipeSlot({
+                id: 'R001',
+                nome_ricetta: `Cena base con ${lead[0] || 'proteina'} e ${lead[1] || 'verdure'}`,
+                difficolta: 'Semplice',
+                tempo_prep_min: 18,
+                allergeni_esclusi: [...toList(payload.profile.allergies), ...toList(payload.profile.intolerances)],
+                tecnica_cottura: 'Secondo piatto serale con tecnica semplice e contorno leggibile, senza deriva da pranzo pesante.',
+                anti_spreco: 'Le verdure gia cotte o la proteina avanzata del giorno si recuperano bene in una cena ordinata.',
+                ingredienti_tabella: [...lead.slice(0, 3), 'olio EVO', 'verdura di supporto'].map((item) => ({ n: item, qty: 100, k: 0, p: 0, c: 0, g: 0 })),
+                totale_piatto: { k: 0, p: 0, c: 0, g: 0 },
+                procedimento: [
+                    'Scegli una fonte proteica chiara come asse del piatto.',
+                    'Cuoci o rigenera le verdure in modo semplice, tenendole ben riconoscibili.',
+                    'Chiudi con un condimento misurato e, solo se utile, una piccola quota glucidica laterale.'
+                ],
+                title: `Cena base con ${lead[0] || 'proteina'} e ${lead[1] || 'verdure'}`,
+                style: 'Cucina base',
+                summary: `Cena base per ${payload.people} ${peopleLabel}, con struttura serale chiara: proteina, verdure e chiusura leggera.`,
+                whyItFits: `Mantiene la cena leggibile e anti-fame senza trasformarla in un pranzo travestito. ${goalHint(goal)} e ${dietHint(diet)}.${clinicalTail}`,
+                ingredients: [...lead.slice(0, 3), 'olio EVO', 'verdura di supporto'],
+                steps: [
+                    'Costruisci il piatto attorno a una proteina centrale.',
+                    'Tieni le verdure come apertura o accompagnamento ben separato.',
+                    'Usa una quota amidacea piccola solo se migliora equilibrio e sazieta.'
+                ],
+                wasteTip: 'Funziona bene per riutilizzare verdure grigliate, legumi gia pronti o proteine cotte in anticipo.',
+                goalTag: goal
+            }, 'base', 0),
+            withRecipeSlot({
+                id: 'R002',
+                nome_ricetta: `Cena media con ${lead[0] || 'ingrediente principale'} e contorno strutturato`,
+                difficolta: 'Media',
+                tempo_prep_min: 26,
+                allergeni_esclusi: [...toList(payload.profile.allergies), ...toList(payload.profile.intolerances)],
+                tecnica_cottura: 'Cena domestica piu costruita: secondo ben definito, contorno o crema vegetale e chiusura ordinata.',
+                anti_spreco: 'Il contorno o la crema possono nascere da verdure residue e tornare utili anche il giorno dopo.',
+                ingredienti_tabella: [...lead.slice(0, 4), 'olio EVO', 'erbe aromatiche'].map((item) => ({ n: item, qty: 100, k: 0, p: 0, c: 0, g: 0 })),
+                totale_piatto: { k: 0, p: 0, c: 0, g: 0 },
+                procedimento: [
+                    'Prepara la componente proteica con una cottura pulita e leggibile.',
+                    'Affianca una verdura piu costruita, come crema, teglia o padellata.',
+                    'Bilancia il piatto senza sommare troppi elementi amidacei o grassi.'
+                ],
+                title: `Cena media con ${lead[0] || 'ingrediente principale'} e contorno strutturato`,
+                style: 'Cucina media',
+                summary: 'Cena intermedia con secondo e contorno ben distinti, adatta a una routine serale piu ordinata.',
+                whyItFits: `Distingue meglio la cena dal pranzo: meno piatto unico centrale, piu struttura proteina piu vegetali.${clinicalTail}`,
+                ingredients: [...lead.slice(0, 4), 'olio EVO', 'erbe aromatiche'],
+                steps: [
+                    'Cuoci la proteina come centro del piatto.',
+                    'Costruisci un contorno riconoscibile e non accessorio.',
+                    'Mantieni l insieme serale, pulito e non eccessivo.'
+                ],
+                wasteTip: 'Contorni e creme serali si prestano bene al recupero intelligente del frigo.',
+                goalTag: goal
+            }, 'media', 1),
+            withRecipeSlot({
+                id: 'R003',
+                nome_ricetta: `Cena chef con ${lead[0] || 'proteina guida'} e ${lead[1] || 'contrasto vegetale'}`,
+                difficolta: 'Chef',
+                tempo_prep_min: 34,
+                allergeni_esclusi: [...toList(payload.profile.allergies), ...toList(payload.profile.intolerances)],
+                tecnica_cottura: 'Cena piu tecnica con controllo di cotture, salsa o finitura, ma ancora coerente con un formato serale.',
+                anti_spreco: 'Rifilature e fondi possono diventare glasse leggere, creme o finiture aromatiche da cena.',
+                ingredienti_tabella: [...lead.slice(0, 3), 'finitura tecnica', 'contrasto vegetale'].map((item) => ({ n: item, qty: 100, k: 0, p: 0, c: 0, g: 0 })),
+                totale_piatto: { k: 0, p: 0, c: 0, g: 0 },
+                procedimento: [
+                    'Gestisci con precisione la cottura della componente proteica.',
+                    'Crea un contrasto vegetale o una salsa leggera che accompagni senza coprire.',
+                    'Chiudi con una finitura netta e un impiattamento da cena curata, non da degustazione dispersiva.'
+                ],
+                title: `Cena chef con ${lead[0] || 'proteina guida'} e ${lead[1] || 'contrasto vegetale'}`,
+                style: 'Chef mode',
+                summary: 'Cena piu precisa e tecnica, pensata come secondo elegante con vegetali e finitura controllata.',
+                whyItFits: `Alza il livello senza spostare il formato verso un primo importante o un piatto da brunch.${clinicalTail}`,
+                ingredients: [...lead.slice(0, 3), 'finitura tecnica', 'contrasto vegetale'],
+                steps: [
+                    'Tieni la proteina come asse dominante.',
+                    'Usa il contrasto vegetale per leggerezza e profondita, non come riempitivo.',
+                    'Mantieni il piatto raffinato ma ancora chiaramente serale.'
+                ],
+                wasteTip: 'Fondi, erbe e verdure gia cotte possono diventare finiture intelligenti senza spreco.',
+                goalTag: goal
+            }, 'chef', 2),
+            withRecipeSlot({
+                id: 'R004',
+                nome_ricetta: `Salvafrigo cena di ${lead[0] || 'frigo'} e ${lead[1] || 'dispensa'}`,
+                difficolta: 'Semplice',
+                tempo_prep_min: 10,
+                allergeni_esclusi: [...toList(payload.profile.allergies), ...toList(payload.profile.intolerances)],
+                tecnica_cottura: 'Cena rapida di recupero, con un solo asse proteico e pochi passaggi utili.',
+                anti_spreco: 'Pensata per chiudere la giornata usando bene quello che resta senza improvvisare un piatto confuso.',
+                ingredienti_tabella: [...lead.slice(0, 3), 'olio EVO', 'verdura rapida'].map((item) => ({ n: item, qty: 100, k: 0, p: 0, c: 0, g: 0 })),
+                totale_piatto: { k: 0, p: 0, c: 0, g: 0 },
+                procedimento: [
+                    'Recupera la fonte proteica gia pronta o piu veloce da preparare.',
+                    'Abbina una sola verdura o una base vegetale molto rapida.',
+                    'Condisci in modo pulito e servi senza creare un piatto eccessivamente ricco.'
+                ],
+                title: `Salvafrigo cena di ${lead[0] || 'frigo'} e ${lead[1] || 'dispensa'}`,
+                style: 'Salvafrigo',
+                summary: 'Cena essenziale e anti-spreco, con struttura chiara e poco attrito decisionale.',
+                whyItFits: `Aiuta a chiudere la giornata con una cena utile, leggibile e coerente col profilo.${clinicalTail}`,
+                ingredients: [...lead.slice(0, 3), 'olio EVO', 'verdura rapida'],
+                steps: [
+                    'Usa un solo centro proteico.',
+                    'Abbina una verdura che alleggerisca il piatto.',
+                    'Evita di accumulare pane, pasta e condimenti superflui tutti insieme.'
+                ],
+                wasteTip: 'Perfetta per proteine avanzate, verdure cotte e piccole basi da finire.',
+                goalTag: goal
+            }, 'salvafrigo', 3)
+        ];
+    }
+
     return [
         withRecipeSlot({
             id: 'R001',
-            nome_ricetta: `Pasta o padellata base con ${lead[0] || 'stagione'} e ${lead[1] || 'dispensa'}`,
+            nome_ricetta: `Pranzo base con ${lead[0] || 'ingrediente guida'} e ${lead[1] || 'base portante'}`,
             difficolta: 'Semplice',
             tempo_prep_min: 20,
             allergeni_esclusi: [...toList(payload.profile.allergies), ...toList(payload.profile.intolerances)],
-            tecnica_cottura: 'Tecnica base riconoscibile: soffritto leggero o cottura diretta in padella con un solo passaggio principale.',
-            anti_spreco: 'Le parti meno belle possono diventare un soffritto o una base per una crema il giorno dopo.',
-            ingredienti_tabella: [...lead.slice(0, 3), 'olio EVO', 'aglio o cipolla', 'erbe aromatiche'].map((item) => ({ n: item, qty: 100, k: 0, p: 0, c: 0, g: 0 })),
+            tecnica_cottura: 'Pranzo a piatto centrale: primo completo o piatto unico con base amidacea ben leggibile e condimento semplice.',
+            anti_spreco: 'Le parti meno belle possono diventare una base aromatica o un condimento espresso per il pranzo del giorno dopo.',
+            ingredienti_tabella: [...lead.slice(0, 3), 'olio EVO', 'base amidacea o legumi', 'erbe aromatiche'].map((item) => ({ n: item, qty: 100, k: 0, p: 0, c: 0, g: 0 })),
             totale_piatto: { k: 0, p: 0, c: 0, g: 0 },
             procedimento: [
-                'Taglia gli ingredienti in pezzi simili e tieni da parte eventuali gambi o foglie tenere.',
-                'Rosola in padella con poco olio partendo dagli ingredienti piu duri e aggiungendo dopo quelli piu delicati.',
-                'Completa con spezie, erbe e una base a scelta come pane, cereali o legumi gia pronti.'
+                'Costruisci il pranzo attorno a una base portante chiara come pasta, riso, pane o legumi.',
+                'Sviluppa il condimento con pochi passaggi netti e una buona leggibilita del piatto.',
+                'Chiudi come piatto unico o primo completo, senza disperdere il risultato in troppi elementi separati.'
             ],
-            title: `Pasta o padellata base con ${lead[0] || 'stagione'} e ${lead[1] || 'dispensa'}`,
+            title: `Pranzo base con ${lead[0] || 'ingrediente guida'} e ${lead[1] || 'base portante'}`,
             style: 'Cucina base',
-            summary: `Ricetta fondamentale e molto semplice per ${payload.people} ${peopleLabel}, pensata per usare subito ${lead.slice(0, 3).join(', ')} con una tecnica sola.`,
-            whyItFits: `Questa proposta ${goalHint(goal)} e ${dietHint(diet)}. Si abbina bene a uno stile di vita ${activity}.${clinicalTail}`,
-            ingredients: [...lead.slice(0, 3), 'olio EVO', 'aglio o cipolla', 'erbe aromatiche'],
+            summary: `Pranzo semplice e centrale per ${payload.people} ${peopleLabel}, pensato come primo completo o piatto unico ordinato.`,
+            whyItFits: `Tiene il pranzo su una struttura piu portante e continua, utile a sazieta e praticita. ${goalHint(goal)} e ${dietHint(diet)}.${clinicalTail}`,
+            ingredients: [...lead.slice(0, 3), 'olio EVO', 'base amidacea o legumi', 'erbe aromatiche'],
             steps: [
-                'Prepara un fondo semplice oppure una cottura diretta senza costruire piu componenti.',
-                'Cuoci l ingrediente principale con un solo passaggio chiaro e leggibile.',
-                'Chiudi il piatto in modo essenziale, senza salse complesse o impiattamenti tecnici.'
+                'Tieni una base portante ben evidente.',
+                'Fai convergere il resto del piatto su quella base senza frammentarlo.',
+                'Chiudi in modo pratico e saziante, adatto alla fascia centrale della giornata.'
             ],
-            wasteTip: 'Le parti meno belle possono diventare un soffritto o una base per una crema il giorno dopo.',
+            wasteTip: 'Ottimo per riusare sughi leggeri, cereali cotti o verdure avanzate dentro un piatto unico.',
             goalTag: goal
         }, 'base', 0),
         withRecipeSlot({
             id: 'R002',
-            nome_ricetta: `Versione media con ${lead[0] || 'ingrediente principale'} e accompagnamento`,
+            nome_ricetta: `Pranzo media con ${lead[0] || 'ingrediente principale'} e accompagnamento`,
             difficolta: 'Media',
             tempo_prep_min: 30,
             allergeni_esclusi: [...toList(payload.profile.allergies), ...toList(payload.profile.intolerances)],
-            tecnica_cottura: 'Piatto composto ma domestico: una preparazione principale con salsa, crema o contorno di supporto.',
+            tecnica_cottura: 'Pranzo domestico piu costruito: primo o piatto unico con accompagnamento, crema o contorno di supporto.',
             anti_spreco: 'Le porzioni avanzate si conservano bene e si trasformano facilmente in pranzo da portare.',
             ingredienti_tabella: [...lead.slice(0, 4), 'olio EVO', 'spezie', 'pangrattato o semi'].map((item) => ({ n: item, qty: 100, k: 0, p: 0, c: 0, g: 0 })),
             totale_piatto: { k: 0, p: 0, c: 0, g: 0 },
             procedimento: [
-                'Disponi tutto in teglia, condisci bene e crea una superficie croccante con semi o pangrattato.',
-                'Cuoci fino a doratura, mescolando a meta cottura se serve.',
-                'Servi in piatto unico o come ripieno per piadine, panini o bowl del giorno dopo.'
+                'Prepara un piatto principale piu strutturato della base, con una crema, salsa o accompagnamento leggibile.',
+                'Mantieni comunque il cuore del pranzo su un asse centrale e saziante.',
+                'Organizza la porzione anche in ottica meal prep o pranzo del giorno dopo.'
             ],
-            title: `Versione media con ${lead[0] || 'ingrediente principale'} e accompagnamento`,
+            title: `Pranzo media con ${lead[0] || 'ingrediente principale'} e accompagnamento`,
             style: 'Cucina media',
-            summary: 'Una proposta intermedia, con piatto principale piu accompagnamento o crema, ma ancora pienamente da cucina di casa.',
-            whyItFits: `Aiuta a cucinare una volta sola per ${payload.people} ${peopleLabel} con un minimo di tecnica in piu e senza sprechi.${clinicalTail}`,
+            summary: 'Una proposta intermedia da pranzo, con piatto principale piu accompagnamento ma ancora pienamente domestica.',
+            whyItFits: `Rende il pranzo piu articolato senza spostarlo sulla logica del secondo serale.${clinicalTail}`,
             ingredients: [...lead.slice(0, 4), 'olio EVO', 'spezie', 'pangrattato o semi'],
             steps: [
-                'Prepara un elemento principale con una lavorazione in piu rispetto alla base.',
-                'Abbinalo a una crema, salsa o verdura di accompagnamento ben distinta.',
-                'Servi le due componenti in modo ordinato ma ancora semplice e domestico.'
+                'Prepara un asse centrale piu curato rispetto alla versione base.',
+                'Abbinalo a un supporto leggibile, ma non farlo diventare una cena a due tempi.',
+                'Tieni il pranzo coeso, pratico e trasportabile se serve.'
             ],
             wasteTip: 'Le porzioni avanzate si conservano bene e si trasformano facilmente in pranzo da portare.',
             goalTag: goal
         }, 'media', 1),
         withRecipeSlot({
             id: 'R003',
-            nome_ricetta: `Chef mode con ${lead[0] || 'ingrediente guida'} e ${lead[1] || 'contrasti'}`,
+            nome_ricetta: `Pranzo chef con ${lead[0] || 'ingrediente guida'} e ${lead[1] || 'contrasti'}`,
             difficolta: 'Chef',
             tempo_prep_min: 35,
             allergeni_esclusi: [...toList(payload.profile.allergies), ...toList(payload.profile.intolerances)],
-            tecnica_cottura: 'Costruzione tecnica in piu componenti con almeno due decisioni critiche: tempi, texture, finitura o salsa.',
+            tecnica_cottura: 'Pranzo tecnico in piu componenti, piu vicino a un primo evoluto o a un piatto unico raffinato che a una cena da secondo.',
             anti_spreco: 'Anche in una proposta piu curata, rifilature e fondi possono diventare salse, garnish o basi aromatiche.',
             ingredienti_tabella: [...lead.slice(0, 3), 'elemento croccante', 'finitura aromatica'].map((item) => ({ n: item, qty: 100, k: 0, p: 0, c: 0, g: 0 })),
             totale_piatto: { k: 0, p: 0, c: 0, g: 0 },
             procedimento: [
-                'Cuoci separatamente l elemento principale, gestendo bene colore e succosita.',
-                'Prepara una seconda componente di contrasto, croccante o cremosa a seconda degli ingredienti disponibili.',
-                'Chiudi il piatto con una finitura aromatica e una presentazione piu pulita e precisa.'
+                'Sviluppa un piatto centrale con una gerarchia chiara di componenti.',
+                'Usa contrasti e finiture per dare precisione, ma mantieni il baricentro sul pranzo come piatto portante.',
+                'Chiudi con una finitura pulita che valorizzi il piatto senza farlo sembrare una cena da secondo classico.'
             ],
-            title: `Chef mode con ${lead[0] || 'ingrediente guida'} e ${lead[1] || 'contrasti'}`,
+            title: `Pranzo chef con ${lead[0] || 'ingrediente guida'} e ${lead[1] || 'contrasti'}`,
             style: 'Chef mode',
-            summary: 'Una proposta che mette davvero alla prova: piu tecnica, piu precisa e meno perdonante della modalita media.',
-            whyItFits: `Alza davvero il livello della richiesta e usa gli ingredienti per una ricetta che richiede attenzione, controllo e mano.${clinicalTail}`,
+            summary: 'Una proposta pranzo piu tecnica e precisa, pensata come piatto centrale raffinato e non come cena di sola proteina.',
+            whyItFits: `Alza davvero il livello del pranzo mantenendo un anima da piatto portante e strutturato.${clinicalTail}`,
             ingredients: [...lead.slice(0, 3), 'elemento croccante', 'finitura aromatica'],
             steps: [
-                'Cuoci separatamente l elemento principale con un controllo preciso di tempo e temperatura.',
-                'Aggiungi almeno una seconda componente tecnica, come crema, salsa, crosta o guarnizione strutturale.',
-                'Chiudi con una finitura coerente e un impiattamento piu rigoroso del solito.'
+                'Gestisci un piatto principale con controllo tecnico vero.',
+                'Usa una seconda componente come supporto strutturale e non come semplice contorno.',
+                'Impiatta in modo rigoroso ma ancora coerente con un pranzo reale.'
             ],
             wasteTip: 'Anche in una proposta piu curata, rifilature e fondi possono diventare salse, garnish o basi aromatiche.',
             goalTag: goal
         }, 'chef', 2),
         withRecipeSlot({
             id: 'R004',
-            nome_ricetta: `Salvafrigo di ${lead[0] || 'frigo'} e ${lead[1] || 'dispensa'}`,
+            nome_ricetta: `Salvafrigo pranzo di ${lead[0] || 'frigo'} e ${lead[1] || 'dispensa'}`,
             difficolta: 'Semplice',
             tempo_prep_min: 12,
             allergeni_esclusi: [...toList(payload.profile.allergies), ...toList(payload.profile.intolerances)],
-            tecnica_cottura: 'Assemblaggio o cottura minima con la soluzione piu facile e immediata.',
+            tecnica_cottura: 'Pranzo rapido di recupero, con un piatto unico semplice o un primo espresso molto leggibile.',
             anti_spreco: 'Questa modalita nasce per finire ingredienti aperti e parti meno nobili ma ancora buone.',
             ingredienti_tabella: [...lead.slice(0, 3), 'olio EVO', 'sale', 'erbe o spezie'].map((item) => ({ n: item, qty: 100, k: 0, p: 0, c: 0, g: 0 })),
             totale_piatto: { k: 0, p: 0, c: 0, g: 0 },
             procedimento: [
-                'Riunisci gli ingredienti gia pronti o piu facili da trattare senza costruire troppi passaggi.',
-                'Usa una sola padella oppure assembla tutto a freddo se gli ingredienti lo permettono.',
-                'Condisci in modo essenziale e servi subito come soluzione rapida anti-spreco.'
+                'Riunisci ingredienti gia pronti o facili da trattare in un unico asse di pranzo.',
+                'Usa una sola padella oppure un assemblaggio freddo, ma mantieni l idea di piatto centrale.',
+                'Condisci in modo essenziale e servi subito come pranzo utile e anti-spreco.'
             ],
-            title: `Salvafrigo di ${lead[0] || 'frigo'} e ${lead[1] || 'dispensa'}`,
+            title: `Salvafrigo pranzo di ${lead[0] || 'frigo'} e ${lead[1] || 'dispensa'}`,
             style: 'Salvafrigo',
-            summary: 'La versione piu semplice e diretta: poca tecnica, pochi passaggi, massima utilita per usare quello che hai.',
-            whyItFits: `E la modalita piu banale in senso utile: entra in cucina, usa quello che c e e non spreca tempo ne ingredienti.${clinicalTail}`,
+            summary: 'La versione pranzo piu semplice e diretta: poca tecnica, pochi passaggi, massima utilita e buona sazieta.',
+            whyItFits: `Resta un pranzo vero, non solo un assemblaggio casuale: usa quello che c e ma con un centro chiaro.${clinicalTail}`,
             ingredients: [...lead.slice(0, 3), 'olio EVO', 'sale', 'erbe o spezie'],
             steps: [
-                'Riunisci gli ingredienti gia pronti o piu facili da trattare senza costruire troppi passaggi.',
-                'Usa una sola padella oppure assembla tutto a freddo se gli ingredienti lo permettono.',
-                'Condisci in modo essenziale e servi subito come soluzione rapida anti-spreco.'
+                'Metti insieme una sola base portante con gli ingredienti da finire.',
+                'Evita di disperdere il piatto in troppi elementi slegati.',
+                'Servi subito come pranzo rapido ma con logica nutrizionale leggibile.'
             ],
             wasteTip: 'Questa modalita nasce per finire ingredienti aperti e parti meno nobili ma ancora buone.',
             goalTag: goal
@@ -851,10 +1398,9 @@ function buildFallbackRecipes(payload) {
     const selectedTemplates = selectRecipeTemplatesBySlot(payload);
     const selectedBySlot = new Map(selectedTemplates.map((entry) => [entry.slot.key, entry.normalizedRecipe]));
     const genericBySlot = new Map(buildGenericFallbackRecipes(payload).map((recipe) => [recipe.mode_key, recipe]));
+    const requestedSlot = getRequestedRecipeSlotConfig(payload.requestedMode);
 
-    return RECIPE_SLOT_CONFIG
-        .map((slot) => selectedBySlot.get(slot.key) || genericBySlot.get(slot.key))
-        .filter(Boolean);
+    return [selectedBySlot.get(requestedSlot.key) || genericBySlot.get(requestedSlot.key)].filter(Boolean);
 }
 
 function collectPromptLines(value, lines = [], seen = new Set()) {
@@ -915,9 +1461,21 @@ function buildTextSignals(payload) {
         payload.profile.diet,
         payload.profile.allergies,
         payload.profile.intolerances,
+        payload.profile.otherPathologies,
         payload.profile.jobType,
         payload.profile.username
     ].join(' | '));
+}
+
+function shouldApplyAntiAgeGuidance(profile, signalText = '') {
+    const age = Number(profile?.age || 0);
+    const signals = normalizeText(`${signalText} ${profile?.goal || ''} ${profile?.otherPathologies || ''} ${profile?.diet || ''}`);
+    return age >= 45 || hasSignal(signals, ['anti age', 'antiage', 'anti aging', 'antiaging', 'omega 3', 'polifenoli', 'stress ossidativo']);
+}
+
+function shouldApplyVeganGuidance(profile, signalText = '') {
+    const signals = normalizeText(`${signalText} ${profile?.diet || ''} ${profile?.goal || ''} ${profile?.otherPathologies || ''}`);
+    return hasSignal(signals, ['vegano', 'vegan', '100 vegetale', '100% vegetale', 'plant based', 'plant-based', 'totalmente vegetale']);
 }
 
 function inferRequestedArchetypes(payload) {
@@ -1404,27 +1962,29 @@ function selectRelevantFoodComposition(payload, rankedTemplates = [], limit = 10
 }
 
 function summarizeTemplateSlotsForPrompt(payload) {
-    return selectRecipeTemplatesBySlot(payload).map((entry) => ({
+    return selectRecipeTemplatesBySlot(payload)
+        .filter((entry) => entry.slot.key === payload.requestedMode)
+        .map((entry) => ({
         slot_key: entry.slot.key,
         slot_label: entry.slot.label,
         target_difficulty: entry.slot.difficulty,
         slot_brief: entry.slot.brief,
         slot_examples: entry.slot.examples,
         template: summarizeTemplateForPrompt(entry.template)
-    }));
+        }));
 }
 
-function assignRecipeSlots(recipes) {
-    return RECIPE_SLOT_CONFIG.map((slot, index) => {
-        const recipe = recipes[index];
-        if (!recipe) return null;
-        return withRecipeSlot({
-            ...recipe,
-            mode_key: recipe.mode_key || recipe.modeKey || slot.key,
-            mode_label: recipe.mode_label || recipe.modeLabel || slot.label,
-            difficolta: recipe.difficolta || slot.difficulty
-        }, slot.key, index);
-    }).filter(Boolean);
+function assignRecipeToRequestedSlot(recipe, requestedMode) {
+    if (!recipe) return null;
+
+    const slot = getRequestedRecipeSlotConfig(requestedMode);
+
+    return withRecipeSlot({
+        ...recipe,
+        mode_key: recipe.mode_key || recipe.modeKey || slot.key,
+        mode_label: recipe.mode_label || recipe.modeLabel || slot.label,
+        difficolta: recipe.difficolta || slot.difficulty
+    }, slot.key, 0);
 }
 
 function selectRelevantKnowledge(payload, rankedTemplates = []) {
@@ -1451,6 +2011,8 @@ function selectRelevantKnowledge(payload, rankedTemplates = []) {
     const hasRomanSignal = hasSignal(signalText, ['amatriciana', 'guanciale', 'pecorino', 'bucatini', 'rigatoni', 'spaghetti']);
     const hasAciditySignal = hasSignal(signalText, ['limone', 'aceto', 'pomodoro', 'ferment', 'pectina', 'marmellata', 'yogurt']);
     const hasFlatbreadSignal = hasSignal(signalText, ['focacc', 'padella', 'zucchina', 'carota', 'yogurt', 'ricotta', 'peperone']);
+    const hasAntiAgeSignal = shouldApplyAntiAgeGuidance(payload.profile, signalText);
+    const hasVeganSignal = shouldApplyVeganGuidance(payload.profile, signalText);
     const relevantFoodComposition = selectRelevantFoodComposition(payload, rankedTemplates);
     const relevantYieldFactors = selectRelevantYieldFactors(payload, rankedTemplates);
 
@@ -1524,6 +2086,27 @@ function selectRelevantKnowledge(payload, rankedTemplates = []) {
             reason: 'utile per rendere piu precise alcune cene vegetali con tofu o tempeh attraverso strutture tecniche gia collaudate',
             data: nutritionCounselingDinnerTemplates,
             include: hasSignal(signalText, ['tofu', 'tempeh', 'spinaci', 'tahina', 'limone', 'pepe rosa', 'pomodori secchi']) || payload.profile.dinnerProteinPreference === 'tofu-tempeh'
+        },
+        {
+            key: 'nutritionCounselingWeeklyMenu',
+            title: 'Ragionamento professionale sul menu settimanale',
+            reason: 'utile per far nascere ricette che si inseriscono in una settimana credibile, completa nei pasti e coerente con praticita, varieta e anti-spreco',
+            data: nutritionCounselingWeeklyMenuPatterns,
+            include: true
+        },
+        {
+            key: 'nutritionCounselingAntiAge',
+            title: 'Ragionamento professionale anti-age',
+            reason: 'utile per privilegiare idratazione, polifenoli, Omega 3, verdure e una rotazione piu sobria delle proteine animali quando il profilo lo rende pertinente',
+            data: nutritionCounselingAntiAgePatterns,
+            include: hasAntiAgeSignal
+        },
+        {
+            key: 'nutritionCounselingVeganMenu',
+            title: 'Ragionamento professionale sul menu vegetale',
+            reason: 'utile per piatti 100% vegetali completi, mediterranei e organizzabili nella settimana reale, ma anche come ispirazione per spingere piu in alto la quota vegetale di altri profili',
+            data: nutritionCounselingVeganMenuPatterns,
+            include: hasVeganSignal
         },
         {
             key: 'vegetableScience',
@@ -1627,7 +2210,7 @@ function selectRelevantKnowledge(payload, rankedTemplates = []) {
         nutritionSignals,
         modules: modules
             .filter((module) => module.include)
-            .slice(0, 8)
+            .slice(0, 10)
             .map((module) => ({
                 key: module.key,
                 title: module.title,
@@ -1657,6 +2240,29 @@ function extractJson(text) {
 function normalizeNutritionNumber(value) {
     const numeric = Number(value);
     return Number.isFinite(numeric) ? Number(numeric.toFixed(1)) : 0;
+}
+
+function parseIngredientQuantity(value) {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+        return Number(value.toFixed(1));
+    }
+
+    const text = String(value || '').trim().replace(',', '.');
+    if (!text) {
+        return 0;
+    }
+
+    const directNumber = Number(text);
+    if (Number.isFinite(directNumber)) {
+        return Number(directNumber.toFixed(1));
+    }
+
+    const match = text.match(/\d+(?:\.\d+)?/);
+    if (!match) {
+        return 0;
+    }
+
+    return Number(Number(match[0]).toFixed(1));
 }
 
 function normalizeNutrition(nutrition) {
@@ -1708,7 +2314,7 @@ function normalizeRecipe(recipe, index, candidateFoods = []) {
     const baseIngredientRows = Array.isArray(recipe.ingredienti_tabella)
         ? recipe.ingredienti_tabella.map((row) => ({
             n: String(row.n || row.name || row.ingredient || '').trim(),
-            qty: Number(row.qty || 0),
+            qty: parseIngredientQuantity(row.qty),
             k: normalizeNutritionNumber(row.k ?? row.kcal),
             p: normalizeNutritionNumber(row.p ?? row.protein ?? row.proteine),
             c: normalizeNutritionNumber(row.c ?? row.carbs ?? row.carboidrati),
@@ -1744,6 +2350,8 @@ function normalizeRecipe(recipe, index, candidateFoods = []) {
         style: String(recipe.style || 'Idea personalizzata').trim(),
         summary: String(recipe.summary || '').trim(),
         whyItFits: String(recipe.whyItFits || recipe.why || '').trim(),
+        chef_note: String(recipe.chef_note || recipe.chefNote || '').trim(),
+        bioavailability_tip: String(recipe.bioavailability_tip || recipe.bioavailabilityTip || '').trim(),
         ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients.map(String).filter(Boolean) : ingredientRows.map((row) => row.n),
         steps: Array.isArray(recipe.steps) ? recipe.steps.map(String).filter(Boolean) : (Array.isArray(recipe.procedimento) ? recipe.procedimento.map(String).filter(Boolean) : []),
         wasteTip: String(recipe.wasteTip || recipe.antiWasteTip || '').trim(),
@@ -1775,6 +2383,37 @@ function normalizeRecipe(recipe, index, candidateFoods = []) {
     return normalized;
 }
 
+function recipeHasQuantifiedIngredients(recipe) {
+    const rows = Array.isArray(recipe?.ingredienti_tabella) ? recipe.ingredienti_tabella : [];
+
+    return rows.length > 0 && rows.every((row) => Number(row?.qty || 0) > 0);
+}
+
+function recipeHasPrepTime(recipe) {
+    return Number(recipe?.tempo_prep_min || 0) > 0;
+}
+
+function recipeHasStepByStepProcedure(recipe, minSteps = 2) {
+    const steps = Array.isArray(recipe?.procedimento)
+        ? recipe.procedimento
+        : (Array.isArray(recipe?.steps) ? recipe.steps : []);
+
+    return steps.length >= minSteps && steps.every((step) => String(step || '').trim().length > 0);
+}
+
+function validateRecipeForRequestedMode(recipe, requestedMode) {
+    if (!recipe || typeof recipe !== 'object') {
+        return false;
+    }
+
+    const normalizedMode = normalizeRequestedRecipeMode(requestedMode);
+    const minSteps = normalizedMode === 'chef' ? 3 : 2;
+
+    return recipeHasQuantifiedIngredients(recipe)
+        && recipeHasPrepTime(recipe)
+        && recipeHasStepByStepProcedure(recipe, minSteps);
+}
+
 async function generateRecipesWithAI(payload) {
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
@@ -1788,44 +2427,59 @@ async function generateRecipesWithAI(payload) {
     const selectedTemplates = summarizeTemplateSlotsForPrompt(payload);
     const relevantKnowledge = selectRelevantKnowledge(payload, rankedTemplates);
     const clinicalContext = getClinicalNutritionContext(payload.profile);
+    const recipeReferenceExamples = getRecipeReferenceExamples();
+    const mealTypeReferenceExamples = getMealTypeReferenceExamples(payload.mealType);
+    const antiAgeGuidance = shouldApplyAntiAgeGuidance(payload.profile, buildTextSignals(payload)) ? collectPromptLines(nutritionCounselingAntiAgePatterns).slice(0, 8) : [];
+    const veganGuidance = shouldApplyVeganGuidance(payload.profile, buildTextSignals(payload)) ? collectPromptLines(nutritionCounselingVeganMenuPatterns).slice(0, 8) : [];
+    const requestedSlot = getRequestedRecipeSlotConfig(payload.requestedMode);
+    const requestedMealType = getRecipeMealTypeLabel(payload.mealType);
+    const mealTypePromptBlock = getRecipeMealTypePromptBlock(payload.mealType);
 
     const systemPrompt = [
-        'Sei uno Chef stellato esperto in nutrizione clinica e cucina anti-spreco.',
-        'L utente ti fornira Ingredienti disponibili, Numero Persone, Allergie/Intolleranze, Obiettivo e dati di profilo utili.',
-        'Devi comportarti come uno chef reale che possiede una base di conoscenza culinaria ampia, concreta e anti-spreco.',
-        'Quando il profilo include dati nutrizionali personalizzati, devi ragionare come una nutrizionista: interpreta prima IMC e contesto corporeo, distingui fabbisogno calorico e piano calorico, poi usa il target proteico in g/kg per orientare la struttura del piatto.',
-        'IMC, fabbisogno, piano calorico e proteine in g/kg non sono regole fisse universali: sono parametri del singolo utente e vanno letti come guida personalizzata e variabile.',
-        'Quando ricevi esempi di piano nutrizionale professionale, devi assorbirne il metodo di ragionamento e non copiarne il testo o trasformarlo in schema universale.',
-        'Se l esempio riguarda colazioni o alternative di pasto, eredita soprattutto questi principi: personalizzazione, opzioni equivalenti, quota proteica ragionata, praticita reale, sazieta e aderenza nel tempo.',
-        'Se l esempio riguarda il pranzo, puoi ereditare questi principi: possibile apertura con verdure crude, piatto principale leggibile con base amidacea modulabile, quota proteico-fibrosa da legumi o alternative compatibili, verdure sempre presenti e condimento esplicitato.',
-        'Se l esempio riguarda la cena, puoi ereditare questi principi: apertura con verdure crude, fonte proteica ruotabile e leggibile, quota glucidica semplice e modulata, verdure sempre presenti, olio EVO dichiarato e frutta finale solo se contestualmente sensata.',
+        'Sei NUTRI-ME Chef-Nutrizionista: un modello che unisce logica da chef, nutrizione clinica, crononutrizione e cucina anti-spreco.',
+        'Devi ragionare in privato e non mostrare mai il chain of thought. Prima di generare il JSON devi seguire questo Protocollo obbligatorio.',
+        'Protocollo obbligatorio.',
+        'Fase 1, Analisi metabolica e vincoli: leggi targetCalories, proteinTargetGrams o proteinGrams, proteinTargetPerKg, allergies, intolerances, otherPathologies, diet, obiettivo, contesto corporeo e persone. Elimina subito ingredienti incompatibili con allergie, intolleranze, patologie, dieta o vincoli clinici.',
+        'Fase 2, Crononutrizione: adatta struttura, densita energetica, tecniche e digeribilita al mealType. Colazione piu proteica e leggibile, pranzo centrale e saziante, cena piu digeribile e ordinata, spuntino breve e porzionabile.',
+        'Fase 3, Strategia da chef e nutrizionista: scegli la tecnica di cottura in base all obiettivo metabolico, alla digeribilita, alla texture e alla praticita reale. Usa conoscenza tecnica concreta, non formule vaghe.',
+        'Fase 4, Bioavailability thinking: valuta se una combinazione puo migliorare assorbimento di ferro, calcio, vitamine liposolubili o tollerabilita digestiva e sintetizzala in modo breve e scientifico.',
+        'Fase 5, Output: restituisci una sola ricetta coerente con il profilo e con la modalita richiesta, senza mostrare le fasi di ragionamento.',
+        'Quando il profilo include dati nutrizionali personalizzati, comportati come una nutrizionista: distingui sempre fabbisogno e piano calorico e usa la quota proteica come guida del piatto, non come slogan.',
+        'Se la dieta e vegana o 100% vegetale, escludi completamente ingredienti di origine animale e privilegia basi mediterranee vegetali complete, sazianti e realistiche.',
+        'Il tipo di pasto richiesto e un vincolo sostanziale: colazione, pranzo, cena e spuntino hanno struttura, densita energetica, tono e ingredienti plausibili diversi.',
         'Se il profilo esprime una preferenza proteica serale, trattala come priorita morbida: deve orientare la scelta della fonte proteica quando coerente con ingredienti e profilo, senza diventare un obbligo meccanico.',
         'Se il profilo indica un pranzo abituale da giorno lavorativo, nel whyItFits fai emergere praticita, digeribilita, organizzazione e sostenibilita nella routine. Se indica un giorno libero, fai emergere una struttura piu distesa, piacevole e curata, ma sempre coerente con il piano calorico.',
         'Applica la stessa distinzione anche al summary: nel giorno lavorativo usa un tono piu pratico, agile e organizzabile; nel giorno libero usa un tono piu disteso, piacevole e curato.',
         'Se il profilo somiglia a un adulto 50+ in sovrappeso con deficit moderato, privilegia ricette scientificamente sobrie: verdure presenti, cotture semplici, olio EVO a crudo quando sensato, porzioni leggibili, niente fritture o intingoli come asse centrale della proposta.',
         'Usa la knowledge base interna come contesto tecnico e culturale: non trattarla come una lista di obblighi da applicare sempre, ma come sapere professionale da richiamare solo quando pertinente alla ricetta.',
         'Vincoli davvero obbligatori:',
-        '1. Se ci sono allergie o intolleranze, escludi tassativamente quegli ingredienti e proponi sostituti compatibili se servono.',
-        '2. Genera esattamente 4 ricette diverse fra loro per livello e struttura.',
-        '3. L ordine e obbligatorio: prima Cucina base, seconda Cucina media, terza Chef mode, quarta Salvafrigo.',
-        '4. La prima deve essere cucina fondamentale e riconoscibile, come una pasta ben costruita ma semplice, un sugo leggibile, una padellata o un piatto base con una sola tecnica principale.',
-        '5. La seconda deve essere una vera cucina media: piatto principale piu accompagnamento, oppure polpette o proteina con crema, salsa o verdura di supporto.',
-        '6. La terza deve essere davvero Chef mode: deve mettere alla prova l utente con piu decisioni tecniche, tempi da controllare, texture da gestire e un risultato meno banale della media.',
-        '7. La quarta deve essere la piu facile e anti-spreco.',
-        '8. Includi una tabella nutrizionale leggibile per ingredienti principali e totale piatto.',
-        '9. Le quantita in ingredienti_tabella e i totali nutrizionali devono essere proporzionati esattamente al Numero Persone richiesto.',
-        '10. Restituisci solo JSON valido nello schema richiesto.',
-        '11. Evita ricette generiche o intercambiabili: se gli ingredienti permettono un piatto specifico, proponilo.',
-        '12. Ogni ricetta deve mostrare almeno una decisione tecnica concreta derivata dagli ingredienti, dal profilo o dalla knowledge base selezionata.',
+        '1. Se ci sono allergie, intolleranze, incompatibilita con otherPathologies o limiti di dieta, escludi tassativamente quegli ingredienti e proponi sostituti compatibili se servono.',
+        '2. Genera esattamente 1 ricetta, non una lista di modalita alternative.',
+        '3. Genera solo la ricetta coerente con la modalita richiesta dall utente.',
+        '4. Se la modalita richiesta e Salvafrigo, dai priorita assoluta agli ingredienti disponibili e all utilita anti-spreco.',
+        '5. Tutte le ricette, in qualunque modalita, devono riportare ogni ingrediente realmente usato in ingredienti_tabella con qty numerica espressa in grammi.',
+        '6. Non usare q.b., quanto basta, cucchiai, tazze, pezzi, fette, unita vaghe o ingredienti senza peso: converti sempre tutto in grammi.',
+        '7. Tutte le ricette devono compilare tempo_prep_min con il tempo totale realistico di preparazione e cottura espresso in minuti.',
+        '8. Tutte le ricette devono compilare procedimento come sequenza passo per passo concreta, ordinata ed eseguibile.',
+        '9. Se la modalita richiesta e Chef, includi anche un tocco gourmet reale e una nota concreta di impiattamento o finitura.',
+        '10. In Chef mode il procedimento deve avere almeno 3 step e l ultimo step deve chiudere con finitura, impiattamento o servizio.',
+        '11. Includi una tabella nutrizionale leggibile per ingredienti principali e totale piatto.',
+        '12. Le quantita in ingredienti_tabella e i totali nutrizionali devono essere proporzionati esattamente al Numero Persone richiesto.',
         '13. Il campo tecnica_cottura deve spiegare la scelta tecnica reale, non una formula vaga.',
-        '14. Nel campo whyItFits spiega in modo breve ma concreto come la ricetta si inserisce nel metodo nutrizionale del profilo: IMC contestualizzato, differenza tra fabbisogno e piano, e quota proteica quando utile.',
-        'Restituisci ESCLUSIVAMENTE JSON valido con questo shape: {"recipes":[{"id":"R001","mode_key":"base|media|chef|salvafrigo","mode_label":"Cucina base|Cucina media|Chef mode|Salvafrigo","nome_ricetta":"Nome del piatto","difficolta":"Semplice|Media|Chef","tempo_prep_min":20,"allergeni_esclusi":["Lattosio","Glutine"],"tecnica_cottura":"Descrizione della tecnica principale","anti_spreco":"Come usare gli scarti","ingredienti_tabella":[{"n":"Ingrediente 1","qty":100,"k":150,"p":10,"c":20,"g":3}],"totale_piatto":{"k":450,"p":30,"c":60,"g":10},"procedimento":["Step 1","Step 2"],"summary":"","whyItFits":"","substitutions":[""]}]}'
+        '14. Il campo chef_note deve spiegare in una frase la tecnica scelta collegandola a obiettivo, digeribilita o appetibilita.',
+        '15. Il campo bioavailability_tip deve spiegare in una frase un abbinamento o una scelta utile per assorbimento, tollerabilita o utilizzo dei nutrienti.',
+        '16. Nel campo whyItFits spiega in modo breve ma concreto come la ricetta si inserisce nel metodo nutrizionale del profilo: IMC contestualizzato, differenza tra fabbisogno e piano, e quota proteica quando utile.',
+        '17. Restituisci solo JSON valido nello schema richiesto.',
+        '18. Evita ricette generiche o intercambiabili: se gli ingredienti permettono un piatto specifico, proponilo.',
+        '19. La ricetta deve mostrare almeno una decisione tecnica concreta derivata dagli ingredienti, dal profilo o dalla knowledge base selezionata.',
+        '20. Restituisci ESCLUSIVAMENTE JSON valido con questo shape: {"recipes":[{"id":"R001","mode_key":"base|media|chef|salvafrigo","mode_label":"Cucina base|Cucina media|Chef mode|Salvafrigo","nome_ricetta":"Nome del piatto","difficolta":"Semplice|Media|Chef|Salvafrigo","tempo_prep_min":20,"allergeni_esclusi":["Lattosio","Glutine"],"tecnica_cottura":"Descrizione della tecnica principale","chef_note":"Nota tecnica da chef nutrizionista","bioavailability_tip":"Nota scientifica su assorbimento o tollerabilita","anti_spreco":"Come usare gli scarti","ingredienti_tabella":[{"n":"Ingrediente 1","qty":100,"k":150,"p":10,"c":20,"g":3}],"totale_piatto":{"k":450,"p":30,"c":60,"g":10},"procedimento":["Step 1","Step 2"],"summary":"","whyItFits":"","substitutions":[""]}]}',
     ].join(' ');
 
     const userPrompt = [
         `Ingredienti disponibili: ${payload.ingredients.join(', ') || 'nessuno specificato'}`,
         `Numero Persone: ${payload.people}`,
         `Allergie/Intolleranze: ${payload.profile.allergies || 'nessuna'} | ${payload.profile.intolerances || 'nessuna'}`,
+        `Patologie o incompatibilita cliniche: ${payload.profile.otherPathologies || 'nessuna'}`,
         `Obiettivo: ${payload.profile.goal || 'mantenere'}`,
         `Regime alimentare: ${payload.profile.diet || 'non specificato'}`,
         `Stile di vita: ${payload.profile.jobType || 'non specificato'}`,
@@ -1837,8 +2491,13 @@ async function generateRecipesWithAI(payload) {
         `Calorie target: ${payload.profile.targetCalories || 0}`,
         `Delta calorico del piano: ${payload.profile.goalCalorieDelta || 0}`,
         `Apporto proteico target: ${payload.profile.proteinTargetPerKg || 0} g/kg | ${payload.profile.proteinTargetGrams || 0} g/die`,
+        `Target carboidrati: ${payload.profile.carbsTargetGrams || 0} g/die`,
+        `Target grassi: ${payload.profile.fatTargetGrams || 0} g/die`,
+        `Target fibra: ${payload.profile.fiberTargetGrams || 0} g/die`,
+        `Tipo di pasto richiesto: ${requestedMealType}`,
         `Contesto pranzo abituale del profilo: ${getLunchContextLabel(payload.profile.lunchContextPreference)}`,
         `Preferenza proteica serale del profilo: ${getDinnerProteinPreferenceLabel(payload.profile.dinnerProteinPreference)}`,
+        `Modalita richiesta: ${requestedSlot.label} (${requestedSlot.difficulty})`,
         `Ingredienti esclusi a monte: ${payload.excludedIngredients.join(', ') || 'nessuno'}`,
         `Archetipi di piatto piu promettenti per questa richiesta: ${JSON.stringify(relevantKnowledge.dishArchetypes)}`,
         `Slot obbligatori e template interni da usare come ispirazione strutturale, non da copiare parola per parola: ${JSON.stringify(selectedTemplates)}`,
@@ -1847,13 +2506,30 @@ async function generateRecipesWithAI(payload) {
         `Riferimenti CREA Tabella C su resa e variazione peso in cottura: ${JSON.stringify(relevantKnowledge.yieldFactorRefs)}`,
         `Segnali nutrizionali CREA utili per orientare le scelte: ${JSON.stringify(relevantKnowledge.nutritionSignals)}`,
         `Schema clinico-pratico aggiuntivo: ${JSON.stringify(clinicalContext.recipePromptLines)}`,
-        'Genera 4 ricette realistiche e diverse fra loro, nell ordine obbligatorio base, media, chef, salvafrigo.',
-        'Per Cucina base: resta su ricette fondamentali e leggibili, con pochi passaggi e una sola tecnica dominante.',
-        'Per Cucina media: costruisci un piatto domestico con almeno due elementi coerenti tra loro, per esempio proteina o polpetta piu crema, salsa o verdura.',
-        'Per Chef mode: scegli la ricetta piu sfidante che gli ingredienti consentono davvero, sfruttando i seed caricati e la knowledge base tecnica; non deve sembrare una media con nome piu elegante.',
+        antiAgeGuidance.length > 0 ? `Metodo anti-age: ${JSON.stringify(antiAgeGuidance)}` : '',
+        veganGuidance.length > 0 ? `Metodo menu vegetale 100% plant-based: ${JSON.stringify(veganGuidance)}` : '',
+        `Esempi interni di riferimento da usare solo come metodo invisibile: ${JSON.stringify(recipeReferenceExamples)}`,
+        `Esempi interni specifici per il tipo di pasto richiesto: ${JSON.stringify(mealTypeReferenceExamples)}`,
+        `Vincoli specifici del tipo di pasto: ${JSON.stringify(mealTypePromptBlock)}`,
+        'Genera una sola ricetta realistica e coerente con la modalita richiesta, senza proporre le altre modalita.',
+        'Applica il Protocollo in silenzio: analisi metabolica e vincoli, crononutrizione, scelta tecnica da chef, rifinitura nutrizionale, poi output JSON.',
+        'Fai in modo che la ricetta possa inserirsi bene in un menu settimanale reale: deve essere organizzabile, abbastanza varia, sensata rispetto alla stagionalita e utile anche per ridurre sprechi o semplificare la spesa quando possibile.',
+        'Se il tipo di pasto lo consente, rendi leggibile la struttura del piatto con base amidacea o cereale, fonte proteica, verdure e grassi buoni, senza trasformare questa logica in una formula meccanica.',
+        'In qualsiasi modalita: indica il peso in grammi di ogni ingrediente realmente usato dentro ingredienti_tabella, senza q.b. o misure vaghe.',
+        'In qualsiasi modalita: compila tempo_prep_min con il tempo totale realistico in minuti.',
+        'In qualsiasi modalita: scrivi il procedimento come sequenza passo per passo concreta, non come descrizione generica o riassunto.',
+        'In qualsiasi modalita: compila chef_note con una breve nota tecnica da chef-nutrizionista e bioavailability_tip con una breve nota scientifica sugli abbinamenti o sulla tollerabilita.',
+        'Se la modalita e Cucina base: resta su ricette fondamentali e leggibili, con pochi passaggi e una sola tecnica dominante.',
+        'Se la modalita e Cucina media: costruisci un piatto domestico con almeno due elementi coerenti tra loro, per esempio proteina o polpetta piu crema, salsa o verdura.',
+        'Se la modalita e Chef mode: scegli la ricetta piu sfidante che gli ingredienti consentono davvero, sfruttando i seed caricati e la knowledge base tecnica; aggiungi un tocco gourmet reale e una chiusura di impiattamento.',
+        'Se la modalita e Chef mode: scrivi il procedimento con almeno 3 passaggi concreti e un ultimo passaggio dedicato a finitura o impiattamento.',
+        'Se la modalita e Salvafrigo: usa come priorita assoluta gli ingredienti disponibili e la riduzione dello spreco, anche a costo di rinunciare a complessita estetica.',
+        'La ricetta deve sembrare davvero appartenere al tipo di pasto richiesto: non produrre una cena che sembra uno snack, una colazione che sembra un pranzo, o uno spuntino che sembra un piatto completo.',
         'Se sono presenti IMC, fabbisogno, piano calorico e proteine g/kg, usali come struttura del ragionamento: non limitarti a citare i numeri, fai in modo che influenzino porzioni, densita energetica, scelta della proteina e composizione del piatto.',
         'Distingui chiaramente il fabbisogno di mantenimento dall apporto del piano: una ricetta non deve per forza coprire tutto il fabbisogno, ma deve essere coerente con il piano giornaliero e con la quota proteica del profilo.',
         'Se la richiesta o gli ingredienti fanno pensare a una colazione o a un pasto rapido, puoi usare la logica professionale delle alternative equivalenti: una base proteica, una quota carboidrati selezionata, eventuale frutta o grassi buoni, e almeno 2-3 varianti coerenti nello stesso ragionamento.',
+        'Gli esempi interni settimanali non devono comparire nella risposta finale: servono solo per orientare struttura, ingredienti, combinazioni e buon senso nutrizionale.',
+        'Gli esempi interni specifici del tipo di pasto servono a evitare errori di formato: per esempio colazioni che sembrano pranzi o spuntini che sembrano cene.',
         'Non trattare supplementi, attesa della fame o equivalenze di frutta come obblighi: usali solo come spunti contestualizzati, prudenti e coerenti con il profilo.',
         'Se il contesto suggerisce un pranzo o piatto unico, puoi usare la logica professionale del pranzo: ordine del pasto, cereali o pasta o equivalenti, legumi o edamame o altra quota compatibile, verdure e olio EVO dichiarato. L eventuale nota dolce finale non e mai automatica.',
         'Se il contesto suggerisce una cena o un secondo piatto, puoi usare la logica professionale della cena: apertura con verdure crude, nucleo proteico scelto in una famiglia ruotabile tra uova, tofu, tempeh, latticini light o burger vegetali proteici, quota glucidica semplice e olio EVO dichiarato.',
@@ -1868,7 +2544,7 @@ async function generateRecipesWithAI(payload) {
         'Ogni ricetta deve essere dimensionata per il Numero Persone indicato sopra: non dare porzioni standard da 1 se l utente ha chiesto 2, 3 o 4 persone.',
         'Se il profilo non richiede approcci specialistici, non forzare riferimenti a low FODMAP, fermentazioni, amatriciana o altri temi non pertinenti.',
         'Evita nomi vaghi come bowl creativa, teglia furba o padellata smart se puoi proporre un piatto piu riconoscibile e utile.',
-        'La quarta ricetta Salvafrigo puo essere la piu banale, ma deve essere la piu utile e chiaramente anti-spreco.'
+        'Restituisci solo il JSON finale, senza introduzioni, commenti o testo extra.'
     ].join('\n');
 
     const controller = new AbortController();
@@ -1913,12 +2589,20 @@ async function generateRecipesWithAI(payload) {
     const data = await completion.json();
     const content = data?.choices?.[0]?.message?.content;
     const parsed = extractJson(content);
-    const recipes = Array.isArray(parsed?.recipes)
-        ? assignRecipeSlots(parsed.recipes.map((recipe, index) => normalizeRecipe(recipe, index, relevantKnowledge.foodCompositionRefs)).filter(Boolean).slice(0, 4))
-            .map((recipe) => applyLunchContextToneToRecipe(recipe, payload.profile.lunchContextPreference))
+    const normalizedRecipes = Array.isArray(parsed?.recipes)
+        ? parsed.recipes.map((recipe, index) => normalizeRecipe(recipe, index, relevantKnowledge.foodCompositionRefs)).filter(Boolean)
         : [];
 
-    if (recipes.length !== 4) {
+    const assignedRecipe = assignRecipeToRequestedSlot(normalizedRecipes[0], payload.requestedMode);
+    if (!validateRecipeForRequestedMode(assignedRecipe, payload.requestedMode)) {
+        throw new Error('AI returned recipe without required grams, prep time, or step-by-step procedure');
+    }
+
+    const recipes = assignedRecipe
+        ? [applyLunchContextToneToRecipe(assignedRecipe, payload.profile.lunchContextPreference)]
+        : [];
+
+    if (recipes.length !== 1) {
         throw new Error('AI returned an invalid recipes payload');
     }
 
@@ -1927,6 +2611,7 @@ async function generateRecipesWithAI(payload) {
         meta: {
             source: 'ai',
             model,
+            requestedMode: payload.requestedMode,
             lunchContext: payload.profile.lunchContextPreference
         }
     };
@@ -1977,6 +2662,7 @@ exports.handler = async (event) => {
             meta: {
                 source: 'fallback',
                 reason: 'AI live temporaneamente non disponibile',
+                requestedMode: payload.requestedMode,
                 excludedIngredients: payload.excludedIngredients,
                 lunchContext: payload.profile.lunchContextPreference
             }

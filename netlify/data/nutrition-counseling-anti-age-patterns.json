@@ -1,0 +1,72 @@
+{
+  "version": "1.0",
+  "category": "metodo-ragionamento-nutrizionale-anti-age",
+  "overview": {
+    "summary": "Un approccio anti-age non promette scorciatoie magiche: parte da alimentazione equilibrata, attivita fisica, idratazione, controllo dello stress e riduzione delle abitudini che accelerano il danno ossidativo.",
+    "principles": [
+      "L obiettivo e sostenere lucidita, tono generale, salute cardiovascolare e qualita dei tessuti riducendo carico ossidativo e stress cronico.",
+      "La dieta anti-age privilegia alimenti comuni e accessibili, senza dipendere da integratori o ingredienti esotici.",
+      "Va sempre adattata al profilo individuale, alla glicemia, all attivita fisica, all eta e al contesto clinico."
+    ]
+  },
+  "lifestyle_logic": {
+    "summary": "L alimentazione anti-age funziona meglio quando si inserisce in uno stile di vita coerente.",
+    "key_points": [
+      "Mantenersi fisicamente attivi aiuta ossigenazione, muscoli e benessere generale.",
+      "Ridurre o eliminare fumo, eccesso di alcol e stress cronico riduce la pressione ossidativa sulle cellule.",
+      "Il carico proteico animale non va spinto inutilmente: meglio una rotazione piu intelligente e sobria."
+    ]
+  },
+  "protein_and_fat_logic": {
+    "summary": "Per una logica anti-age e utile contenere l eccesso di proteine animali e favorire fonti piu protettive.",
+    "patterns": [
+      "Riduci l eccesso di proteine animali, soprattutto se ripetitive e poco variate.",
+      "Quando scegli pesce, privilegia quello ricco di Omega 3 come salmone e pesce azzurro.",
+      "Aumenta la presenza di legumi, frutta secca e olio EVO dentro pasti equilibrati."
+    ]
+  },
+  "hydration_and_antioxidants": {
+    "summary": "Idratazione, frutta e verdura sono assi centrali per un approccio anti-age.",
+    "key_points": [
+      "L idratazione va mantenuta costante con acqua e alimenti naturalmente ricchi di acqua come frutta e verdura.",
+      "Frutta e ortaggi ricchi di polifenoli aiutano a contrastare stress ossidativo e infiammazione di basso grado.",
+      "I polifenoli possono contribuire anche a un miglior controllo del profilo lipidico dentro una dieta complessivamente sana."
+    ]
+  },
+  "polyphenol_sources": {
+    "summary": "Flavonoidi, fenoli e tannini possono essere richiamati tramite alimenti quotidiani e stagionali.",
+    "examples": [
+      "agrumi, legumi, uva rossa, te e cioccolato fondente come fonti di flavonoidi",
+      "olio EVO, caffe, ciliegie, mirtilli, broccoli e spinaci come fonti fenoliche utili",
+      "melograno, uva rossa, mele cotogne e mirtilli rossi come fonti di tannini"
+    ]
+  },
+  "meal_structure_logic": {
+    "summary": "I pasti anti-age devono restare completi e bilanciati, non solo ricchi di alimenti considerati salutari.",
+    "principles": [
+      "Associa legumi e frutta secca a cereali integrali o altre basi amidacee ben tollerate, con attenzione al carico glicemico.",
+      "Privilegia frutta a basso indice glicemico negli spuntini quando il contesto lo richiede.",
+      "Mantieni sempre leggibili verdure, grassi buoni e fonti proteiche coerenti con il profilo."
+    ]
+  },
+  "guardrails": {
+    "summary": "Le semplificazioni divulgative vanno trattate con prudenza.",
+    "principles": [
+      "Non presentare la dieta anti-age come cura o protocollo medico personalizzato.",
+      "Non trasformare esempi settimanali anti-age in regole rigide da ripetere identiche ogni settimana.",
+      "Se compaiono medie caloriche o ripartizioni macro semplificate, trattale come spunti divulgativi e non come target universali."
+    ]
+  },
+  "chef_use": {
+    "when_relevant": [
+      "Quando il profilo riguarda eta adulta avanzata o benessere a lungo termine.",
+      "Quando il piano o la ricetta devono dare piu spazio a idratazione, polifenoli, Omega 3, legumi e verdure.",
+      "Quando conviene alleggerire il ruolo di carne, alcol e proteine animali ripetitive."
+    ],
+    "how_to_use": [
+      "Usa il modulo come metodo di orientamento e non come testo da copiare.",
+      "Traduci i principi anti-age in pasti concreti, sobri, ricchi di vegetali e con grassi buoni ben leggibili.",
+      "Mantieni sempre il pasto completo e realistico, non ideologico o eccessivamente restrittivo."
+    ]
+  }
+}

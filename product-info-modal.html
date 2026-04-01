@@ -1,0 +1,21 @@
+<!-- Modal per info prodotto scansionato -->
+<div id="product-info-modal" style="display:none;position:fixed;z-index:1000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);justify-content:center;align-items:center;">
+  <div style="background:#fff;padding:2rem 1.5rem;border-radius:12px;max-width:400px;width:90%;box-shadow:0 2px 16px rgba(0,0,0,0.2);position:relative;">
+    <button id="close-product-info" style="position:absolute;top:10px;right:10px;font-size:1.2rem;background:none;border:none;cursor:pointer;">&times;</button>
+    <h2 id="modal-product-name">Prodotto</h2>
+    <p id="modal-product-brand" style="color:#666;font-size:1rem;margin-bottom:1rem;"></p>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:1rem;">
+      <thead>
+        <tr style="background:#f5f5f5;">
+          <th style="text-align:left;padding:4px 8px;">Nutriente</th>
+          <th style="text-align:right;padding:4px 8px;">per 100g</th>
+        </tr>
+      </thead>
+      <tbody id="modal-nutrition-table">
+        <!-- Valori nutrizionali qui -->
+      </tbody>
+    </table>
+    <div id="modal-nutriscore" style="margin-bottom:0.5rem;"></div>
+    <div id="modal-product-note" style="font-size:0.95rem;color:#888;"></div>
+  </div>
+</div>

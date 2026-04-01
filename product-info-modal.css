@@ -1,0 +1,9 @@
+/* Modal prodotto scansionato */
+#product-info-modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+#product-info-modal.active { display: flex; }
+#product-info-modal .modal-content { background: #fff; padding: 2rem 1.5rem; border-radius: 12px; max-width: 400px; width: 90%; box-shadow: 0 2px 16px rgba(0,0,0,0.2); position: relative; }
+#product-info-modal h2 { margin-top: 0; }
+#close-product-info { position: absolute; top: 10px; right: 10px; font-size: 1.2rem; background: none; border: none; cursor: pointer; }
+#modal-nutrition-table td, #modal-nutrition-table th { padding: 4px 8px; }
+#modal-nutrition-table th { background: #f5f5f5; }
+#modal-nutriscore { font-weight: bold; font-size: 1.1rem; }

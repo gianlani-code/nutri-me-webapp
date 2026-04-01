@@ -1,3 +1,146 @@
+/* Bottoni più piccoli solo per la domanda motivazione (traccia nutrienti) */
+.chip-group[data-type="motivation"] .chip {
+    font-size: 0.87rem;
+    padding-left: 2px;
+    padding-right: 2px;
+    min-width: 90px;
+    max-width: 28%;
+    white-space: normal;
+    word-break: break-word;
+}
+/* Evidenziazione bottone selezionato */
+.chip.selected,
+.choice-btn.selected,
+.confirm-modal-actions > button.selected {
+    background: none !important;
+    border-color: inherit !important;
+    color: #1b5e20 !important; /* solo il testo si colora */
+    transition: none !important;
+}
+/* Forza i bottoni del gruppo genere a non andare a capo e riduce la dimensione del testo */
+.chip-group[data-type="genere"] .chip {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.92rem;
+    padding-left: 2px;
+    padding-right: 2px;
+}
+/*
+Esempio di utilizzo delle caselle di selezione:
+
+<div class="choice-group">
+    <button class="choice-btn">Donna</button>
+    <button class="choice-btn">Uomo</button>
+    <button class="choice-btn">Altro/Preferisco<br>non specificare</button>
+</div>
+*/
+
+
+
+/* Contenitori di gruppi di bottoni uniformi */
+.chip-group,
+.choice-group,
+.meal-selector,
+.confirm-modal-actions {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 10px;
+    width: 100%;
+    align-items: stretch;
+    margin: 10px 0 18px 0;
+}
+
+
+.chip,
+.choice-btn,
+.confirm-modal-actions > button {
+    flex: 1;
+    width: auto;
+    min-width: 0;
+    max-width: 100%;
+    background: #f6f9fc;
+    color: #2d3a4a;
+    border: 2px solid #e3eaf2;
+    border-radius: 12px;
+    padding: 10px 4px;
+    font-size: 1.05rem;
+    font-family: inherit;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: none;
+    transition: none !important;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.2;
+    white-space: normal;
+    word-break: break-word;
+    height: 44px;
+}
+
+.chip:hover, .chip:focus,
+.choice-btn:hover, .choice-btn:focus,
+.confirm-modal-actions > button:hover, .confirm-modal-actions > button:focus {
+    border-color: #b5c7d8;
+    background: #f0f4fa;
+}
+/*
+Esempio di utilizzo dei pulsanti:
+
+<div class="custom-buttons">
+    <button class="custom-btn"><span class="icon">👍</span> 184</button>
+    <button class="custom-btn"><span class="icon">👎</span></button>
+    <button class="custom-btn"><span class="icon">🔗</span> Condividi</button>
+    <button class="custom-btn"><span class="icon">🔖</span> Salva</button>
+    <button class="custom-btn"><span class="icon">✂️</span> Clip</button>
+</div>
+*/
+/* Pulsanti stile moderno simile all'esempio fornito */
+.custom-buttons {
+    display: flex;
+    gap: 12px;
+    margin: 16px 0;
+}
+
+.custom-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(40, 55, 40, 0.85); /* sfondo scuro trasparente */
+    color: #fff;
+    border: none;
+    border-radius: 22px;
+    padding: 6px 18px;
+    font-size: 1rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: none !important;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.custom-btn:hover {
+    background: rgba(60, 80, 60, 0.95);
+}
+
+.custom-btn .icon {
+    display: flex;
+    align-items: center;
+    font-size: 1.1em;
+}
+
+/* Esempio di icone con font-awesome o simili, oppure SVG inline */
+/*
+<div class="custom-buttons">
+    <button class="custom-btn"><span class="icon">👍</span> 184</button>
+    <button class="custom-btn"><span class="icon">👎</span></button>
+    <button class="custom-btn"><span class="icon">🔗</span> Condividi</button>
+    <button class="custom-btn"><span class="icon">🔖</span> Salva</button>
+    <button class="custom-btn"><span class="icon">✂️</span> Clip</button>
+</div>
+*/
 /* Griglia selezione nel Wizard */
 .avatar-selection-grid {
     display: grid;
@@ -15,7 +158,7 @@
     border-radius: 15px;
     border: 3px solid transparent;
     cursor: pointer;
-    transition: 0.3s;
+    transition: none !important;
 }
 
 .avatar-selection-grid img.selected {
@@ -93,9 +236,9 @@
 
 .brand-logo {
     display: block;
-    max-width: 220px;
+    max-width: 180px;
     width: 100%;
-    margin: 0 auto 8px;
+    margin: 0 auto 6px;
     object-fit: contain;
 }
 
@@ -332,6 +475,12 @@
 }
 
 /* rimosso stili vecchi, usiamo il layout compatto e centratto definito sopra */
+html {
+    font-size: 14px;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
 body {
     margin: 0;
     font-family: 'Inter', sans-serif;
@@ -580,7 +729,7 @@ h1, h2, h3, h4 {
 }
 
 .nav-item .icon {
-    font-size: 1.4rem;
+    font-size: 1.2rem;
     transition: transform 0.2s ease;
     display: flex;
     align-items: center;
@@ -597,7 +746,7 @@ h1, h2, h3, h4 {
     border-radius: 16px;
     padding: 12px;
     margin-bottom: 8px;
-    box-shadow: 0 4px 12px rgba(21, 41, 61, 0.08);
+    width: 74px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -610,7 +759,7 @@ h1, h2, h3, h4 {
     border-radius: 14px;
     padding: 10px 14px;
     min-width: 95px;
-    text-align: center;
+    gap: 8px;
     box-shadow: 0 8px 20px rgba(20, 38, 74, 0.08);
 }
 
@@ -635,15 +784,11 @@ h1, h2, h3, h4, h5 { margin: 0; font-family: 'Poppins', sans-serif; }
     margin-bottom: 28px;
 }
 
-#pasti-rapidi .ai-mode-panel {
-    margin-top: 28px;
-}
-
 .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 8px;
-    padding: 12px;
+    transition: transform 0.2s ease;
     background: var(--panel-bg);
 }
 
@@ -658,15 +803,15 @@ h1, h2, h3, h4, h5 { margin: 0; font-family: 'Poppins', sans-serif; }
 .home-profile-summary {
     width: 100%;
     margin-bottom: 14px;
-}
-
+    width: 46px;
+    height: 46px;
 .diary-profile-summary strong {
     font-family: 'Poppins', sans-serif;
     display: inline;
     margin-right: 4px;
 }
-
-.cal-header {
+  width: 30px;
+  height: 30px;
     display: grid;
     grid-template-columns: 44px minmax(0, 1fr) 44px;
     align-items: center;
@@ -1033,6 +1178,52 @@ h1, h2, h3, h4, h5 { margin: 0; font-family: 'Poppins', sans-serif; }
     margin-bottom: 8px;
 }
 
+.ai-recipe-card-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+.ai-recipe-mealtype {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.ai-recipe-mealtype-note {
+    font-size: 0.8rem;
+    color: #60748a;
+    line-height: 1.35;
+}
+
+.ai-recipe-mealtype-breakfast {
+    background: #fff3dd;
+    color: #a16207;
+}
+
+.ai-recipe-mealtype-lunch {
+    background: #e7f1ff;
+    color: #1d4f91;
+}
+
+.ai-recipe-mealtype-dinner {
+    background: #edf5ee;
+    color: #22603b;
+}
+
+.ai-recipe-mealtype-snack {
+    background: #fbeaf2;
+    color: #a53d6d;
+}
+
 .ai-recipe-summary,
 .ai-recipe-fit,
 .ai-recipe-waste {
@@ -1040,6 +1231,53 @@ h1, h2, h3, h4, h5 { margin: 0; font-family: 'Poppins', sans-serif; }
     color: #425a76;
     font-size: 0.9rem;
     line-height: 1.45;
+}
+
+.ai-recipe-insight {
+    margin: 0 0 10px;
+    padding: 10px 12px;
+    border-radius: 14px;
+    border: 1px solid #dbe7f3;
+    background: #f8fbff;
+}
+
+.ai-recipe-insight strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #1f4f88;
+}
+
+.ai-recipe-insight p,
+.ai-plan-theme {
+    margin: 0;
+    color: #425a76;
+    font-size: 0.88rem;
+    line-height: 1.45;
+}
+
+.ai-recipe-insight-chef {
+    background: linear-gradient(180deg, #f5fbf7 0%, #eef8f2 100%);
+    border-color: #cfe8da;
+}
+
+.ai-recipe-insight-bio {
+    background: linear-gradient(180deg, #f7f8ff 0%, #eef2ff 100%);
+    border-color: #d6dcfb;
+}
+
+.ai-plan-theme {
+    display: inline-flex;
+    align-items: center;
+    padding: 7px 10px;
+    border-radius: 999px;
+    background: #eef6ff;
+    color: #1f5fa5;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.ai-plan-theme-main {
+    margin-top: 8px;
 }
 
 .ai-recipe-section {
@@ -1471,14 +1709,14 @@ h1, h2, h3, h4, h5 { margin: 0; font-family: 'Poppins', sans-serif; }
     color: #607694;
 }
 
-.qty-control {
+ qty-control {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto auto;
     gap: 10px;
     align-items: center;
 }
 
-.qty-control span {
+ qty-control span {
     color: #607694;
     font-weight: 700;
 }
@@ -1637,13 +1875,13 @@ input[type='text']:focus, input[type='number']:focus, select:focus {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
     border: none;
     border-radius: 999px;
     background: #eef4fb;
     color: #49627f;
-    font-size: 0.95rem;
+    font-size: 0.8rem;
     font-weight: 700;
     cursor: pointer;
     z-index: 1;
@@ -1678,19 +1916,19 @@ input[type='text']:focus, input[type='number']:focus, select:focus {
 .macros-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 12px;
-    margin: 14px 16px 8px;
+    gap: 10px;
+    margin: 12px 16px 6px;
 }
 
 .macro-card {
     background: #ffffff;
     border: 1px solid #e6ecf4;
-    border-radius: 20px;
+    border-radius: 18px;
     box-shadow: 0 10px 22px rgba(24, 52, 91, 0.08);
-    padding: 14px;
+    padding: 11px 10px;
     position: relative;
     overflow: hidden;
-    min-height: 96px;
+    min-height: 82px;
 }
 
 .macro-card.carb::after,
@@ -1711,7 +1949,7 @@ input[type='text']:focus, input[type='number']:focus, select:focus {
 .macro-card .macro-info {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 3px;
     align-items: center;
     width: 100%;
     z-index: 1;
@@ -1730,9 +1968,9 @@ input[type='text']:focus, input[type='number']:focus, select:focus {
 
 .macro-card .macro-info label {
     font-family: 'Poppins', sans-serif;
-    font-size: 0.72rem;
+    font-size: 0.66rem;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.35px;
     color: #7f93a6;
     font-weight: 700;
     display: block;
@@ -1748,8 +1986,8 @@ input[type='text']:focus, input[type='number']:focus, select:focus {
 
 .macro-card .macro-info span {
     font-family: 'Poppins', sans-serif;
-    font-size: 0.96rem;
-    margin-bottom: 16px;
+    font-size: 0.84rem;
+    margin-bottom: 12px;
     color: #243f5e;
     white-space: nowrap;
     line-height: 1.2;
@@ -1771,9 +2009,9 @@ input[type='text']:focus, input[type='number']:focus, select:focus {
 
 .chart-wrapper {
     position: relative;
-    width: 250px;
-    height: 250px;
-    margin: 20px auto;
+    width: 220px;
+    height: 220px;
+    margin: 16px auto;
 }
 
 .chart-center-text {
@@ -1789,7 +2027,7 @@ input[type='text']:focus, input[type='number']:focus, select:focus {
 
 .chart-center-text span {
     font-family: 'Poppins', sans-serif;
-    font-size: 2.8rem;
+    font-size: 2.3rem;
     font-weight: 700;
     color: var(--text);
     line-height: 1;
@@ -1797,14 +2035,14 @@ input[type='text']:focus, input[type='number']:focus, select:focus {
 
 .chart-center-text small {
     font-family: 'Inter', sans-serif;
-    font-size: 0.9rem;
+    font-size: 0.78rem;
     color: var(--muted);
     font-weight: 600;
     text-transform: uppercase;
-    margin-top: 5px;
+    margin-top: 4px;
 }
 
-.chart-container { width: 260px; height: 260px; margin: 0 auto; position: relative; }
+.chart-container { width: 226px; height: 226px; margin: 0 auto; position: relative; }
 
 .micro-targets {
     margin: 24px 16px 0;
@@ -2033,10 +2271,7 @@ input[type='text']:focus, input[type='number']:focus, select:focus {
 }
 
 hr.spacer {
-    border: none;
-    height: 1px;
-    background: linear-gradient(to right, rgba(106, 125, 148, 0), rgba(144, 161, 187, 0.4), rgba(106, 125, 148, 0));
-    margin: 20px 0;
+    display: none !important;
 }
 
 #home-screen {
@@ -2206,6 +2441,90 @@ hr.spacer {
     color: #94a3b8;
     margin: 10px 0 0;
     text-align: center;
+}
+
+.product-info-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 20, 40, 0.68);
+    z-index: 9100;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+.product-info-box {
+    position: relative;
+    background: #fff;
+    border-radius: 22px;
+    padding: 24px 20px 20px;
+    width: 100%;
+    max-width: 460px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 24px 48px rgba(10, 20, 50, 0.22);
+}
+
+.product-info-image {
+    display: block;
+    width: 100%;
+    max-height: 180px;
+    object-fit: contain;
+    border-radius: 16px;
+    background: linear-gradient(180deg, #f8fbff 0%, #eef5fb 100%);
+    border: 1px solid #e2e8f0;
+    margin: 0 0 16px;
+    padding: 10px;
+}
+
+.product-info-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 16px;
+}
+
+.product-info-meta-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.product-info-section {
+    margin-top: 12px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+
+.product-info-section strong {
+    display: block;
+    margin-bottom: 6px;
+    color: #1e293b;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.product-info-section p {
+    margin: 0;
+    color: #475569;
+    font-size: 0.88rem;
+    line-height: 1.45;
+}
+
+.product-info-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    margin-top: 16px;
 }
 
 .scan-ai-loading {
@@ -2452,6 +2771,11 @@ hr.spacer {
 [data-theme="dark"] .ai-recipe-tag   { background: rgba(62, 207, 142, 0.12);  color: #3ecf8e; }
 [data-theme="dark"] .ai-recipe-tag-workday { background: rgba(96, 165, 250, 0.16); color: #93c5fd; }
 [data-theme="dark"] .ai-recipe-tag-free-day { background: rgba(251, 146, 60, 0.16); color: #fdba74; }
+[data-theme="dark"] .ai-recipe-mealtype-note { color: #94a3b8; }
+[data-theme="dark"] .ai-recipe-mealtype-breakfast { background: rgba(245, 158, 11, 0.16); color: #fcd34d; }
+[data-theme="dark"] .ai-recipe-mealtype-lunch { background: rgba(59, 130, 246, 0.16); color: #93c5fd; }
+[data-theme="dark"] .ai-recipe-mealtype-dinner { background: rgba(34, 197, 94, 0.14); color: #86efac; }
+[data-theme="dark"] .ai-recipe-mealtype-snack { background: rgba(236, 72, 153, 0.16); color: #f9a8d4; }
 [data-theme="dark"] .ai-recipe-card h5,
 [data-theme="dark"] .ai-recipe-section strong,
 [data-theme="dark"] .ai-plan-stat strong { color: #e2e8f0; }
@@ -2461,6 +2785,32 @@ hr.spacer {
 [data-theme="dark"] .ai-plan-stat span,
 [data-theme="dark"] .ai-plan-items,
 [data-theme="dark"] .ai-plan-note-list { color: #94a3b8; }
+
+[data-theme="dark"] .ai-recipe-insight {
+    background: #1a2233;
+    border-color: rgba(255,255,255,0.07);
+}
+
+[data-theme="dark"] .ai-recipe-insight-chef {
+    background: rgba(62, 207, 142, 0.08);
+}
+
+[data-theme="dark"] .ai-recipe-insight-bio {
+    background: rgba(129, 140, 248, 0.11);
+}
+
+[data-theme="dark"] .ai-recipe-insight strong,
+[data-theme="dark"] .ai-plan-theme {
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .ai-recipe-insight p {
+    color: #94a3b8;
+}
+
+[data-theme="dark"] .ai-plan-theme {
+    background: rgba(96, 165, 250, 0.14);
+}
 
 /* -- Dark Mode: Progress Bars -- */
 [data-theme="dark"] .progress-container { background: #1e2638; }
@@ -2662,8 +3012,8 @@ hr.spacer {
 
 /* -- Lucide Icons in Nav -- */
 .nav-item .icon svg {
-  width: 26px;
-  height: 26px;
+    width: 22px;
+    height: 22px;
   stroke-width: 1.75;
   stroke: #334155;
   transition: transform 0.2s ease, stroke 0.2s ease, opacity 0.2s ease;
@@ -2804,8 +3154,10 @@ hr.spacer {
 /* Scan trigger matches Lucide icon alignment */
 .scan-trigger-btn i[data-lucide] {
   display: inline-block;
+    width: 12px;
+    height: 12px;
   vertical-align: middle;
-  margin-right: 5px;
+    margin-right: 4px;
 }
 
 /* == CSS appended successfully == */

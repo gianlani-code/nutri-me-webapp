@@ -1,3 +1,1416 @@
+// Mostra/nasconde il campo sport in base al numero di allenamenti
+document.addEventListener('DOMContentLoaded', function() {
+    var workoutsInput = document.getElementById('wizard-workouts');
+    var sportDetails = document.getElementById('wizard-sport-details');
+    if (workoutsInput && sportDetails) {
+        function toggleSportField() {
+            if (parseInt(workoutsInput.value, 10) >= 1) {
+                sportDetails.style.display = 'block';
+            } else {
+                sportDetails.style.display = 'none';
+                document.getElementById('wizard-sport-name').value = '';
+            }
+        }
+        workoutsInput.addEventListener('input', toggleSportField);
+        toggleSportField();
+    }
+
+    // --- TIPO DI PASTO SOLO SE "RICETTA SU MISURA" ---
+    var aiModeSelector = document.getElementById('ai-mode-selector');
+    var mealTypeGroup = document.getElementById('chef-mode-meal-type-group');
+    function toggleMealTypeGroup() {
+        if (aiModeSelector && mealTypeGroup) {
+            if (aiModeSelector.value === 'recipe') {
+                mealTypeGroup.style.display = '';
+            } else {
+                mealTypeGroup.style.display = 'none';
+                // opzionale: resetta la selezione
+                var hiddenMealType = document.getElementById('chef-recipe-meal-type');
+                if (hiddenMealType) hiddenMealType.value = '';
+                // rimuovi highlight dai chip
+                var chips = mealTypeGroup.querySelectorAll('.chip');
+                chips.forEach(function(chip) { chip.classList.remove('selected'); });
+            }
+        }
+    }
+    if (aiModeSelector && mealTypeGroup) {
+        aiModeSelector.addEventListener('change', toggleMealTypeGroup);
+        // anche click sui chip che cambiano il valore
+        var aiModeChips = document.querySelectorAll('.chip[data-value="recipe"], .chip[data-value="daily"], .chip[data-value="weekly"]');
+        aiModeChips.forEach(function(chip) {
+            chip.addEventListener('click', function() {
+                setTimeout(toggleMealTypeGroup, 0);
+            });
+        });
+        // inizializza stato
+        toggleMealTypeGroup();
+    }
+});
+// --- MODAL INFO PRODOTTO SCANSIONATO ---
+function formatScanMacroValue(value, unit, decimals = 1) {
+    const numericValue = Number(value || 0);
+    if (!Number.isFinite(numericValue)) {
+        return `0 ${unit}`;
+    }
+
+    if (decimals === 0) {
+        return `${Math.round(numericValue)} ${unit}`;
+    }
+
+    return `${numericValue.toFixed(decimals)} ${unit}`;
+}
+
+function closeProductInfoModal() {
+    const modal = document.getElementById('product-info-modal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+function openScannedProductAddPanel() {
+    if (!selectedFood) {
+        closeProductInfoModal();
+        return;
+    }
+
+    const addPanel = document.getElementById('add-panel');
+    const selectedName = document.getElementById('selected-name');
+    const qty = document.getElementById('qty');
+
+    if (addPanel) {
+        addPanel.style.display = 'block';
+    }
+
+    if (selectedName) {
+        selectedName.innerText = selectedFood.nome || 'Prodotto scannerizzato';
+    }
+
+    if (qty) {
+        qty.value = 100;
+    }
+
+    updateSelectedFoodPreview();
+    closeProductInfoModal();
+}
+
+function showProductInfoModal(scanResult) {
+    if (!scanResult || typeof scanResult !== 'object') {
+        return;
+    }
+
+    let modal = document.getElementById('product-info-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'product-info-modal';
+        modal.className = 'product-info-overlay';
+        modal.innerHTML = '<div class="product-info-box" id="product-info-box"></div>';
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) closeProductInfoModal();
+        });
+        document.body.appendChild(modal);
+    }
+
+    const box = document.getElementById('product-info-box');
+    const ns = String(scanResult.nutriscore || '?').toUpperCase();
+    const nutrients = scanResult.per_100g || {};
+    const metaItems = [
+        scanResult.brand ? `<span class="product-info-meta-pill">Marca: ${escapeHtml(scanResult.brand)}</span>` : '',
+        scanResult.barcode ? `<span class="product-info-meta-pill">Barcode: ${escapeHtml(scanResult.barcode)}</span>` : '',
+        scanResult.quantity ? `<span class="product-info-meta-pill">Formato: ${escapeHtml(scanResult.quantity)}</span>` : '',
+        scanResult.category ? `<span class="product-info-meta-pill">Categoria: ${escapeHtml(scanResult.category)}</span>` : '',
+        scanResult.sourceLabel ? `<span class="product-info-meta-pill">Fonte: ${escapeHtml(scanResult.sourceLabel)}</span>` : ''
+    ].filter(Boolean).join('');
+
+    box.innerHTML =
+        '<button class="scan-ai-close" onclick="closeProductInfoModal()">✕</button>' +
+        (scanResult.imageUrl ? `<img src="${escapeHtml(scanResult.imageUrl)}" alt="${escapeHtml(scanResult.alimento || 'Prodotto')}" class="product-info-image">` : '') +
+        `<h3 class="scan-ai-title">${escapeHtml(scanResult.alimento || scanResult.nome || 'Prodotto')}</h3>` +
+        (scanResult.descrizione ? `<p class="scan-ai-desc">${escapeHtml(scanResult.descrizione)}</p>` : '') +
+        '<div class="nutriscore-wrap">' +
+        '<span class="nutriscore-label">NutriScore</span>' +
+        `<span class="nutriscore-badge nutriscore-${ns.toLowerCase()}">${escapeHtml(ns)}</span>` +
+        '</div>' +
+        (metaItems ? `<div class="product-info-meta">${metaItems}</div>` : '') +
+        '<table class="scan-ai-table">' +
+        '<thead><tr><th>Nutriente</th><th>per 100 g</th></tr></thead>' +
+        '<tbody>' +
+        `<tr><td>Energia</td><td>${formatScanMacroValue(nutrients.kcal, 'kcal', 0)}</td></tr>` +
+        `<tr><td>Proteine</td><td>${formatScanMacroValue(nutrients.proteine, 'g')}</td></tr>` +
+        `<tr><td>Carboidrati</td><td>${formatScanMacroValue(nutrients.carboidrati, 'g')}</td></tr>` +
+        `<tr class="indent-row"><td>&nbsp;&nbsp;di cui zuccheri</td><td>${formatScanMacroValue(nutrients.zuccheri, 'g')}</td></tr>` +
+        `<tr><td>Grassi</td><td>${formatScanMacroValue(nutrients.grassi, 'g')}</td></tr>` +
+        `<tr class="indent-row"><td>&nbsp;&nbsp;di cui saturi</td><td>${formatScanMacroValue(nutrients.grassi_saturi, 'g')}</td></tr>` +
+        `<tr><td>Fibre</td><td>${formatScanMacroValue(nutrients.fibre, 'g')}</td></tr>` +
+        `<tr><td>Sodio</td><td>${formatScanMacroValue(nutrients.sodio_mg, 'mg', 0)}</td></tr>` +
+        '</tbody></table>' +
+        (scanResult.ingredients ? `<div class="product-info-section"><strong>Ingredienti</strong><p>${escapeHtml(scanResult.ingredients)}</p></div>` : '') +
+        (scanResult.note ? `<p class="scan-ai-note">${escapeHtml(scanResult.note)}</p>` : '') +
+        '<div class="product-info-actions">' +
+        '<button type="button" class="btn-main" onclick="openScannedProductAddPanel()">Aggiungi al diario</button>' +
+        '<button type="button" class="btn-secondary" onclick="closeProductInfoModal()">Chiudi</button>' +
+        '</div>' +
+        `<p class="scan-ai-disclaimer">${escapeHtml(scanResult.source === 'kaggle' ? 'Valori nutrizionali e dati prodotto recuperati dal dataset locale.' : 'Valori nutrizionali e dati prodotto recuperati da OpenFoodFacts.')}</p>`;
+
+    modal.style.display = 'flex';
+}
+// --- FINE MODAL ---
+// --- ESEMPI PRATICI DI UTILIZZO ---
+
+const GEMINI_PROCEDURE_STYLE_GUIDE = `
+Standard obbligatorio per il campo procedimento:
+- il procedimento deve imitare il tono e la precisione di una vera scheda ricetta italiana;
+- ogni step deve essere autosufficiente, operativo e specifico;
+- ogni step deve iniziare con un verbo guida o un'etichetta d'azione, ad esempio: Prepara:, Trita:, Cuoci:, Sciacqua:, Frulla:, Stendi:, Assembla:, Inforna:, Manteca:, Servi:;
+- ogni step deve includere almeno due tra questi elementi concreti: utensile o recipiente, taglio o lavorazione, intensita della fiamma o temperatura, tempo indicativo, segnale visivo o tattile corretto;
+- non usare step riassuntivi o vaghi come "cuoci e servi", "prepara gli ingredienti", "assembla il piatto";
+- se la ricetta e di livello facile, gli step devono essere brevi ma molto pratici;
+- se la ricetta e di livello difficile, gli step devono includere preparazioni separate, riposi, assemblaggio e cottura finale quando necessario.
+
+Esempi di stile da imitare:
+1. "Prepara: Sbatti le uova con sale, pepe e un cucchiaio di latte in una ciotola ampia, finche il composto risulta uniforme e leggermente spumoso."
+2. "Scalda: Versa le verdure gia cotte in una padella da 24 cm con un filo d'olio e falle insaporire per 2 minuti a fuoco medio, mescolando per distribuire bene l'umidita residua."
+3. "Cuoci: Versa le uova sulle verdure, copri con coperchio e lascia rassodare a fuoco basso per 5-6 minuti; gira la frittata aiutandoti con il coperchio e completa la cottura per altri 2 minuti."
+4. "Manteca: Scola la pasta molto al dente direttamente nella padella, aggiungi poca acqua di cottura alla volta e fai saltare per 1 minuto, poi unisci l'olio restante fuori dal fuoco per ottenere una salsa lucida e cremosa."
+5. "Inforna: Cuoci in forno statico preriscaldato a 200 gradi per circa 30 minuti, finche la superficie appare asciutta e dorata ai bordi; sforna e lascia assestare 10 minuti prima di tagliare."
+`;
+
+const GEMINI_MASTER_CHEF_SYSTEM_PROMPT = `Sei un Master Chef esperto in nutrizione, specializzato in ricette sane, svuota-frigo e anti-spreco. Il tuo compito e generare ricette intelligenti, realistiche e fattibili, abbinando gli ingredienti in modo logico e gustoso.
+
+REGOLE FONDAMENTALI:
+1. Non inventare passaggi impossibili o tempi di cottura irreali.
+2. Usa misurazioni precise (grammi, cucchiai).
+3. Se la ricetta e "Salvafrigo", suggerisci come riutilizzare gli scarti in modo creativo.
+4. DEVI RISPETTARE TASSATIVAMENTE IL SEGUENTE FORMATO, senza aggiungere testo introduttivo o conclusivo fuori dal template:
+
+[NOME RICETTA IN MAIUSCOLO]
+Difficolta: [SEMPLICE / CHEF / INTERMEDIA] - [Categoria: es. SALVAFRIGO / PRANZO O CENA]
+[Breve descrizione o scopo della ricetta, max 2 righe]
+Ingredienti: [Elenco separato da virgole con quantita precise. Se appropriato includi i macro-nutrienti principali]
+Tempi: [es. 15 min preparazione + 20 min cottura]
+[Azione 1 es. Trita/Prepara/Metti in Ammollo o l azione specifica per quell alimento]: [Spiegazione del passaggio]
+[Azione 2 es. Cuoci]: [Spiegazione del passaggio]
+[Azione 3 es. Servi]: [Spiegazione del passaggio]
+Conservazione: [Come conservarlo e per quanto tempo]
+Consiglio: [Un suggerimento tecnico o nutrizionale]
+
+Compatibilita applicativa obbligatoria:
+- se la richiesta operativa dell applicazione impone JSON o un formato dati strutturato, mantieni tutte le regole qualitative sopra ma rispondi esattamente nel formato richiesto dall applicazione;
+- non aggiungere testo fuori dal formato richiesto;
+- le istruzioni di dominio da Master Chef hanno priorita sullo stile, ma il formato richiesto dall applicazione ha priorita sull impaginazione finale.`;
+
+const PROMPT_RICETTA_SU_MISURA = `
+Sei lo Chef-Nutrizionista ufficiale di NUTRI-ME.
+Devi ragionare internamente in piu passaggi come chef e nutrizionista, ma non devi mai mostrare il ragionamento. Niente spiegazioni fuori dal JSON finale.
+
+Compito:
+- crea una ricetta su misura partendo da dati utente, target calorico e proteico, dieta, allergie, intolleranze, patologie, ingrediente o pasto guida;
+- rispetta rigorosamente i vincoli clinici e dietetici;
+- proponi una tecnica di cottura sensata, domestica ma precisa, con attenzione a sapore, digeribilita e controllo calorico;
+- inserisci sempre una cottura_consigliata concreta e coerente con la ricetta;
+- inserisci sempre un tip_antispreco utile e realistico;
+- inserisci sempre un bioavailability_tip utile e concreto.
+
+Regole obbligatorie:
+- restituisci solo JSON valido, senza markdown, senza prefazioni, senza commenti;
+- la ricetta deve essere realistica, cucinabile e coerente con il tipo di pasto richiesto;
+- gli ingredienti devono avere grammature o quantita leggibili;
+- il procedimento deve essere un array di step reali, concreti e operativi, non generici, scritto nello stile della guida esempi sotto;
+- il procedimento deve contenere almeno 5 step e al massimo 8 step per Pranzo o Cena; almeno 4 step per Colazione o Spuntino;
+- il procedimento deve coprire l intero flusso del piatto: preparazione ingredienti, cottura principale, eventuale mantecatura o assemblaggio finale, servizio o rifinitura finale;
+- il procedimento deve includere obbligatoriamente: uno step di preparazione ingredienti, almeno uno step di cottura, uno step di finitura o regolazione finale, uno step di servizio o impiattamento;
+- almeno 3 step devono contenere tempi, temperatura o intensita della fiamma;
+- almeno 2 step devono citare esplicitamente utensili o recipienti;
+- ogni step deve dire cosa fare davvero: taglio, recipiente, intensita di fiamma o forno, ordine dei passaggi, minuti indicativi o segnali pratici di cottura;
+- ogni step deve iniziare con un verbo guida o etichetta d'azione come negli esempi;
+- evita formule vaghe come "cuoci fino a pronto" o "assembla il piatto": sii specifico;
+- calorie e macronutrienti devono essere numeri plausibili per l intera ricetta o porzione richiesta;
+- usa sempre una chiave annidata macro con proteine, carbo e grassi;
+- se un ingrediente non e compatibile coi vincoli, sostituiscilo senza discutere.
+
+Guida di stile obbligatoria per il procedimento:
+${GEMINI_PROCEDURE_STYLE_GUIDE}
+
+Output JSON obbligatorio, con queste sole chiavi:
+{
+  "titolo": "string",
+  "tempo_prep": "string o numero in minuti",
+    "tipo_pasto": "Colazione | Pranzo | Cena | Spuntino",
+    "difficolta": "Facile | Media | Difficile",
+  "calorie": number,
+    "macro": {
+        "proteine": number,
+        "carbo": number,
+        "grassi": number
+    },
+  "ingredienti": ["string", "string"],
+  "procedimento": ["step 1", "step 2"],
+    "cottura_consigliata": "string",
+    "tip_antispreco": "string",
+  "bioavailability_tip": "string"
+}
+`;
+
+const PROMPT_PIANO_GIORNALIERO = `
+Sei lo Chef-Nutrizionista ufficiale di NUTRI-ME.
+Devi ragionare internamente in piu passaggi come nutrizionista clinico e chef organizzatore, ma non devi mai mostrare il ragionamento. Niente testo fuori dal JSON finale.
+
+Compito:
+- genera un piano giornaliero coerente con profilo, stile di vita, dieta, allergie, intolleranze, patologie, target calorico e macro;
+- applica la crononutrizione: colazione piu densa e utile, pranzo energetico e funzionale, cena piu leggera e digeribile;
+- costruisci un filo logico anti-spreco tra i pasti quando possibile;
+- ogni pasto deve essere una vera mini-ricetta coerente con il momento della giornata.
+
+Regole obbligatorie:
+- restituisci solo JSON valido, senza markdown, senza commenti, senza testo extra;
+- l array pasti deve essere in ordine logico: Colazione, Spuntino, Pranzo, Cena; se serve un secondo spuntino, integralo nel piano ma mantieni ordine chiaro;
+- ogni elemento di pasti deve rispettare esattamente il formato JSON della singola ricetta;
+- ogni ricetta deve usare la chiave macro con proteine, carbo e grassi;
+- i procedimenti devono essere reali e collegati tra loro: se riusi una base o un ingrediente tra pranzo e cena, rendilo evidente nei passaggi;
+- ogni procedimento deve seguire la guida di stile sotto e usare step concreti con verbi guida, tempi, utensili e segnali di cottura;
+- daily_theme deve essere una stringa sintetica ma significativa;
+- evita combinazioni casuali: ogni giornata deve sembrare progettata da uno chef-nutrizionista.
+
+Guida di stile obbligatoria per i procedimenti:
+${GEMINI_PROCEDURE_STYLE_GUIDE}
+
+Output JSON obbligatorio:
+{
+  "daily_theme": "string",
+  "pasti": [
+    {
+      "titolo": "string",
+      "tempo_prep": "string o numero in minuti",
+            "tipo_pasto": "Colazione | Pranzo | Cena | Spuntino",
+            "difficolta": "Facile | Media | Difficile",
+      "calorie": number,
+            "macro": {
+                "proteine": number,
+                "carbo": number,
+                "grassi": number
+            },
+      "ingredienti": ["string"],
+      "procedimento": ["string"],
+            "cottura_consigliata": "string",
+            "tip_antispreco": "string",
+      "bioavailability_tip": "string"
+    }
+  ]
+}
+`;
+
+const PROMPT_PIANO_SETTIMANALE = `
+Sei lo Chef-Nutrizionista ufficiale di NUTRI-ME.
+Devi ragionare internamente in piu passaggi come strategist nutrizionale e chef meal planner, ma non devi mai mostrare il ragionamento. Niente testo fuori dal JSON finale.
+
+Compito:
+- genera una strategia alimentare settimanale da Lunedi a Domenica;
+- rispetta target, dieta, allergie, intolleranze, patologie e numero di pasti al giorno;
+- applica rotazione proteica sensata e distribuzione coerente dei macro su base settimanale;
+- mantieni logica anti-spreco, continuita di dispensa e realismo domestico.
+
+Regole obbligatorie:
+- restituisci solo JSON valido, senza markdown, senza commenti, senza testo extra;
+- weekly_strategy deve essere una spiegazione di due righe, sintetica ma professionale;
+- giorni deve contenere 7 elementi, in ordine da Lunedi a Domenica;
+- ogni giorno deve avere almeno: giorno, daily_theme, pasti;
+- ogni elemento di pasti deve rispettare esattamente il formato JSON della singola ricetta;
+- ogni ricetta deve usare la chiave macro con proteine, carbo e grassi;
+- i procedimenti devono sembrare quelli di un vero piano cucinabile in casa, non titoli astratti travestiti da ricette;
+- ogni procedimento deve seguire la guida di stile sotto e usare step concreti con verbi guida, tempi, utensili e segnali di cottura;
+- la settimana deve sembrare progettata da un vero professionista, non da un generatore casuale.
+
+Guida di stile obbligatoria per i procedimenti:
+${GEMINI_PROCEDURE_STYLE_GUIDE}
+
+Output JSON obbligatorio:
+{
+  "weekly_strategy": "string",
+  "giorni": [
+    {
+      "giorno": "Lunedi",
+      "daily_theme": "string",
+      "pasti": [
+        {
+          "titolo": "string",
+          "tempo_prep": "string o numero in minuti",
+                    "tipo_pasto": "Colazione | Pranzo | Cena | Spuntino",
+                    "difficolta": "Facile | Media | Difficile",
+          "calorie": number,
+                    "macro": {
+                        "proteine": number,
+                        "carbo": number,
+                        "grassi": number
+                    },
+          "ingredienti": ["string"],
+          "procedimento": ["string"],
+                    "cottura_consigliata": "string",
+                    "tip_antispreco": "string",
+          "bioavailability_tip": "string"
+        }
+      ]
+    }
+  ]
+}
+`;
+
+const GEMINI_PROMPT_MAP = {
+    'ricetta-su-misura': PROMPT_RICETTA_SU_MISURA,
+    'piano-giornaliero': PROMPT_PIANO_GIORNALIERO,
+    'piano-settimanale': PROMPT_PIANO_SETTIMANALE
+};
+
+function buildGeminiRecipeRequestPayload(profile, request) {
+    return {
+        profilo_utente: {
+            kcal_target: Math.round(profile.targetCalories || 0),
+            proteine_target_g: Math.round(profile.proteinTargetGrams || 0),
+            carbo_target_g: Math.round(profile.carbsTargetGrams || 0),
+            grassi_target_g: Math.round(profile.fatTargetGrams || 0),
+            dieta: profile.diet || 'non specificata',
+            allergie: profile.allergies || 'nessuna indicata',
+            intolleranze: profile.intolerances || 'nessuna indicata',
+            patologie: profile.otherPathologies || 'nessuna indicata',
+            obiettivo: profile.goal || 'mantenere',
+            stile_di_vita: profile.jobType || 'moderato'
+        },
+        richiesta_ricetta: {
+            ...request,
+            requisiti_output: [
+                'procedimento dettagliato passo per passo come una ricetta reale italiana',
+                'il procedimento deve avere minimo 5 e massimo 8 step per pranzo o cena; minimo 4 step per colazione o spuntino',
+                'il procedimento deve contenere almeno uno step di preparazione ingredienti, uno di cottura, uno di finitura e uno di servizio',
+                'almeno 3 step devono riportare tempi, temperatura o intensita della fiamma',
+                'almeno 2 step devono nominare utensili o recipienti',
+                'il procedimento deve chiudere davvero il piatto con finitura finale, regolazione del condimento o servizio',
+                'ogni step deve iniziare con un verbo guida tipo Prepara:, Cuoci:, Manteca:, Inforna:',
+                'ogni step deve contenere utensile o recipiente, tempo o temperatura, e un segnale pratico di corretta esecuzione',
+                'cottura_consigliata sempre valorizzata',
+                'tip_antispreco sempre valorizzato',
+                'bioavailability_tip in chiusura'
+            ],
+            esempi_stile_procedimento: [
+                'Prepara: Sbatti le uova con sale, pepe e un cucchiaio di latte in una ciotola ampia finche il composto risulta uniforme e leggermente spumoso.',
+                'Cuoci: Versa le uova sulle verdure, copri con coperchio e lascia rassodare a fuoco basso per 5-6 minuti; gira la frittata con il coperchio e completa per altri 2 minuti.',
+                'Manteca: Scola la pasta molto al dente nella padella, aggiungi poca acqua di cottura alla volta e fai saltare per 1 minuto, poi unisci l olio restante fuori dal fuoco.',
+                'Servi: Impiatta subito il piatto ben caldo, regola con un ultimo filo di condimento a crudo e completa con l erba aromatica prevista.'
+            ]
+        }
+    };
+}
+
+function buildGeminiDailyPlanRequestPayload(profile, request) {
+    return {
+        profilo_utente: {
+            username: profile.username || '',
+            lifestyle: profile.jobType || 'moderato',
+            workout_settimanali: Number(profile.workoutsPerWeek || 0),
+            dieta: profile.diet || 'non specificata',
+            allergie: profile.allergies || 'nessuna indicata',
+            intolleranze: profile.intolerances || 'nessuna indicata',
+            patologie: profile.otherPathologies || 'nessuna indicata',
+            target_calorico: Math.round(profile.targetCalories || 0),
+            macro_target: {
+                proteine: Math.round(profile.proteinTargetGrams || 0),
+                carbo: Math.round(profile.carbsTargetGrams || 0),
+                grassi: Math.round(profile.fatTargetGrams || 0)
+            },
+            acqua_litri: Number(profile.waterTargetLiters || 0).toFixed(1)
+        },
+        richiesta_piano_giornaliero: {
+            ...request,
+            requisiti_output: [
+                'ogni pasto deve avere procedimento reale e concreto',
+                'ogni step deve iniziare con un verbo guida e includere dettagli pratici di esecuzione',
+                'evidenziare riuso intelligente degli ingredienti tra pranzo e cena',
+                'cottura_consigliata e tip_antispreco sempre presenti per ogni ricetta'
+            ],
+            esempi_stile_procedimento: [
+                'Sciacqua: Se usi legumi in scatola, sciacquali bene sotto acqua corrente e lasciali sgocciolare 2 minuti.',
+                'Frulla: Metti tutto nel mixer e aggiungi un cucchiaio di acqua calda alla volta fino a ottenere una crema liscia ma sostenuta.',
+                'Inforna: Cuoci in forno statico preriscaldato a 200 gradi finche la superficie appare asciutta e dorata ai bordi.'
+            ]
+        }
+    };
+}
+
+function buildGeminiWeeklyPlanRequestPayload(profile, request) {
+    return {
+        profilo_utente: {
+            lifestyle: profile.jobType || 'moderato',
+            obiettivo: profile.goal || 'mantenere',
+            dieta: profile.diet || 'non specificata',
+            allergie: profile.allergies || 'nessuna indicata',
+            intolleranze: profile.intolerances || 'nessuna indicata',
+            patologie: profile.otherPathologies || 'nessuna indicata',
+            target_calorico: Math.round(profile.targetCalories || 0),
+            macro_target: {
+                proteine: Math.round(profile.proteinTargetGrams || 0),
+                carbo: Math.round(profile.carbsTargetGrams || 0),
+                grassi: Math.round(profile.fatTargetGrams || 0)
+            },
+            pasti_al_giorno: Number(profile.mealsPerDay || 4)
+        },
+        richiesta_piano_settimanale: {
+            ...request,
+            requisiti_output: [
+                'rotazione proteica sensata sui 7 giorni',
+                'procedimenti realmente cucinabili in casa',
+                'ogni step deve iniziare con un verbo guida e includere dettagli pratici di esecuzione',
+                'cottura_consigliata e tip_antispreco sempre presenti per ogni ricetta'
+            ],
+            esempi_stile_procedimento: [
+                'Prepara: Taglia le verdure in pezzi regolari su un tagliere ampio cosi cuociono in modo uniforme.',
+                'Cuoci: Scalda una padella antiaderente a fuoco medio, aggiungi il condimento e fai insaporire per 2-3 minuti prima di unire la base.',
+                'Servi: Lascia assestare 2 minuti fuori dal fuoco prima di impiattare, cosi i sapori restano piu definiti.'
+            ]
+        }
+    };
+}
+
+function buildGeminiChefPrompt(mode, payload) {
+    const systemPrompt = GEMINI_PROMPT_MAP[mode];
+    if (!systemPrompt) {
+        throw new Error(`Modalita Gemini non supportata: ${mode}`);
+    }
+
+    return [
+        systemPrompt.trim(),
+        'DATI DINAMICI UTENTE E RICHIESTA OPERATIVA:',
+        JSON.stringify(payload, null, 2),
+        'Restituisci esclusivamente JSON valido. Non usare blocchi markdown. Non aggiungere testo prima o dopo il JSON.'
+    ].join('\n\n');
+}
+
+function extractGeminiText(data) {
+    if (!data || typeof data !== 'object') return '';
+
+    if (typeof data.text === 'string') return data.text;
+    if (typeof data.output === 'string') return data.output;
+    if (typeof data.response === 'string') return data.response;
+
+    const parts = data?.candidates?.[0]?.content?.parts;
+    if (Array.isArray(parts)) {
+        return parts.map((part) => part?.text || '').join('').trim();
+    }
+
+    return '';
+}
+
+function extractBalancedJsonBlock(rawText) {
+    const text = String(rawText || '').trim();
+    if (!text) return '';
+
+    const fencedMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
+    const candidateText = fencedMatch?.[1]?.trim() || text;
+    const startIndex = candidateText.search(/[\[{]/);
+    if (startIndex === -1) {
+        return '';
+    }
+
+    const openingChar = candidateText[startIndex];
+    const closingChar = openingChar === '{' ? '}' : ']';
+    let depth = 0;
+    let inString = false;
+    let isEscaped = false;
+
+    for (let index = startIndex; index < candidateText.length; index += 1) {
+        const char = candidateText[index];
+
+        if (inString) {
+            if (isEscaped) {
+                isEscaped = false;
+                continue;
+            }
+
+            if (char === '\\') {
+                isEscaped = true;
+                continue;
+            }
+
+            if (char === '"') {
+                inString = false;
+            }
+            continue;
+        }
+
+        if (char === '"') {
+            inString = true;
+            continue;
+        }
+
+        if (char === openingChar) {
+            depth += 1;
+        } else if (char === closingChar) {
+            depth -= 1;
+            if (depth === 0) {
+                return candidateText.slice(startIndex, index + 1);
+            }
+        }
+    }
+
+    return '';
+}
+
+function parseGeminiJsonResponse(rawText) {
+    const trimmedText = String(rawText || '').trim();
+    if (!trimmedText) {
+        throw new Error('Gemini non ha restituito testo utile.');
+    }
+
+    try {
+        return JSON.parse(trimmedText);
+    } catch (error) {
+        const extractedJson = extractBalancedJsonBlock(trimmedText);
+        if (!extractedJson) {
+            throw new Error('Impossibile estrarre un JSON valido dalla risposta di Gemini.');
+        }
+
+        return JSON.parse(extractedJson);
+    }
+}
+
+function normalizeGeminiRecipeDifficulty(value) {
+    const normalized = String(value || '').trim().toLowerCase();
+    if (normalized.includes('chef') || normalized.includes('difficile')) return 'Difficile';
+    if (normalized.includes('intermedia') || normalized.includes('media')) return 'Media';
+    return 'Facile';
+}
+
+function deriveMealTypeFromGeminiText(text) {
+    const normalized = String(text || '').toLowerCase();
+    if (normalized.includes('colazione')) return 'Colazione';
+    if (normalized.includes('spuntino')) return 'Spuntino';
+    if (normalized.includes('cena')) return 'Cena';
+    if (normalized.includes('pranzo')) return 'Pranzo';
+    return 'Pranzo';
+}
+
+function deriveCookingTechniqueFromSteps(steps, fallback = '') {
+    const joined = (Array.isArray(steps) ? steps : []).join(' ').toLowerCase();
+    if (/forno|inforna|statico|ventilato/.test(joined)) return 'Forno controllato con temperatura gia impostata';
+    if (/padella|salta|rosola|manteca|fuoco/.test(joined)) return 'Padella a fuoco medio con controllo progressivo della cottura';
+    if (/pentola|bollore|lessa/.test(joined)) return 'Cottura in pentola con bollore regolare';
+    if (/mixer|frulla|frullatore/.test(joined)) return 'Preparazione a freddo con rifinitura al mixer';
+    return fallback || 'Cottura domestica semplice e controllata';
+}
+
+function deriveBioavailabilityTipFromRecipeText(text, ingredients = []) {
+    const normalized = `${String(text || '')} ${(Array.isArray(ingredients) ? ingredients.join(' ') : '')}`.toLowerCase();
+    if (/limone|agrumi|vitamina c|prezzemolo/.test(normalized)) {
+        return 'Aggiungi una fonte di vitamina C a fine preparazione per favorire l assorbimento di ferro e composti antiossidanti.';
+    }
+    if (/olio evo|olio extravergine|olio d'oliva|olio d oliva/.test(normalized)) {
+        return 'Una piccola quota di olio EVO a crudo aiuta l assorbimento dei composti liposolubili presenti nelle verdure.';
+    }
+    if (/legumi|ceci|lenticchie|fagioli|spinaci/.test(normalized)) {
+        return 'Abbina erbe fresche o ortaggi ricchi di vitamina C per migliorare l utilizzo del ferro vegetale.';
+    }
+    return 'Completa il piatto con un contorno vegetale fresco per migliorare densita micronutrizionale e biodisponibilita complessiva.';
+}
+
+function parseGeminiRecipeTextResponse(rawText) {
+    const trimmedText = String(rawText || '').trim();
+    if (!trimmedText) {
+        return null;
+    }
+
+    const lines = trimmedText
+        .split(/\r?\n/)
+        .map((line) => String(line || '').trim())
+        .filter(Boolean);
+
+    if (lines.length < 4) {
+        return null;
+    }
+
+    const difficultyIndex = lines.findIndex((line) => /^difficolt/i.test(line));
+    const ingredientsIndex = lines.findIndex((line) => /^ingredienti\s*:/i.test(line));
+    const timesIndex = lines.findIndex((line) => /^tempi\s*:/i.test(line));
+    const conservationIndex = lines.findIndex((line) => /^conservazione\s*:/i.test(line));
+    const adviceIndex = lines.findIndex((line) => /^consiglio\s*:/i.test(line));
+
+    if (difficultyIndex === -1 || ingredientsIndex === -1 || timesIndex === -1) {
+        return null;
+    }
+
+    const title = String(lines[0] || 'Ricetta su misura')
+        .replace(/^\[|\]$/g, '')
+        .replace(/^["']|["']$/g, '')
+        .trim();
+    const difficultyLine = lines[difficultyIndex];
+    const difficultyMatch = difficultyLine.match(/^difficolt[aà]\s*:\s*([^\-]+?)(?:\s*-\s*(.+))?$/i);
+    const difficultyText = String(difficultyMatch?.[1] || '').trim();
+    const categoryText = String(difficultyMatch?.[2] || '').trim();
+    const description = lines.slice(difficultyIndex + 1, ingredientsIndex).join(' ').trim();
+    const ingredientsText = String(lines[ingredientsIndex] || '').replace(/^ingredienti\s*:/i, '').trim();
+    const timeText = String(lines[timesIndex] || '').replace(/^tempi\s*:/i, '').trim();
+
+    const sectionEndCandidates = [conservationIndex, adviceIndex].filter((index) => index > timesIndex);
+    const stepsEndIndex = sectionEndCandidates.length > 0 ? Math.min(...sectionEndCandidates) : lines.length;
+    const rawSteps = lines.slice(timesIndex + 1, stepsEndIndex);
+    const steps = [];
+
+    rawSteps.forEach((line) => {
+        const normalizedLine = String(line || '').replace(/\s+/g, ' ').trim();
+        if (!normalizedLine || /^preparazione\s*:?$/i.test(normalizedLine)) {
+            return;
+        }
+
+        const isNewStep = /^[A-Za-zÀ-ÿ][^:]{1,24}:/.test(normalizedLine);
+        if (isNewStep || steps.length === 0) {
+            steps.push(normalizedLine);
+            return;
+        }
+
+        steps[steps.length - 1] = `${steps[steps.length - 1]} ${normalizedLine}`.trim();
+    });
+
+    const conservationText = conservationIndex !== -1 ? String(lines[conservationIndex] || '').replace(/^conservazione\s*:/i, '').trim() : '';
+    const adviceText = adviceIndex !== -1 ? String(lines[adviceIndex] || '').replace(/^consiglio\s*:/i, '').trim() : '';
+    const ingredients = ingredientsText
+        .split(/\s*,\s*/)
+        .map((item) => item.trim())
+        .filter(Boolean);
+
+    const calorie = extractMacroNumberFromText(trimmedText, ['energia kcal', 'kcal', 'calorie']);
+    const proteine = extractMacroNumberFromText(trimmedText, ['proteine', 'protein']);
+    const carbo = extractMacroNumberFromText(trimmedText, ['carboidrati', 'carbo', 'carbs']);
+    const grassi = extractMacroNumberFromText(trimmedText, ['grassi', 'fat']);
+    const antiWasteText = adviceText || conservationText || (categoryText.toLowerCase().includes('salvafrigo') ? 'Riutilizza gli ingredienti gia pronti o gli scarti puliti per limitare gli sprechi.' : 'Conserva gli avanzi in frigorifero e riutilizzali entro 24-48 ore in una preparazione simile.');
+    const bioavailabilityTip = /assorb|vitamina|ferro|prote/i.test(adviceText.toLowerCase())
+        ? adviceText
+        : deriveBioavailabilityTipFromRecipeText(trimmedText, ingredients);
+
+    return {
+        titolo: title || 'Ricetta su misura',
+        tempo_prep: timeText || '20 minuti',
+        tipo_pasto: deriveMealTypeFromGeminiText(categoryText || description || trimmedText),
+        difficolta: normalizeGeminiRecipeDifficulty(difficultyText),
+        calorie: Number.isFinite(calorie) ? calorie : 0,
+        macro: {
+            proteine: Number.isFinite(proteine) ? proteine : 0,
+            carbo: Number.isFinite(carbo) ? carbo : 0,
+            grassi: Number.isFinite(grassi) ? grassi : 0
+        },
+        ingredienti: ingredients,
+        procedimento: steps,
+        cottura_consigliata: deriveCookingTechniqueFromSteps(steps, categoryText),
+        tip_antispreco: antiWasteText,
+        bioavailability_tip: bioavailabilityTip,
+        descrizione: description
+    };
+}
+
+function parseGeminiModelResponse(rawText, mode = 'generic') {
+    try {
+        return parseGeminiJsonResponse(rawText);
+    } catch (error) {
+        if (mode === 'ricetta-su-misura') {
+            const parsedRecipe = parseGeminiRecipeTextResponse(rawText);
+            if (parsedRecipe) {
+                return parsedRecipe;
+            }
+        }
+
+        throw error;
+    }
+}
+
+function isNonEmptyString(value) {
+    return typeof value === 'string' && value.trim().length > 0;
+}
+
+function isFiniteNumber(value) {
+    return typeof value === 'number' && Number.isFinite(value);
+}
+
+function coerceFiniteNumber(value, fallback = 0) {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+        return value;
+    }
+
+    if (typeof value === 'string') {
+        const normalized = value.replace(',', '.').replace(/[^0-9.-]/g, '').trim();
+        const parsed = Number(normalized);
+        if (Number.isFinite(parsed)) {
+            return parsed;
+        }
+    }
+
+    return fallback;
+}
+
+function extractMacroNumberFromText(text, labels = []) {
+    const source = String(text || '');
+    for (const label of labels) {
+        const pattern = new RegExp(`${label}[^0-9-]*([0-9]+(?:[.,][0-9]+)?)`, 'i');
+        const match = source.match(pattern);
+        if (match?.[1]) {
+            return coerceFiniteNumber(match[1], Number.NaN);
+        }
+    }
+
+    return Number.NaN;
+}
+
+function getObjectValueCaseInsensitive(source, keys = []) {
+    if (!source || typeof source !== 'object' || Array.isArray(source)) {
+        return undefined;
+    }
+
+    const entries = Object.entries(source);
+    for (const candidateKey of keys) {
+        const match = entries.find(([currentKey]) => String(currentKey || '').trim().toLowerCase() === String(candidateKey || '').trim().toLowerCase());
+        if (match) {
+            return match[1];
+        }
+    }
+
+    return undefined;
+}
+
+function normalizeGeminiMacroShape(macro, recipe = {}) {
+    const source = macro && typeof macro === 'object' && !Array.isArray(macro) ? macro : {};
+    const macroText = typeof macro === 'string' ? macro : '';
+    return {
+        proteine: coerceFiniteNumber(
+            getObjectValueCaseInsensitive(source, ['proteine', 'protein'])
+            ?? recipe.proteine ?? recipe.protein
+            ?? extractMacroNumberFromText(macroText, ['proteine', 'protein']),
+            0
+        ),
+        carbo: coerceFiniteNumber(
+            getObjectValueCaseInsensitive(source, ['carbo', 'carboidrati', 'carbs'])
+            ?? recipe.carboidrati ?? recipe.carbs
+            ?? extractMacroNumberFromText(macroText, ['carboidrati', 'carbo', 'carbs']),
+            0
+        ),
+        grassi: coerceFiniteNumber(
+            getObjectValueCaseInsensitive(source, ['grassi', 'fat'])
+            ?? recipe.grassi ?? recipe.fat
+            ?? extractMacroNumberFromText(macroText, ['grassi', 'fat']),
+            0
+        )
+    };
+}
+
+function getGeminiRecipeDifficultyLabel(value) {
+    const normalized = String(value || '').trim().toLowerCase();
+    if (normalized.includes('chef') || normalized.includes('diffic')) return 'Difficile';
+    if (normalized.includes('media')) return 'Media';
+    if (normalized.includes('salvafrigo')) return 'Facile';
+    return 'Facile';
+}
+
+function assertGeminiRecipeSchema(recipe, contextLabel = 'ricetta') {
+    if (!recipe || typeof recipe !== 'object' || Array.isArray(recipe)) {
+        throw new Error(`Schema Gemini non valido: ${contextLabel} assente o non oggetto.`);
+    }
+
+    const requiredStringKeys = ['titolo', 'difficolta', 'cottura_consigliata', 'tip_antispreco', 'bioavailability_tip'];
+    const requiredMacroKeys = ['proteine', 'carbo', 'grassi'];
+
+    requiredStringKeys.forEach((key) => {
+        if (!isNonEmptyString(recipe[key])) {
+            throw new Error(`Schema Gemini non valido: campo ${key} mancante in ${contextLabel}.`);
+        }
+    });
+
+    if (!isFiniteNumber(coerceFiniteNumber(recipe.calorie, Number.NaN))) {
+        throw new Error(`Schema Gemini non valido: campo numerico calorie mancante in ${contextLabel}.`);
+    }
+
+    if (!recipe.macro || typeof recipe.macro !== 'object' || Array.isArray(recipe.macro)) {
+        throw new Error(`Schema Gemini non valido: macro mancante in ${contextLabel}.`);
+    }
+
+    requiredMacroKeys.forEach((key) => {
+        if (!isFiniteNumber(coerceFiniteNumber(recipe.macro[key], Number.NaN))) {
+            throw new Error(`Schema Gemini non valido: macro.${key} mancante in ${contextLabel}.`);
+        }
+    });
+
+    if (!(typeof recipe.tempo_prep === 'string' || isFiniteNumber(recipe.tempo_prep))) {
+        throw new Error(`Schema Gemini non valido: campo tempo_prep mancante in ${contextLabel}.`);
+    }
+
+    if (!Array.isArray(recipe.ingredienti) || recipe.ingredienti.length === 0 || !recipe.ingredienti.every((item) => isNonEmptyString(typeof item === 'string' ? item : String(item?.nome || item?.name || '')))) {
+        throw new Error(`Schema Gemini non valido: ingredienti non validi in ${contextLabel}.`);
+    }
+
+    if (!Array.isArray(recipe.procedimento) || recipe.procedimento.length === 0 || !recipe.procedimento.every((step) => isNonEmptyString(String(step || '')))) {
+        throw new Error(`Schema Gemini non valido: procedimento non valido in ${contextLabel}.`);
+    }
+
+    assertGeminiProcedureQuality(recipe.procedimento, contextLabel);
+
+    return true;
+}
+
+function scoreGeminiProcedureStep(step) {
+    const text = String(step || '').trim();
+    const normalized = text.toLowerCase();
+
+    const hasActionLabel = /^[A-Za-zÀ-ÿ][^:]{1,24}:/.test(text);
+    const hasTimeOrTemperature = /(\b\d+\s*(min|minuti|secondi|ore)\b|\b\d+\s*°|gradi|fuoco\s+(basso|medio|alto)|forno\s+(statico|ventilato)|bollore)/i.test(text);
+    const hasToolOrContainer = /(padella|pentola|forno|teglia|ciotola|mixer|frullatore|coperchio|tagliere|coltello|planetaria|spatola|casseruola)/i.test(text);
+    const hasTechnique = /(trita|taglia|mescola|sbatti|versa|scola|manteca|stendi|inforna|salta|frulla|copri|rosola|lessa|scalda|aggiungi|distribuisci|ung[e]?|raffredda|strizza|impiatta|guarnisci|rifinisci|condisci|spolvera|completa|servi)/i.test(text);
+    const hasSensoryCue = /(finche|fino a quando|quando .* risulta|dorato|cremos|asciutt|tener|lucid|spumos|uniforme|rigid|morb|ben caldo|assorb)/i.test(text);
+    const hasFinishingCue = /(impiatta|guarnisci|rifinisci|servi|a crudo|ultimo giro|spolvera|completa con|ben caldo|subito|immediatamente)/i.test(text);
+    const hasPreparationCue = /(prepara|trita|taglia|sbuccia|lava|sciacqua|pela|sbatti|metti in ammollo|monda)/i.test(text);
+    const hasCookingCue = /(cuoci|scalda|rosola|salta|lessa|manteca|inforna|stufa|fai sobbollire|porta a bollore)/i.test(text);
+    const isTooGeneric = /(prepara gli ingredienti|assembla il piatto|cuoci e servi|procedi con la cottura|completa la ricetta|impiatta e servi|quanto basta|cuoci fino a pronto)/i.test(normalized);
+
+    const score = [hasActionLabel, hasTimeOrTemperature, hasToolOrContainer, hasTechnique, hasSensoryCue]
+        .filter(Boolean)
+        .length;
+
+    return {
+        text,
+        score,
+        hasActionLabel,
+        hasFinishingCue,
+        hasPreparationCue,
+        hasCookingCue,
+        hasTimeOrTemperature,
+        hasToolOrContainer,
+        isTooGeneric
+    };
+}
+
+function assertGeminiProcedureQuality(steps, contextLabel = 'ricetta') {
+    const normalizedSteps = (Array.isArray(steps) ? steps : []).map((step) => String(step || '').trim()).filter(Boolean);
+    const contextText = String(contextLabel || '').trim();
+    const requiredStepCount = /^ricetta\b/i.test(contextText) ? 5 : 3;
+    if (normalizedSteps.length < requiredStepCount) {
+        throw new Error(`Procedimento Gemini troppo debole in ${contextLabel}: servono almeno ${requiredStepCount} step reali.`);
+    }
+
+    const evaluations = normalizedSteps.map(scoreGeminiProcedureStep);
+    const weakSteps = evaluations.filter((entry, index) => {
+        const isLastStep = index === evaluations.length - 1;
+        const minimumScore = isLastStep && entry.hasFinishingCue ? 2 : 3;
+        return entry.isTooGeneric || !entry.hasActionLabel || entry.score < minimumScore;
+    });
+
+    const hasPreparationStep = evaluations.some((entry) => entry.hasPreparationCue);
+    const hasCookingStep = evaluations.some((entry) => entry.hasCookingCue);
+    const hasFinishingStep = evaluations.some((entry) => entry.hasFinishingCue);
+    const timedSteps = evaluations.filter((entry) => entry.hasTimeOrTemperature).length;
+    const tooLessTools = evaluations.filter((entry) => entry.hasToolOrContainer).length;
+
+    if (/^ricetta\b/i.test(contextText)) {
+        if (!hasPreparationStep) {
+            throw new Error(`Procedimento Gemini troppo generico in ${contextLabel}: manca uno step reale di preparazione ingredienti.`);
+        }
+        if (!hasCookingStep) {
+            throw new Error(`Procedimento Gemini troppo generico in ${contextLabel}: manca uno step reale di cottura.`);
+        }
+        if (!hasFinishingStep) {
+            throw new Error(`Procedimento Gemini troppo generico in ${contextLabel}: manca uno step reale di finitura o servizio.`);
+        }
+        if (timedSteps < 3) {
+            throw new Error(`Procedimento Gemini troppo generico in ${contextLabel}: servono almeno 3 step con tempi o temperatura.`);
+        }
+        if (tooLessTools < 2) {
+            throw new Error(`Procedimento Gemini troppo generico in ${contextLabel}: servono almeno 2 step con utensili o recipienti.`);
+        }
+    }
+
+    if (weakSteps.length > 0) {
+        const example = weakSteps[0]?.text || 'step generico';
+        throw new Error(`Procedimento Gemini troppo generico in ${contextLabel}: ${example}`);
+    }
+
+    return true;
+}
+
+function collectGeminiRecipesForQualityCheck(payload) {
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+        return [];
+    }
+
+    if (Array.isArray(payload.procedimento) && Array.isArray(payload.ingredienti)) {
+        return [{ recipe: payload, contextLabel: 'ricetta' }];
+    }
+
+    if (Array.isArray(payload.pasti)) {
+        return payload.pasti.map((meal, index) => ({
+            recipe: meal,
+            contextLabel: `pasto ${index + 1}`
+        }));
+    }
+
+    if (Array.isArray(payload.giorni)) {
+        return payload.giorni.flatMap((day, dayIndex) => {
+            const dayLabel = String(day?.giorno || `giorno ${dayIndex + 1}`).trim();
+            return (Array.isArray(day?.pasti) ? day.pasti : []).map((meal, mealIndex) => ({
+                recipe: meal,
+                contextLabel: `${dayLabel} pasto ${mealIndex + 1}`
+            }));
+        });
+    }
+
+    return [];
+}
+
+function assertGeminiPayloadProcedureQuality(payload) {
+    const recipes = collectGeminiRecipesForQualityCheck(payload);
+    recipes.forEach(({ recipe, contextLabel }) => {
+        if (recipe?.procedimento) {
+            assertGeminiProcedureQuality(recipe.procedimento, contextLabel);
+        }
+    });
+    return true;
+}
+
+function getConfiguredGeminiEndpointOverride() {
+    try {
+        if (typeof window !== 'undefined') {
+            const configOverride = String(window.NUTRIME_CONFIG?.geminiFunctionUrl || '').trim();
+            if (configOverride) {
+                return configOverride;
+            }
+
+            const windowOverride = String(window.NUTRIME_GEMINI_FUNCTION_URL || '').trim();
+            if (windowOverride) {
+                return windowOverride;
+            }
+
+            const storedOverride = String(window.localStorage?.getItem('nutrime_gemini_function_url') || '').trim();
+            if (storedOverride) {
+                return storedOverride;
+            }
+        }
+    } catch (error) {
+        return '';
+    }
+
+    return '';
+}
+
+function getConfiguredGeminiModelOverride() {
+    try {
+        if (typeof window !== 'undefined') {
+            const configModel = String(window.NUTRIME_CONFIG?.geminiModel || '').trim();
+            if (configModel) {
+                return configModel;
+            }
+
+            const windowModel = String(window.NUTRIME_GEMINI_MODEL || '').trim();
+            if (windowModel) {
+                return windowModel;
+            }
+
+            const storedModel = String(window.localStorage?.getItem('nutrime_gemini_model') || '').trim();
+            if (storedModel) {
+                return storedModel;
+            }
+        }
+    } catch (error) {
+        return '';
+    }
+
+    return 'gemini-2.5-flash';
+}
+
+function isLocalNetworkHostname(hostname) {
+    const normalized = String(hostname || '').trim().toLowerCase();
+    if (!normalized) {
+        return false;
+    }
+
+    return normalized === 'localhost'
+        || normalized === '127.0.0.1'
+        || normalized === '0.0.0.0'
+        || /^192\.168\./.test(normalized)
+        || /^10\./.test(normalized)
+        || /^172\.(1[6-9]|2\d|3[0-1])\./.test(normalized)
+        || normalized.endsWith('.local');
+}
+
+function buildGeminiEndpointCandidates() {
+    const candidates = [];
+    const pushCandidate = (value) => {
+        const normalized = String(value || '').trim();
+        if (normalized && !candidates.includes(normalized)) {
+            candidates.push(normalized);
+        }
+    };
+
+    const override = getConfiguredGeminiEndpointOverride();
+    if (override) {
+        pushCandidate(override);
+    }
+
+    if (typeof window !== 'undefined') {
+        const protocol = String(window.location?.protocol || '').toLowerCase();
+        const origin = String(window.location?.origin || '').trim();
+        const hostname = String(window.location?.hostname || '').trim();
+        const port = String(window.location?.port || '').trim();
+
+        if (protocol === 'http:' || protocol === 'https:') {
+            pushCandidate(new URL('/.netlify/functions/gemini', window.location.href).toString());
+        }
+
+        if (protocol === 'http:' && isLocalNetworkHostname(hostname) && port !== '8888') {
+            pushCandidate(`http://${hostname}:8888/.netlify/functions/gemini`);
+        }
+
+        if (protocol === 'file:' || /localhost|127\.0\.0\.1/i.test(origin)) {
+            pushCandidate('http://localhost:8888/.netlify/functions/gemini');
+            pushCandidate('http://127.0.0.1:8888/.netlify/functions/gemini');
+        }
+    }
+
+    pushCandidate('/.netlify/functions/gemini');
+    return candidates;
+}
+
+async function readGeminiErrorDetails(response) {
+    try {
+        const text = await response.text();
+        if (!text) {
+            return '';
+        }
+
+        try {
+            const parsed = JSON.parse(text);
+            return parsed?.details?.error?.message || parsed?.details?.message || parsed?.details || parsed?.error || text;
+        } catch (error) {
+            return text;
+        }
+    } catch (error) {
+        return '';
+    }
+}
+
+async function fetchGeminiJsonPayload(prompt, mode = 'generic') {
+    const endpoints = buildGeminiEndpointCandidates();
+    let lastError = 'Servizio Gemini non raggiungibile.';
+
+    for (const endpoint of endpoints) {
+        try {
+            const res = await fetch(endpoint, {
+                method: 'POST',
+                mode: 'cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    systemPrompt: GEMINI_MASTER_CHEF_SYSTEM_PROMPT,
+                    prompt
+                })
+            });
+
+            if (!res.ok) {
+                const details = await readGeminiErrorDetails(res);
+                if (res.status === 404 || res.status === 405) {
+                    lastError = `Endpoint Gemini non disponibile su ${endpoint} (${res.status}).`;
+                    continue;
+                }
+
+                throw new Error(details ? `Errore Gemini ${res.status}: ${details}` : `Errore Gemini ${res.status}`);
+            }
+
+            const data = await res.json();
+            const rawText = extractGeminiText(data);
+            return parseGeminiModelResponse(rawText, mode);
+        } catch (error) {
+            const message = String(error?.message || error || '').trim();
+            lastError = message ? `${message} [endpoint: ${endpoint}]` : `NetworkError [endpoint: ${endpoint}]`;
+            continue;
+        }
+    }
+
+    throw new Error(`${lastError} Avvia Netlify Dev su porta 8888, oppure configura window.NUTRIME_GEMINI_FUNCTION_URL / localStorage.nutrime_gemini_function_url o window.NUTRIME_CONFIG.geminiFunctionUrl con l'URL assoluto della tua function pubblica.`);
+}
+
+function assertGeminiDailyPlanSchema(payload) {
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+        throw new Error('Schema Gemini non valido: piano giornaliero assente o non oggetto.');
+    }
+
+    if (!isNonEmptyString(payload.daily_theme)) {
+        throw new Error('Schema Gemini non valido: daily_theme mancante nel piano giornaliero.');
+    }
+
+    if (!Array.isArray(payload.pasti) || payload.pasti.length < 4) {
+        throw new Error('Schema Gemini non valido: il piano giornaliero deve contenere almeno 4 pasti.');
+    }
+
+    payload.pasti.forEach((meal, index) => assertGeminiRecipeSchema(meal, `pasto giornaliero ${index + 1}`));
+    return true;
+}
+
+function assertGeminiWeeklyPlanSchema(payload) {
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+        throw new Error('Schema Gemini non valido: piano settimanale assente o non oggetto.');
+    }
+
+    if (!isNonEmptyString(payload.weekly_strategy)) {
+        throw new Error('Schema Gemini non valido: weekly_strategy mancante nel piano settimanale.');
+    }
+
+    if (!Array.isArray(payload.giorni) || payload.giorni.length !== 7) {
+        throw new Error('Schema Gemini non valido: il piano settimanale deve contenere 7 giorni.');
+    }
+
+    payload.giorni.forEach((day, dayIndex) => {
+        if (!day || typeof day !== 'object' || Array.isArray(day)) {
+            throw new Error(`Schema Gemini non valido: giorno ${dayIndex + 1} non valido.`);
+        }
+
+        if (!isNonEmptyString(day.giorno)) {
+            throw new Error(`Schema Gemini non valido: campo giorno mancante alla posizione ${dayIndex + 1}.`);
+        }
+
+        if (!isNonEmptyString(day.daily_theme)) {
+            throw new Error(`Schema Gemini non valido: daily_theme mancante per ${day.giorno || `giorno ${dayIndex + 1}`}.`);
+        }
+
+        if (!Array.isArray(day.pasti) || day.pasti.length === 0) {
+            throw new Error(`Schema Gemini non valido: pasti mancanti per ${day.giorno || `giorno ${dayIndex + 1}`}.`);
+        }
+
+        day.pasti.forEach((meal, mealIndex) => assertGeminiRecipeSchema(meal, `${day.giorno || `giorno ${dayIndex + 1}`} pasto ${mealIndex + 1}`));
+    });
+
+    return true;
+}
+
+async function generaRicettaGemini(promptConfig) {
+    const mode = typeof promptConfig === 'string' ? 'generic' : promptConfig.mode;
+    const prompt = typeof promptConfig === 'string'
+        ? promptConfig
+        : buildGeminiChefPrompt(promptConfig.mode, promptConfig.payload);
+
+    try {
+        const firstAttempt = await fetchGeminiJsonPayload(prompt, mode);
+        assertGeminiPayloadProcedureQuality(firstAttempt);
+        return firstAttempt;
+    } catch (firstError) {
+        const retryPrompt = [
+            prompt,
+            'CORREZIONE OBBLIGATORIA DEL PROCEDIMENTO:',
+            '- rigenera da zero il JSON;',
+            '- il procedimento precedente e stato rifiutato perche troppo generico;',
+            '- il procedimento deve avere almeno 5 step completi per una ricetta pranzo o cena;',
+            '- devi descrivere il piatto dall inizio alla fine: preparazione ingredienti, cottura, eventuale assemblaggio o mantecatura, rifinitura e servizio;',
+            '- inserisci obbligatoriamente almeno uno step di preparazione ingredienti, uno di cottura, uno di finitura e uno di servizio;',
+            '- almeno 3 step devono contenere tempi, temperatura o intensita della fiamma;',
+            '- almeno 2 step devono nominare utensili o recipienti;',
+            '- ogni step deve iniziare con una etichetta d azione tipo Prepara:, Cuoci:, Manteca:, Inforna:, Servi:;',
+            '- ogni step deve includere dettagli pratici: utensile o recipiente, tempo o temperatura, tecnica e segnale finale corretto;',
+            '- non usare step riassuntivi o vaghi;',
+            '- mantieni identico il formato JSON richiesto.'
+        ].join('\n');
+
+        const secondAttempt = await fetchGeminiJsonPayload(retryPrompt, mode);
+        assertGeminiPayloadProcedureQuality(secondAttempt);
+        return secondAttempt;
+    }
+}
+
+function normalizeGeminiIngredientList(items) {
+    return (Array.isArray(items) ? items : []).map((item) => {
+        if (typeof item === 'string') {
+            return item.trim();
+        }
+
+        if (!item || typeof item !== 'object') {
+            return '';
+        }
+
+        const quantity = String(item.quantita || item.qty || item.quantity || '').trim();
+        const unit = String(item.unita || item.unit || '').trim();
+        const name = String(item.nome || item.name || item.ingrediente || '').trim();
+        return [quantity, unit, name].filter(Boolean).join(' ').trim();
+    }).filter(Boolean);
+}
+
+function normalizeGeminiSteps(items) {
+    return (Array.isArray(items) ? items : []).map((step) => String(step || '').trim()).filter(Boolean);
+}
+
+function normalizeGeminiMinutes(value) {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+        return Math.max(1, Math.round(value));
+    }
+
+    const text = String(value || '').trim();
+    const match = text.match(/\d+/);
+    return match ? Math.max(1, Number(match[0])) : 20;
+}
+
+function buildGeminiTargets(profile) {
+    return {
+        maintenanceCalories: Math.round(profile.maintenanceCalories || 0),
+        targetCalories: Math.round(profile.targetCalories || 0),
+        deltaCalories: Math.round(profile.goalCalorieDelta || 0),
+        proteinGrams: Math.round(profile.proteinTargetGrams || 0),
+        proteinPerKg: Number(profile.proteinTargetPerKg || 0).toFixed(1),
+        carbsGrams: Math.round(profile.carbsTargetGrams || 0),
+        fatGrams: Math.round(profile.fatTargetGrams || 0),
+        fiberGrams: Math.round(profile.fiberTargetGrams || 0),
+        hydrationLiters: Number(profile.waterTargetLiters || 0).toFixed(1)
+    };
+}
+
+function normalizeGeminiRecipeShape(recipe) {
+    const normalizedRecipe = recipe && typeof recipe === 'object' ? recipe : {};
+    const mergedRecipe = {
+        ...normalizedRecipe,
+        ingredienti: normalizedRecipe.ingredienti || normalizedRecipe.ingredients,
+        procedimento: normalizedRecipe.procedimento || normalizedRecipe.steps
+    };
+
+    assertGeminiRecipeSchema({
+        ...mergedRecipe,
+        titolo: String(mergedRecipe.titolo || mergedRecipe.title || mergedRecipe.nome_ricetta || 'Ricetta su misura').trim(),
+        difficolta: String(mergedRecipe.difficolta || 'Facile').trim(),
+        calorie: coerceFiniteNumber(mergedRecipe.calorie ?? mergedRecipe.kcal, 0),
+        macro: normalizeGeminiMacroShape(mergedRecipe.macro, mergedRecipe),
+        cottura_consigliata: String(mergedRecipe.cottura_consigliata || mergedRecipe.tecnica_cottura || mergedRecipe.chef_note || '').trim(),
+        tip_antispreco: String(mergedRecipe.tip_antispreco || mergedRecipe.anti_spreco || mergedRecipe.wasteTip || '').trim(),
+        bioavailability_tip: String(mergedRecipe.bioavailability_tip || '').trim(),
+        tempo_prep: mergedRecipe.tempo_prep || mergedRecipe.tempo_prep_min || 20,
+        ingredienti: normalizeGeminiIngredientList(mergedRecipe.ingredienti),
+        procedimento: normalizeGeminiSteps(mergedRecipe.procedimento)
+    });
+
+    return {
+        titolo: String(mergedRecipe.titolo || mergedRecipe.title || mergedRecipe.nome_ricetta || 'Ricetta su misura').trim(),
+        tempo_prep: mergedRecipe.tempo_prep || mergedRecipe.tempo_prep_min || 20,
+        tipo_pasto: String(mergedRecipe.tipo_pasto || mergedRecipe.meal_type || '').trim(),
+        difficolta: String(mergedRecipe.difficolta || 'Facile').trim(),
+        calorie: coerceFiniteNumber(mergedRecipe.calorie ?? mergedRecipe.kcal, 0),
+        macro: normalizeGeminiMacroShape(mergedRecipe.macro, mergedRecipe),
+        ingredienti: normalizeGeminiIngredientList(mergedRecipe.ingredienti),
+        procedimento: normalizeGeminiSteps(mergedRecipe.procedimento),
+        cottura_consigliata: String(mergedRecipe.cottura_consigliata || mergedRecipe.tecnica_cottura || mergedRecipe.chef_note || '').trim(),
+        tip_antispreco: String(mergedRecipe.tip_antispreco || mergedRecipe.anti_spreco || mergedRecipe.wasteTip || '').trim(),
+        bioavailability_tip: String(mergedRecipe.bioavailability_tip || '').trim()
+    };
+}
+
+function adaptGeminiRecipeToCard(recipe, metadata = {}) {
+    const normalizedRecipe = normalizeGeminiRecipeShape(recipe);
+    const requestedMode = normalizeAIRecipeRequestedMode(metadata.difficulty);
+    const slot = AI_RECIPE_MODE_SLOTS.find((item) => item.key === requestedMode) || AI_RECIPE_MODE_SLOTS[0];
+
+    return {
+        id: metadata.id || 'GEM-1',
+        title: normalizedRecipe.titolo,
+        nome_ricetta: normalizedRecipe.titolo,
+        mode_key: slot.key,
+        mode_label: slot.label,
+        difficolta: normalizedRecipe.difficolta || slot.difficulty,
+        style: slot.label,
+        ingredients: normalizedRecipe.ingredienti,
+        procedimento: normalizedRecipe.procedimento,
+        steps: normalizedRecipe.procedimento,
+        tempo_prep_min: normalizeGeminiMinutes(normalizedRecipe.tempo_prep),
+        tipo_pasto: normalizedRecipe.tipo_pasto || metadata.mealType || 'Pranzo',
+        bioavailability_tip: normalizedRecipe.bioavailability_tip,
+        tecnica_cottura: normalizedRecipe.cottura_consigliata,
+        anti_spreco: normalizedRecipe.tip_antispreco,
+        nutrition: {
+            ingredients: [{
+                name: 'Totale ricetta',
+                kcal: Math.round(normalizedRecipe.calorie || 0),
+                protein: Number(normalizedRecipe.macro?.proteine || 0).toFixed(1),
+                carbs: Number(normalizedRecipe.macro?.carbo || 0).toFixed(1),
+                fat: Number(normalizedRecipe.macro?.grassi || 0).toFixed(1)
+            }],
+            total: {
+                kcal: Math.round(normalizedRecipe.calorie || 0),
+                protein: Number(normalizedRecipe.macro?.proteine || 0).toFixed(1),
+                carbs: Number(normalizedRecipe.macro?.carbo || 0).toFixed(1),
+                fat: Number(normalizedRecipe.macro?.grassi || 0).toFixed(1)
+            }
+        }
+    };
+}
+
+const GEMINI_DAILY_SLOTS = ['Colazione', 'Spuntino', 'Pranzo', 'Cena'];
+const GEMINI_WEEK_DAYS = ['Lunedi', 'Martedi', 'Mercoledi', 'Giovedi', 'Venerdi', 'Sabato', 'Domenica'];
+
+function adaptGeminiMealToPlanEntry(recipe, slotLabel) {
+    const normalizedRecipe = normalizeGeminiRecipeShape(recipe);
+
+    return {
+        slot: slotLabel,
+        title: normalizedRecipe.titolo,
+        whyItFits: normalizedRecipe.descrizione || normalizedRecipe.chef_note,
+        items: normalizedRecipe.ingredienti,
+        kcal: Math.round(normalizedRecipe.calorie || 0),
+        protein: Number(normalizedRecipe.macro?.proteine || 0).toFixed(1),
+        carbs: Number(normalizedRecipe.macro?.carbo || 0).toFixed(1),
+        fat: Number(normalizedRecipe.macro?.grassi || 0).toFixed(1),
+        notes: [normalizedRecipe.chef_note, normalizedRecipe.bioavailability_tip].filter(Boolean)
+    };
+}
+
+function adaptGeminiDailyPlan(payload, profile, context = {}) {
+    assertGeminiDailyPlanSchema(payload);
+    const meals = (Array.isArray(payload?.pasti) ? payload.pasti : []).map((meal, index) => adaptGeminiMealToPlanEntry(meal, GEMINI_DAILY_SLOTS[index] || `Pasto ${index + 1}`));
+    const notes = (Array.isArray(payload?.pasti) ? payload.pasti : [])
+        .flatMap((meal) => {
+            const normalizedRecipe = normalizeGeminiRecipeShape(meal);
+            return [normalizedRecipe.chef_note, normalizedRecipe.bioavailability_tip];
+        })
+        .filter(Boolean);
+
+    return {
+        plan: {
+            title: 'Piano giornaliero su misura',
+            daily_theme: String(payload?.daily_theme || '').trim(),
+            rationale: `Crononutrizione applicata al tuo profilo con focus su ${String(payload?.daily_theme || 'equilibrio energetico').trim().toLowerCase()}.`,
+            lunchContext: context.lunchContext || 'workday',
+            targets: buildGeminiTargets(profile),
+            meals,
+            notes: [...new Set(notes)]
+        },
+        meta: {
+            source: 'gemini'
+        }
+    };
+}
+
+function adaptGeminiWeeklyPlan(payload, profile, context = {}) {
+    assertGeminiWeeklyPlanSchema(payload);
+    const inputDays = Array.isArray(payload?.giorni) ? payload.giorni : [];
+    const days = inputDays.map((day, dayIndex) => {
+        const meals = (Array.isArray(day?.pasti) ? day.pasti : []).map((meal, mealIndex) => adaptGeminiMealToPlanEntry(meal, GEMINI_DAILY_SLOTS[mealIndex] || `Pasto ${mealIndex + 1}`));
+        const notes = (Array.isArray(day?.pasti) ? day.pasti : []).flatMap((meal) => {
+            const normalizedRecipe = normalizeGeminiRecipeShape(meal);
+            return [normalizedRecipe.chef_note, normalizedRecipe.bioavailability_tip];
+        }).filter(Boolean);
+
+        return {
+            day: String(day?.giorno || GEMINI_WEEK_DAYS[dayIndex] || `Giorno ${dayIndex + 1}`).trim(),
+            daily_theme: String(day?.daily_theme || '').trim(),
+            focus: String(day?.daily_theme || 'Struttura del giorno').trim(),
+            meals,
+            notes: [...new Set(notes)]
+        };
+    });
+
+    return {
+        week: {
+            title: 'Piano settimanale su misura',
+            rationale: String(payload?.weekly_strategy || '').trim(),
+            targets: buildGeminiTargets(profile),
+            days,
+            notes: [
+                String(payload?.weekly_strategy || '').trim(),
+                context.preferences ? `Preferenze considerate: ${context.preferences}` : ''
+            ].filter(Boolean)
+        },
+        meta: {
+            source: 'gemini'
+        }
+    };
+}
 const wizardJobLabels = {
     sedentario: 'Sedentario',
     moderato: 'Moderato',
@@ -5,9 +1418,10 @@ const wizardJobLabels = {
 };
 
 const wizardGoalLabels = {
-    dimagrire: 'Vorrei perdere peso',
-    mantenere: 'Vorrei mantenere il mio peso forma',
-    massa: 'Vorrei aumentare la massa muscolare'
+    dimagrire: 'Perdere peso',
+    mantenere: 'Mantenere pesoforma',
+    massa: 'Aumentare massa muscolare',
+    benessere: 'Benessere generale'
 };
 
 const avatarMoodLabels = {
@@ -199,6 +1613,487 @@ function renderLifestyleGuidancePanel(profileData) {
         <article class="chef-mode-guide-card">
             <strong>${escapeHtml(card.title)}</strong>
             <p>${escapeHtml(card.text)}</p>
+        </article>
+    `).join('');
+}
+
+function isVegetarianPlanning(profile) {
+    const signals = normalizePlanningText(`${profile?.diet || ''} ${profile?.otherPathologies || ''}`);
+    return !shouldUseVeganPlanning(profile, signals)
+        && (signals.includes('vegetarian') || signals.includes('vegetariano') || signals.includes('vegetariana'));
+}
+
+function getWeeklyGuidanceDietLabel(profile) {
+    const rawDiet = String(profile?.diet || '').trim();
+
+    if (!rawDiet || normalizePlanningText(rawDiet).includes('non specificato')) {
+        return 'regime alimentare non specificato';
+    }
+
+    return rawDiet;
+}
+
+function getPlanningDietMode(profile) {
+    if (shouldUseVeganPlanning(profile)) {
+        return 'vegan';
+    }
+
+    if (isVegetarianPlanning(profile)) {
+        return 'vegetarian';
+    }
+
+    return 'omnivore';
+}
+
+function buildGenericWeeklyGuidancePlan(profile, lunchContext = 'workday') {
+    const dietMode = getPlanningDietMode(profile);
+    const goal = profile?.goal || 'mantenere';
+    const lunchContextLabel = getLunchContextLabel(lunchContext).toLowerCase();
+    const breakfastRotation = dietMode === 'vegan'
+        ? (goal === 'massa'
+            ? [
+                {
+                    title: 'Yogurt di soia con avena, semi e doppia frutta',
+                    items: ['170 g yogurt di soia naturale', '40 g avena', '10 g semi di chia o lino', '1-2 porzioni di frutta fresca']
+                },
+                {
+                    title: 'Pane integrale con crema 100% frutta secca e bevanda vegetale',
+                    items: ['60 g pane integrale', '20 g crema 100% frutta secca', '200 ml bevanda vegetale senza zuccheri', '1 frutto']
+                },
+                {
+                    title: 'Porridge vegetale piu energetico',
+                    items: ['40 g avena', 'bevanda di soia', 'semi misti', '1 frutto piccolo']
+                }
+            ]
+            : [
+                {
+                    title: 'Yogurt di soia con avena e frutta fresca',
+                    items: ['125-170 g yogurt di soia naturale', '30 g avena o muesli senza zuccheri', '1 porzione di frutta fresca']
+                },
+                {
+                    title: 'Pane integrale con crema 100% frutta secca',
+                    items: ['50 g pane integrale', '15-20 g crema 100% frutta secca', '1 frutto di stagione']
+                },
+                {
+                    title: 'Porridge semplice con semi e frutta',
+                    items: ['35 g avena', 'bevanda vegetale senza zuccheri', 'semi di chia o lino', '1 frutto piccolo']
+                }
+            ])
+        : dietMode === 'vegetarian'
+            ? (goal === 'dimagrire'
+                ? [
+                    {
+                        title: 'Yogurt greco con avena e frutta fresca',
+                        items: ['150-170 g yogurt greco', '25-30 g avena', '1 porzione di frutta fresca']
+                    },
+                    {
+                        title: 'Pane integrale tostato con ricotta leggera',
+                        items: ['50 g pane integrale', '60 g ricotta leggera', '1 frutto di stagione']
+                    },
+                    {
+                        title: 'Porridge leggero con quota proteica',
+                        items: ['30-35 g avena', 'latte o yogurt bianco', '1 frutto piccolo']
+                    }
+                ]
+                : [
+                    {
+                        title: 'Yogurt bianco o greco con avena e frutta fresca',
+                        items: ['125-170 g yogurt bianco o greco', '30 g avena o muesli senza zuccheri', '1 porzione di frutta fresca']
+                    },
+                    {
+                        title: 'Pane integrale con ricotta o crema di frutta secca',
+                        items: ['50-60 g pane integrale', 'ricotta leggera oppure crema 100% frutta secca', '1 frutto']
+                    },
+                    {
+                        title: 'Pancake o porridge integrale ben strutturato',
+                        items: ['base integrale semplice', '1 porzione di frutta fresca', 'eventuale yogurt o latte']
+                    }
+                ])
+            : (goal === 'massa'
+                ? [
+                    {
+                        title: 'Yogurt greco con avena, frutta e semi',
+                        items: ['170 g yogurt greco', '40 g avena', '1 porzione abbondante di frutta', '10 g semi']
+                    },
+                    {
+                        title: 'Pane integrale, ricotta e frutta',
+                        items: ['60 g pane integrale', '70 g ricotta', '1 frutto', 'eventuale bevanda a lato']
+                    },
+                    {
+                        title: 'Pancake integrali con yogurt',
+                        items: ['pancake integrali semplici', 'yogurt bianco', '1 frutto di stagione']
+                    }
+                ]
+                : [
+                    {
+                        title: 'Yogurt bianco o greco con avena e frutta fresca',
+                        items: ['125-170 g yogurt bianco o greco', '30 g avena o muesli senza zuccheri', '1 porzione di frutta fresca']
+                    },
+                    {
+                        title: 'Pane integrale tostato con ricotta o marmellata senza zuccheri',
+                        items: ['50 g pane integrale', 'ricotta magra oppure marmellata senza zuccheri', '1 frutto di stagione']
+                    },
+                    {
+                        title: 'Pancake o porridge integrale ben strutturato',
+                        items: ['base integrale semplice', '1 porzione di frutta fresca', 'eventuale quota proteica come yogurt o latte']
+                    }
+                ]);
+    const snackItems = goal === 'dimagrire'
+        ? ['frutta fresca di stagione', 'crudite senza sale oppure 10 g frutta secca se serve piu sazieta', 'spuntini brevi e protettivi, senza trasformarli in mini pasti casuali']
+        : (goal === 'massa'
+            ? ['frutta fresca di stagione', 'yogurt, kefir o bevanda proteica se utile', '10-20 g frutta secca o semi per aumentare energia e continuita']
+            : ['frutta fresca di stagione', 'yogurt naturale, crudite o 10 g frutta secca secondo fame e giornata']);
+    const lunchBases = dietMode === 'vegan'
+        ? [
+            'bowl vegetale con cereale integrale, legumi e ortaggi',
+            'piatto unico con riso o farro, tofu o tempeh e verdure',
+            'insalatona completa con cereali, legumi e semi',
+            'pasta integrale con verdure e legumi',
+            'zuppa o minestrone con legumi e pane integrale',
+            'pranzo piu disteso con base amidacea e proteina vegetale chiara',
+            'piatto della domenica vegetale con struttura completa'
+        ]
+        : dietMode === 'vegetarian'
+            ? [
+                'piatto unico con cereale integrale, ortaggi e proteina vegetariana',
+                'pasta integrale con verdure e uova o legumi',
+                'insalatona completa con cereali, legumi o formaggio fresco leggero',
+                'orzotto o riso con verdure e quota proteica vegetariana',
+                'piatto semplice con pane, ortaggi e proteina vegetariana chiara',
+                'pranzo piu disteso ma sempre leggibile e bilanciato',
+                'domenica con primo ordinato e secondo vegetariano leggero'
+            ]
+            : [
+                'pasta o cereale integrale con verdure di stagione',
+                'piatto unico con cereale, verdure e proteina leggibile',
+                'insalatona completa con cereali e ortaggi',
+                'orzotto, riso o zuppa con base vegetale',
+                'riso, farro o pasta con ortaggi e condimento semplice',
+                'pranzo piu disteso ma con struttura chiara',
+                'pranzo della domenica piu curato ma equilibrato'
+            ];
+    const dinnerProteins = dietMode === 'vegan'
+        ? ['legumi', 'tofu o tempeh', 'burger vegetali o seitan', 'legumi', 'tofu o tempeh', 'burger vegetali', 'legumi o tofu']
+        : dietMode === 'vegetarian'
+            ? ['legumi', 'uova', 'tofu o tempeh', 'ricotta o formaggio fresco leggero', 'legumi', 'uova', 'tofu o formaggio fresco leggero']
+            : ['pesce', 'carne bianca', 'uova', 'pesce', 'legumi', 'carne bianca', 'pesce o formaggio fresco leggero'];
+    const goalFocusMap = {
+        dimagrire: ['controllo della fame e densita energetica', 'continuita senza eccessi', 'volume del piatto e sazieta', 'ordine nei carboidrati', 'chiusura di settimana pulita', 'socialita gestita bene', 'appagamento senza perdere struttura'],
+        massa: ['energia stabile e recupero', 'quota proteica ben distribuita', 'continuita calorica ordinata', 'carboidrati utili all allenamento', 'giornata piena ma leggibile', 'pranzo piu ricco ben gestito', 'recupero e struttura'],
+        mantenere: ['equilibrio e continuita', 'varieta e praticita', 'rotazione proteica semplice', 'energia stabile', 'leggerezza sostenibile', 'flessibilita del weekend', 'chiusura settimanale ordinata']
+    };
+    const days = ['Lunedi', 'Martedi', 'Mercoledi', 'Giovedi', 'Venerdi', 'Sabato', 'Domenica'].map((day, index) => {
+        const breakfast = breakfastRotation[index % breakfastRotation.length];
+        const lunchGoalHint = goal === 'massa'
+            ? 'con quota amidacea piena e proteina ben leggibile per sostenere energia e recupero'
+            : (goal === 'dimagrire'
+                ? 'con quota amidacea misurata, alto volume vegetale e proteina chiara per aumentare sazieta'
+                : 'con equilibrio semplice e ripetibile tra energia, proteina e verdure');
+        const dinnerCarbHint = goal === 'massa'
+            ? 'quota glucidica di supporto ben dichiarata come riso, pane, cereali o patate'
+            : (goal === 'dimagrire'
+                ? 'quota glucidica semplice ma misurata, anche piu contenuta se la giornata e stata piu ricca'
+                : (index >= 5 ? 'quota glucidica semplice ma non eccessiva' : 'pane o patate in quota leggibile'));
+        const lunchCompletion = completePlanMealItems(
+            'Pranzo',
+            [
+                lunchBases[index],
+                index >= 5 && lunchContext === 'free-day'
+                    ? 'porzione piu distesa ma senza perdere equilibrio'
+                    : `struttura facile da gestire in un ${lunchContextLabel}`,
+                lunchGoalHint,
+                'verdure presenti in modo chiaro',
+                '10-15 g olio EVO preferibilmente a crudo'
+            ],
+            {
+                protein: dietMode === 'vegan'
+                    ? 'aggiungi una proteina vegetale ben leggibile come legumi, tofu o tempeh'
+                    : (dietMode === 'vegetarian'
+                        ? 'aggiungi una proteina chiara come legumi, uova, tofu o formaggio fresco leggero'
+                        : 'aggiungi una fonte proteica leggibile come pesce, legumi, uova o carne bianca'),
+                cereal: 'completa con una base amidacea chiara come riso, farro, pasta, pane o patate',
+                vegetables: 'assicurati che sia presente una quota di verdure ben visibile',
+                healthyFat: 'dichiara una quota misurata di grassi buoni, preferibilmente olio EVO'
+            }
+        );
+        const dinnerCompletion = completePlanMealItems(
+            'Cena',
+            [
+                `fonte proteica principale: ${dinnerProteins[index]}`,
+                dinnerCarbHint,
+                '10 g olio EVO preferibilmente a crudo'
+            ],
+            {
+                protein: `aggiungi una proteina coerente con la rotazione del giorno: ${dinnerProteins[index]}`,
+                cereal: 'se manca, completa con una base semplice come pane, riso, cereale o patate',
+                vegetables: 'aggiungi una quota ben visibile di verdure',
+                healthyFat: 'dichiara una quota misurata di grassi buoni, preferibilmente olio EVO'
+            }
+        );
+
+        return {
+            day,
+            focus: goalFocusMap[goal]?.[index] || 'equilibrio e continuita',
+            meals: [
+                {
+                    slot: 'Colazione',
+                    title: breakfast.title,
+                    items: breakfast.items
+                },
+                {
+                    slot: 'Spuntini',
+                    title: 'Spuntini flessibili ma ordinati',
+                    items: snackItems
+                },
+                {
+                    slot: 'Pranzo',
+                    title: lunchBases[index],
+                    items: lunchCompletion.items
+                },
+                {
+                    slot: 'Cena',
+                    title: `Cena con ${dinnerProteins[index]}`,
+                    items: dinnerCompletion.items
+                }
+            ],
+            notes: [
+                index >= 5
+                    ? 'Nel weekend il menu puo essere piu rilassato, ma resta utile mantenere una struttura leggibile.'
+                    : `In un ${lunchContextLabel} conviene mantenere il pranzo pratico e ripetibile.`,
+                goal === 'dimagrire'
+                    ? 'Tieni alta la presenza di verdure e proteine, e usa i carboidrati in modo piu misurato ma non punitivo.'
+                    : (goal === 'massa'
+                        ? 'Distribuisci bene energia e proteine nella giornata, con quote amidacee piu dichiarate attorno ai pasti principali.'
+                        : 'La priorita resta una routine semplice, varia e sostenibile.'),
+                dietMode === 'vegan'
+                    ? 'Controlla due volte al giorno la presenza di proteine vegetali chiare e usa semi, frutta secca e olio EVO con misura.'
+                    : (dietMode === 'vegetarian'
+                        ? 'Alterna legumi, uova, tofu e latticini leggeri senza appoggiarti sempre alla stessa fonte proteica.'
+                        : 'Ruota pesce, legumi, uova e carni bianche con piu continuita, lasciando la carne rossa piu sporadica.')
+            ]
+        };
+    });
+
+    const titleMap = {
+        dimagrire: {
+            vegan: 'Menu settimanale vegano orientato al dimagrimento',
+            vegetarian: 'Menu settimanale vegetariano orientato al dimagrimento',
+            omnivore: 'Menu settimanale orientato al dimagrimento'
+        },
+        massa: {
+            vegan: 'Menu settimanale vegano per supporto a massa e recupero',
+            vegetarian: 'Menu settimanale vegetariano per supporto a massa e recupero',
+            omnivore: 'Menu settimanale per supporto a massa e recupero'
+        },
+        mantenere: {
+            vegan: 'Menu settimanale vegano di equilibrio e continuita',
+            vegetarian: 'Menu settimanale vegetariano di equilibrio e continuita',
+            omnivore: 'Menu settimanale di equilibrio e continuita'
+        }
+    };
+    const rationaleMap = {
+        dimagrire: `Schema costruito per aumentare sazieta, leggibilita del pasto e continuita, con carboidrati piu ordinati e densita energetica meglio controllata nel contesto ${lunchContextLabel}.`,
+        massa: `Schema costruito per sostenere energia, recupero e quota proteica distribuita, con una presenza amidacea piu esplicita e una struttura facile da mantenere nel contesto ${lunchContextLabel}.`,
+        mantenere: `Schema costruito per dare varieta, stabilita e una buona rotazione dei pasti senza irrigidire troppo la settimana nel contesto ${lunchContextLabel}.`
+    };
+
+    return {
+        title: titleMap[goal]?.[dietMode] || 'Menu settimanale flessibile costruito sul tuo profilo',
+        rationale: rationaleMap[goal] || `Schema orientativo costruito in base al tuo obiettivo, al tuo regime alimentare e al contesto pranzo ${lunchContextLabel}.`,
+        notes: [
+            'Questo schema funziona come traccia pratica: puoi scambiare i pasti tra giorni diversi mantenendo la stessa logica nutrizionale.',
+            'Per ogni pasto principale controlla la presenza di verdure, una proteina chiara, una base amidacea leggibile e grassi buoni ben misurati.',
+            goal === 'dimagrire'
+                ? 'Quando vuoi alleggerire il piano, riduci prima extras, condimenti e porzioni amidacee troppo abbondanti, non le verdure e non la quota proteica.'
+                : (goal === 'massa'
+                    ? 'Quando vuoi sostenere meglio allenamento e recupero, alza in modo ordinato quota amidacea e proteica invece di aggiungere calorie casuali.'
+                    : 'Se aggiorni profilo, obiettivo o preferenze, anche questo menu guida va reinterpretato di conseguenza.'),
+            dietMode === 'vegan'
+                ? 'Nel profilo vegano la settimana deve rendere sempre leggibile la presenza di legumi, tofu, tempeh, seitan o altre proteine vegetali strutturate.'
+                : (dietMode === 'vegetarian'
+                    ? 'Nel profilo vegetariano conviene alternare davvero le fonti proteiche, senza concentrare tutto su latticini e formaggi.'
+                    : 'Nel profilo onnivoro il valore aggiunto sta soprattutto nella rotazione intelligente delle proteine e nella presenza costante delle verdure.')
+        ],
+        days
+    };
+}
+
+function buildWeeklyGuidanceContent(profile) {
+    const sourceProfile = profile || {};
+    const lunchContext = sourceProfile?.lunchContextPreference === 'free-day' ? 'free-day' : 'workday';
+    const clinicalContext = getClinicalNutritionContext(sourceProfile);
+    const week = clinicalContext.applicable
+        ? getAIWeeklyPlanFallback(sourceProfile, '', lunchContext)
+        : buildGenericWeeklyGuidancePlan(sourceProfile, lunchContext);
+    const goalLabel = getWizardGoalLabel(sourceProfile?.goal || 'mantenere');
+    const dietLabel = getWeeklyGuidanceDietLabel(sourceProfile);
+    const dinnerPreferenceLabel = getDinnerProteinPreferenceLabel(sourceProfile?.dinnerProteinPreference || 'variata');
+    const profileLabel = clinicalContext.applicable
+        ? clinicalContext.profileLabel
+        : 'Profilo generale senza pattern clinico specifico';
+    const cards = [
+        {
+            title: week.title || 'Menu settimanale su misura',
+            bodyHtml: `
+                <p>Questo e il contenitore unico dei menu settimanali del chef nutrizionista: la struttura si aggiorna in base alle informazioni che l'utente ha scelto, cosi i piani restano intercambiabili ma coerenti con il profilo.</p>
+                ${week.rationale ? `<p>${escapeHtml(week.rationale)}</p>` : ''}
+            `
+        },
+        {
+            title: 'Profilo considerato',
+            bodyHtml: `
+                <p><strong>Obiettivo:</strong> ${escapeHtml(goalLabel)}</p>
+                <p><strong>Regime alimentare:</strong> ${escapeHtml(dietLabel)}</p>
+                <p><strong>Contesto pranzo:</strong> ${escapeHtml(getLunchContextLabel(lunchContext))}</p>
+                <p><strong>Rotazione proteica serale:</strong> ${escapeHtml(dinnerPreferenceLabel)}</p>
+                <p><strong>Pattern riconosciuto:</strong> ${escapeHtml(profileLabel)}</p>
+            `
+        },
+        ...((Array.isArray(week.days) ? week.days : []).map((day) => ({
+            title: day.day || 'Giorno',
+            bodyHtml: `
+                ${day.focus ? `<p><strong>Focus:</strong> ${escapeHtml(day.focus)}</p>` : ''}
+                ${(Array.isArray(day.meals) ? day.meals : []).map((meal) => `
+                    <p><strong>${escapeHtml(meal.slot || 'Pasto')}:</strong> ${escapeHtml(meal.title || '')}</p>
+                    ${(Array.isArray(meal.items) && meal.items.length > 0) ? `<ul class="ai-plan-note-list">${renderAICardList(meal.items)}</ul>` : ''}
+                `).join('')}
+                ${(Array.isArray(day.notes) && day.notes.length > 0) ? `<ul class="ai-plan-note-list">${renderAICardList(day.notes)}</ul>` : ''}
+            `
+        }))),
+        ...((Array.isArray(week.notes) && week.notes.length > 0)
+            ? [{
+                title: 'Note della settimana',
+                bodyHtml: `<ul class="ai-plan-note-list">${renderAICardList(week.notes)}</ul>`
+            }]
+            : [])
+    ];
+
+    return { cards };
+}
+
+function renderWeeklyGuidancePanel(profileData) {
+    const weeklyGuidanceGrid = document.getElementById('weekly-guidance-grid');
+
+    if (!weeklyGuidanceGrid) {
+        return;
+    }
+
+    const sourceProfile = profileData || JSON.parse(localStorage.getItem('nv_profilo')) || userProfile || {};
+    const weeklyCards = buildWeeklyGuidanceContent(sourceProfile).cards;
+
+    weeklyGuidanceGrid.innerHTML = weeklyCards.map((card) => `
+        <article class="chef-mode-guide-card">
+            <strong>${escapeHtml(card.title)}</strong>
+            ${card.bodyHtml || `<p>${escapeHtml(card.text || '')}</p>`}
+        </article>
+    `).join('');
+}
+
+function buildSmartRecipeGuidanceContent(profile) {
+    const sourceProfile = profile || {};
+    const dietMode = getPlanningDietMode(sourceProfile);
+    const goal = sourceProfile?.goal || 'mantenere';
+    const goalLabel = getWizardGoalLabel(goal);
+    const dietLabel = getWeeklyGuidanceDietLabel(sourceProfile);
+    const recipes = [];
+
+    recipes.push({
+        title: 'Hummus di pomodori secchi e capperi',
+        bodyHtml: `
+            <p><strong>Perche lo stai vedendo:</strong> e una proposta molto trasversale, adatta a quasi tutti i profili e particolarmente utile quando servono praticita, sapore e buona sazieta con una base vegetale chiara.</p>
+            <p><strong>Quando usarlo nel tuo profilo:</strong> ${goal === 'dimagrire'
+                ? 'puo funzionare bene come pranzo leggero o cena smart se abbini crudite e tieni la piadina in quota leggibile.'
+                : (goal === 'massa'
+                    ? 'puo diventare un ottimo supporto se lo abbini a una quota amidacea piu piena o a un contorno che aumenti energia e completezza del pasto.'
+                    : 'puo essere usato come aperitivo evoluto, pranzo leggero o cena veloce ben organizzata.')}</p>
+            <p><strong>Ingredienti per 2 persone:</strong> olio EVO 15g; ceci cotti 250g; pomodori secchi e capperi sott'olio 100g; succo di limone 30g; capperi 15g; basilico fresco 5g; piadina 240g.</p>
+            <p><strong>Procedimento:</strong></p>
+            <ul class="ai-plan-note-list">${renderAICardList([
+                'Versa nel frullatore pomodori secchi e capperi sott olio, ceci, succo di limone, un pizzico di sale e 15g di olio EVO, poi frulla fino a ottenere una crema liscia e omogenea.',
+                'Scalda una padella antiaderente e tosta i capperi per pochi secondi, finche diventano croccanti.',
+                'Riscalda la piadina su una piastra calda per circa 1 minuto per lato.',
+                'Taglia la piadina a spicchi e distribuisci l hummus in una ciotola o in piccoli piatti individuali.',
+                'Completa con i capperi tostati, il basilico fresco e un filo di olio EVO a crudo tenuto dai 15g totali.'
+            ])}</ul>
+        `
+    });
+
+    if (dietMode === 'vegan') {
+        recipes.push({
+            title: 'Hummus di spinaci in versione vegetale',
+            bodyHtml: `
+                <p><strong>Perche lo stai vedendo:</strong> nel tuo profilo la ricetta viene adattata in chiave 100% vegetale, cosi resta coerente con il regime scelto ma continua a essere cremosa, pratica e appagante.</p>
+                <p><strong>Quando usarlo nel tuo profilo:</strong> ${goal === 'dimagrire'
+                    ? 'funziona bene come cena leggera se aumenti la quota di verdure e mantieni semplice la base amidacea.'
+                    : (goal === 'massa'
+                        ? 'puo diventare piu solido se lo abbini a una piadina piena, a pane integrale o a un cereale semplice di accompagnamento.'
+                        : 'e una proposta vegetale comoda per brunch, pranzo rapido o cena smart.')}</p>
+                <p><strong>Ingredienti per 2 persone:</strong> olio EVO 15g; ceci cotti 250g; succo di limone 30g; spinaci 200g; crema vegetale 140g; pinoli tostati 20g; piadina 240g.</p>
+                <p><strong>Procedimento:</strong></p>
+                <ul class="ai-plan-note-list">${renderAICardList([
+                    'Sbollenta gli spinaci in acqua bollente per circa 7 minuti, fino a 10 minuti se li preferisci piu morbidi.',
+                    'Trasferiscili subito in acqua e ghiaccio, poi scolali e strizzali molto bene.',
+                    'Frulla spinaci, ceci cotti, succo di limone, un pizzico di sale e 15g di olio EVO fino a ottenere una consistenza liscia e vellutata.',
+                    'Scalda la piadina in padella antiaderente per circa 3 minuti per lato, finche diventa ben dorata.',
+                    'Taglia la piadina a spicchi, servi l hummus e completa con crema vegetale, pinoli tostati e l eventuale olio EVO rimasto a crudo.'
+                ])}</ul>
+            `
+        });
+    } else {
+        recipes.unshift({
+            title: 'Hummus di spinaci e stracciatella',
+            bodyHtml: `
+                <p><strong>Perche lo stai vedendo:</strong> ${dietMode === 'vegetarian'
+                    ? 'e una proposta molto coerente con un profilo vegetariano, perche unisce ceci, spinaci e una componente lattiero-casearia in una ricetta facile e soddisfacente.'
+                    : 'e una proposta morbida e appagante che puo stare bene in una routine onnivora quando vuoi alleggerire la cucina senza rinunciare al gusto.'}</p>
+                <p><strong>Quando usarlo nel tuo profilo:</strong> ${goal === 'dimagrire'
+                    ? 'puo essere molto utile se tieni la stracciatella in una quota chiara e aumenti il volume con verdure o crudite di accompagnamento.'
+                    : (goal === 'massa'
+                        ? 'puo diventare piu completo se lo abbini a una base amidacea ben dichiarata e a una porzione leggermente piu generosa di piadina o pane.'
+                        : 'si inserisce bene come brunch, cena leggera o pranzo veloce ma curato.')}</p>
+                <p><strong>Adattabilita:</strong> se vuoi una variante senza lattosio o piu vegetale, puoi sostituire la stracciatella con una crema vegetale.</p>
+                <p><strong>Ingredienti per 2 persone:</strong> olio EVO 15g; ceci cotti 250g; succo di limone 30g; spinaci 200g; stracciatella 150g; pinoli tostati 20g; piadina 240g.</p>
+                <p><strong>Procedimento:</strong></p>
+                <ul class="ai-plan-note-list">${renderAICardList([
+                    'Sbollenta gli spinaci in acqua bollente per circa 7 minuti, fino a 10 minuti se li preferisci piu morbidi.',
+                    'Trasferiscili subito in acqua e ghiaccio per mantenere il colore brillante, poi scolali e strizzali molto bene.',
+                    'Frulla spinaci, ceci cotti, succo di limone, un pizzico di sale e 15g di olio EVO fino a ottenere una consistenza liscia e vellutata.',
+                    'Scalda la piadina in padella antiaderente per circa 3 minuti per lato, finche diventa ben dorata.',
+                    'Taglia la piadina a spicchi, servi accanto o spalma l hummus e aggiungi al centro un cucchiaio abbondante di stracciatella.',
+                    'Completa con pinoli tostati e l eventuale olio EVO rimasto a crudo.'
+                ])}</ul>
+            `
+        });
+    }
+
+    return {
+        cards: [
+            {
+                title: 'Ricette smart costruite sul tuo profilo',
+                bodyHtml: `
+                    <p>Le ricette smart non sono piu statiche: ora vengono ordinate o adattate in base alle informazioni inserite dall utente, cosi restano coerenti con obiettivo, regime alimentare e stile di vita.</p>
+                    <p><strong>Obiettivo:</strong> ${escapeHtml(goalLabel)}<br><strong>Regime alimentare:</strong> ${escapeHtml(dietLabel)}</p>
+                `
+            },
+            ...recipes
+        ]
+    };
+}
+
+function renderSmartRecipeGuidancePanel(profileData) {
+    const smartRecipesGrid = document.getElementById('smart-recipes-guidance-grid');
+
+    if (!smartRecipesGrid) {
+        return;
+    }
+
+    const sourceProfile = profileData || JSON.parse(localStorage.getItem('nv_profilo')) || userProfile || {};
+    const recipeCards = buildSmartRecipeGuidanceContent(sourceProfile).cards;
+
+    smartRecipesGrid.innerHTML = recipeCards.map((card) => `
+        <article class="chef-mode-guide-card">
+            <strong>${escapeHtml(card.title)}</strong>
+            ${card.bodyHtml || `<p>${escapeHtml(card.text || '')}</p>`}
         </article>
     `).join('');
 }
@@ -2267,6 +4162,94 @@ const generaDatabase = (testo) => {
 const db = generaDatabase(datiAlimenti);
 
 
+function parseLegacyIngredientQuantity(text) {
+    const normalized = String(text || '').trim().replace(',', '.');
+    if (!normalized) {
+        return 0;
+    }
+
+    const directMatch = normalized.match(/(\d+(?:\.\d+)?)\s*g\b/i);
+    if (directMatch) {
+        return Number(Number(directMatch[1]).toFixed(1));
+    }
+
+    const rangeMatch = normalized.match(/(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)\s*g\b/i);
+    if (rangeMatch) {
+        return Number(Number(rangeMatch[2]).toFixed(1));
+    }
+
+    return 0;
+}
+
+function stripLegacyIngredientQuantity(text) {
+    return String(text || '')
+        .replace(/^(\d+(?:[.,]\d+)?(?:\s*-\s*\d+(?:[.,]\d+)?)?)\s*g\s*(?:di\s+)?/i, '')
+        .replace(/\b(\d+(?:[.,]\d+)?(?:\s*-\s*\d+(?:[.,]\d+)?)?)\s*g\b/gi, '')
+        .replace(/^di\s+/i, '')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+}
+
+function normalizeSavedRecipeItem(item) {
+    if (item && typeof item === 'object' && !Array.isArray(item)) {
+        const sourceName = String(item.n || item.name || item.ingredient || '').trim();
+        const parsedQty = parseLegacyIngredientQuantity(sourceName);
+        const normalizedQty = Number(item.qty || 0) > 0 ? Number(item.qty || 0) : parsedQty;
+        const normalizedName = stripLegacyIngredientQuantity(sourceName) || sourceName;
+
+        return {
+            ...item,
+            n: normalizedName,
+            qty: normalizedQty,
+            k: Number(item.k || item.kcal || 0),
+            p: Number(item.p || item.protein || 0),
+            c: Number(item.c || item.carbs || 0),
+            g: Number(item.g || item.fat || 0),
+            fe: Number(item.fe || 0),
+            ca: Number(item.ca || 0),
+            b12: Number(item.b12 || 0)
+        };
+    }
+
+    const sourceName = String(item || '').trim();
+    return {
+        n: stripLegacyIngredientQuantity(sourceName) || sourceName,
+        qty: parseLegacyIngredientQuantity(sourceName),
+        k: 0,
+        p: 0,
+        c: 0,
+        g: 0,
+        fe: 0,
+        ca: 0,
+        b12: 0
+    };
+}
+
+function normalizeSavedRecipesCollection(recipes) {
+    const sourceRecipes = Array.isArray(recipes) ? recipes : [];
+    let changed = false;
+
+    const normalizedRecipes = sourceRecipes.map((recipe) => {
+        const normalizedItems = Array.isArray(recipe?.items)
+            ? recipe.items.map((item) => normalizeSavedRecipeItem(item))
+            : [];
+
+        const normalizedRecipe = {
+            ...recipe,
+            items: normalizedItems
+        };
+
+        if (JSON.stringify(recipe) !== JSON.stringify(normalizedRecipe)) {
+            changed = true;
+        }
+
+        return normalizedRecipe;
+    });
+
+    return { recipes: normalizedRecipes, changed };
+}
+
+
 
 let profilo = JSON.parse(localStorage.getItem('nv_profilo')) || null;
 let diario = JSON.parse(localStorage.getItem('nv_diario')) || [];
@@ -2276,7 +4259,11 @@ let tempRecipe = { items: [], k: 0, p: 0, c: 0, g: 0, fe: 0, ca: 0, b12: 0 };
 
 // 2. STATO DEL DIARIO/CALENDARIO
 let log = JSON.parse(localStorage.getItem('nv_log')) || {};
-let ricetteSalvate = JSON.parse(localStorage.getItem('nv_ricette')) || [];
+const normalizedSavedRecipesState = normalizeSavedRecipesCollection(JSON.parse(localStorage.getItem('nv_ricette')) || []);
+let ricetteSalvate = normalizedSavedRecipesState.recipes;
+if (normalizedSavedRecipesState.changed) {
+    localStorage.setItem('nv_ricette', JSON.stringify(ricetteSalvate));
+}
 let activeDate = formatLocalIsoDate(new Date());
 let currentMonth = new Date();
 let currentMealType = null;
@@ -2538,6 +4525,8 @@ function initApp(profile) {
     applyLunchContextPreference(profile);
     renderUserProfileSummary();
     renderLifestyleGuidancePanel(profile);
+    renderWeeklyGuidancePanel(profile);
+    renderSmartRecipeGuidancePanel(profile);
     mostraSezione('home');
     aggiornaUI();
     aggiornaListaRicetteSalvate();
@@ -3050,6 +5039,8 @@ function mostraSezione(tabId) {
     }
     if (tabId === 'pasti-rapidi') {
         aggiornaListaRicetteSalvate();
+        renderWeeklyGuidancePanel(JSON.parse(localStorage.getItem('nv_profilo')) || userProfile || {});
+        renderSmartRecipeGuidancePanel(JSON.parse(localStorage.getItem('nv_profilo')) || userProfile || {});
         toggleAiMode();
     }
     if (tabId === 'profilo') {
@@ -3128,17 +5119,20 @@ function cambiaMese(offset) {
 function renderUserProfileSummary() {
     const homeProfileSummary = document.getElementById('home-profile-summary');
     const diaryData = JSON.parse(localStorage.getItem('userDiaryProfile'));
+    const activeProfile = diaryData?.profilo || profilo || userProfile || {};
 
     if (!homeProfileSummary) return;
 
-    renderLifestyleGuidancePanel(diaryData?.profilo || profilo || userProfile || {});
+    renderLifestyleGuidancePanel(activeProfile);
+    renderWeeklyGuidancePanel(activeProfile);
+    renderSmartRecipeGuidancePanel(activeProfile);
 
     if (diaryData && diaryData.profilo) {
         const dinnerPreferenceLabel = getDinnerProteinPreferenceLabel(diaryData.profilo.dinnerProteinPreference || 'variata');
         const dinnerFrequencyLabel = getDinnerProteinFrequencyLabel(diaryData.profilo.dinnerProteinFrequency || 'libera');
         homeProfileSummary.innerHTML = `
             <div style="margin-bottom: 10px; padding: 10px 12px; background: #f4f9ff; border: 1px solid #dce9f5; border-radius: 14px; text-align: center;">
-                <strong>${escapeHtml(diaryData.profilo.username || 'Utente')}</strong> • ${escapeHtml(diaryData.profilo.sex || '-')} • ${escapeHtml(diaryData.profilo.age || '-')} anni • IMC: ${escapeHtml(diaryData.profilo.imc || '-')} • Fabbisogno: ${escapeHtml(diaryData.profilo.maintenanceCalories || '-')} kcal • Piano: ${escapeHtml(diaryData.profilo.target || '-')} kcal • Cena: ${escapeHtml(dinnerPreferenceLabel)} • Frequenza: ${escapeHtml(dinnerFrequencyLabel)}
+                <strong>${escapeHtml(diaryData.profilo.username || 'Utente')}</strong> • ${escapeHtml(diaryData.profilo.sex || '-')} • ${escapeHtml(diaryData.profilo.age || '-')} anni • IMC: ${escapeHtml(diaryData.profilo.imc || '-')} • Fabbisogno: ${escapeHtml(diaryData.profilo.maintenanceCalories || '-')} kcal • Piano: ${escapeHtml(diaryData.profilo.target || '-')} kcal • Preferenza serale: ${escapeHtml(dinnerPreferenceLabel)} • Uso suggerito: ${escapeHtml(dinnerFrequencyLabel)}
             </div>
         `;
         return;
@@ -3221,6 +5215,28 @@ function selectMealType(type, btn) {
     document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
     if (btn) btn.classList.add('active');
 }
+
+function selezionaOpzioneChip(btn, hiddenInputId, value) {
+    const hiddenInput = document.getElementById(hiddenInputId);
+    if (!hiddenInput) {
+        return;
+    }
+
+    hiddenInput.value = value;
+
+    const chipGroup = btn?.closest('.chip-group') || hiddenInput.closest('.chip-group') || hiddenInput.parentElement;
+    if (chipGroup) {
+        chipGroup.querySelectorAll('.chip').forEach((chip) => chip.classList.remove('active'));
+    }
+
+    if (btn) {
+        btn.classList.add('active');
+    }
+
+    hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
+window.selezionaOpzioneChip = selezionaOpzioneChip;
 
 function aggiornaTotaliGiorno(giorno, entry, segno) {
     giorno.k += (entry.k * segno);
@@ -3548,7 +5564,7 @@ function renderTempRecipe() {
 
     list.innerHTML = tempRecipe.items.map((item, idx) => `
         <li style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:#f8f9fd;border-radius:12px;margin: 6px 0;">
-            <span style="font-family:'Inter',sans-serif;">${item.n} - ${item.qty}g</span>
+            <span style="font-family:'Inter',sans-serif;">${formatIngredientDisplay(item)}</span>
             <span style="font-weight:700;">${Math.round(item.k)} kcal</span>
             <button onclick="rimuoviIngredienteRicetta(${idx})" style="background:#ff9800;border:none;color:white;border-radius:8px;padding:4px 10px;cursor:pointer;">×</button>
         </li>
@@ -3576,6 +5592,25 @@ function rimuoviIngredienteRicetta(index) {
     tempRecipe.b12 -= item.b12;
     tempRecipe.items.splice(index, 1);
     renderTempRecipe();
+}
+
+function formatIngredientQtyLabel(value) {
+    const qty = Number(value || 0);
+    if (!Number.isFinite(qty) || qty <= 0) {
+        return '';
+    }
+
+    return Number.isInteger(qty) ? `${qty}g` : `${qty.toFixed(1).replace(/\.0$/, '')}g`;
+}
+
+function formatIngredientDisplay(item) {
+    if (item && typeof item === 'object') {
+        const name = String(item.n || item.name || item.ingredient || '').trim();
+        const qtyLabel = formatIngredientQtyLabel(item.qty);
+        return qtyLabel ? `${name} ${qtyLabel}`.trim() : name;
+    }
+
+    return String(item || '').trim();
 }
 
 function salvaRicettaDefinitiva() {
@@ -3662,11 +5697,57 @@ function updateAiModeResultsVisibility(activeResultId) {
     }
 }
 
+function getChipGroupForHiddenInput(hiddenInput) {
+    if (!hiddenInput) return null;
+
+    const nextElement = hiddenInput.nextElementSibling;
+    if (nextElement?.classList?.contains('chip-group')) {
+        return nextElement;
+    }
+
+    return hiddenInput.parentElement?.querySelector('.chip-group') || null;
+}
+
+function clearChipInputSelection(hiddenInputId) {
+    const hiddenInput = document.getElementById(hiddenInputId);
+    if (!hiddenInput) return;
+
+    hiddenInput.value = '';
+    const chipGroup = getChipGroupForHiddenInput(hiddenInput);
+    chipGroup?.querySelectorAll('.chip').forEach((chip) => chip.classList.remove('active'));
+}
+
+function toggleChefModeRecipeFlow() {
+    const selector = document.getElementById('ai-mode-selector');
+    const mealTypeInput = document.getElementById('chef-recipe-meal-type');
+    const mealTypeGroup = document.getElementById('chef-mode-meal-type-group');
+    const difficultyGroup = document.getElementById('chef-mode-difficulty-group');
+    const isRecipeMode = selector?.value === 'recipe';
+    const hasMealType = Boolean(mealTypeInput?.value);
+
+    if (!isRecipeMode) {
+        clearChipInputSelection('chef-recipe-meal-type');
+        clearChipInputSelection('chef-recipe-difficulty');
+    }
+
+    if (mealTypeGroup) {
+        mealTypeGroup.style.display = isRecipeMode ? 'flex' : 'none';
+    }
+
+    if (difficultyGroup) {
+        difficultyGroup.style.display = isRecipeMode && hasMealType ? 'flex' : 'none';
+    }
+
+    if (!isRecipeMode || !hasMealType) {
+        clearChipInputSelection('chef-recipe-difficulty');
+    }
+}
+
 function toggleAiMode() {
     const selector = document.getElementById('ai-mode-selector');
     if (!selector) return;
 
-    const mode = selector.value || 'recipe';
+    const mode = selector.value || '';
     const fieldGroups = {
         recipe: document.getElementById('ai-mode-recipes-fields'),
         daily: document.getElementById('ai-mode-daily-fields'),
@@ -3687,12 +5768,14 @@ function toggleAiMode() {
 
     Object.entries(fieldGroups).forEach(([key, element]) => {
         if (!element) return;
-        element.style.display = key === mode ? 'flex' : 'none';
+        element.style.display = key === mode && Boolean(mode) ? 'flex' : 'none';
     });
 
     if (recipeOptions) {
         recipeOptions.style.display = mode === 'recipe' ? 'flex' : 'none';
     }
+
+    toggleChefModeRecipeFlow();
 
     if (dailyButton) {
         dailyButton.style.display = mode === 'daily' ? 'block' : 'none';
@@ -3712,6 +5795,9 @@ function toggleAiMode() {
 
     updateAiModeResultsVisibility(resultByMode[mode]);
 }
+
+window.toggleChefModeRecipeFlow = toggleChefModeRecipeFlow;
+window.toggleAiMode = toggleAiMode;
 
 function aggiornaListaRicetteSalvate() {
     const list = document.getElementById('preset-list');
@@ -3734,6 +5820,7 @@ function aggiornaListaRicetteSalvate() {
                 <div>
                     <strong style="font-family:'Poppins',sans-serif;">${r.n}</strong><br>
                     <small style="color:#7f8c8d;">${r.aiGenerated ? 'AI Mode salvata come ispirazione' : `${Math.round(r.k)} kcal / porzione`}</small>
+                    ${Array.isArray(r.items) && r.items.length > 0 ? `<br><small style="color:#51606f;display:block;margin-top:4px;">${escapeHtml(r.items.slice(0, 4).map((item) => formatIngredientDisplay(item)).filter(Boolean).join(', '))}${r.items.length > 4 ? '...' : ''}</small>` : ''}
                 </div>
                 <div style="display:flex;gap:6px;">
                     ${r.aiGenerated ? '' : `<button onclick="modificaRicetta(${i})" style="background:#34b27f;color:white;border:none;border-radius:10px;padding:5px 8px;">✎</button>`}
@@ -3875,6 +5962,9 @@ function getAIProfilePayload() {
         goalCalorieDelta: storedProfile.goalCalorieDelta || 0,
         proteinTargetPerKg: storedProfile.proteinTargetPerKg || 0,
         proteinTargetGrams: storedProfile.proteinTarget || 0,
+        carbsTargetGrams: storedProfile.carbsTarget || 0,
+        fatTargetGrams: storedProfile.fatTarget || 0,
+        fiberTargetGrams: storedProfile.fiberTarget || 0,
         mealsPerDay: storedProfile.mealsPerDay || 0,
         waterIntake: storedProfile.waterIntake || 0,
         waterTargetLiters: storedProfile.acquaObiettivo || 0,
@@ -3895,6 +5985,282 @@ function formatDeltaKcal(value) {
 
 function renderAICardList(items) {
     return (items || []).map((item) => `<li>${escapeHtml(item)}</li>`).join('');
+}
+
+let lastWeeklyPlanPayload = null;
+
+function normalizePlanningText(value) {
+    return String(value || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .trim();
+}
+
+function shouldUseVeganPlanning(profile, extraSignals = '') {
+    const signals = normalizePlanningText(`${extraSignals} ${profile?.diet || ''} ${profile?.goal || ''} ${profile?.otherPathologies || ''}`);
+    return signals.includes('vegano')
+        || signals.includes('vegan')
+        || signals.includes('100% vegetale')
+        || signals.includes('100 vegetale')
+        || signals.includes('plant based')
+        || signals.includes('plant-based')
+        || signals.includes('totalmente vegetale');
+}
+
+function hasPlanningKeyword(text, keywords) {
+    const normalized = normalizePlanningText(text);
+    return (keywords || []).some((keyword) => normalized.includes(normalizePlanningText(keyword)));
+}
+
+function uniquePlanningStrings(values) {
+    return [...new Set((values || []).map((item) => String(item || '').trim()).filter(Boolean))];
+}
+
+function completePlanMealItems(slot, items, fallbacks) {
+    const baseItems = Array.isArray(items) ? items.filter(Boolean) : [];
+    const text = baseItems.join(' | ');
+    const slotNormalized = normalizePlanningText(slot);
+    const completedItems = [...baseItems];
+    const addedComponents = [];
+
+    if (!['pranzo', 'cena'].includes(slotNormalized)) {
+        return { items: uniquePlanningStrings(completedItems), addedComponents };
+    }
+
+    const needsProtein = !hasPlanningKeyword(text, ['legumi', 'ceci', 'lenticchie', 'fagioli', 'edamame', 'pesce', 'salmone', 'sgombro', 'acciugh', 'tonno', 'carne', 'pollo', 'tacchino', 'uova', 'uovo', 'tofu', 'tempeh', 'ricotta', 'formaggio', 'grana', 'mozzarella', 'seitan', 'burger']);
+    const needsCereal = !hasPlanningKeyword(text, ['pasta', 'riso', 'farro', 'orzo', 'quinoa', 'cous', 'grano saraceno', 'pane', 'cracker', 'patate', 'gnocchi', 'miglio']);
+    const needsVegetables = !hasPlanningKeyword(text, ['verdur', 'insalata', 'carota', 'finocchio', 'zucchina', 'broccoli', 'spinaci', 'radicchio', 'bieta', 'cavolo', 'pomodoro', 'orto']);
+    const needsHealthyFat = !hasPlanningKeyword(text, ['olio evo', 'olio extravergine', 'olio', 'frutta secca', 'semi', 'grassi buoni', 'avocado']);
+
+    if (needsProtein && fallbacks?.protein) {
+        completedItems.push(fallbacks.protein);
+        addedComponents.push('proteine');
+    }
+    if (needsCereal && fallbacks?.cereal) {
+        completedItems.push(fallbacks.cereal);
+        addedComponents.push('cereali');
+    }
+    if (needsVegetables && fallbacks?.vegetables) {
+        completedItems.push(fallbacks.vegetables);
+        addedComponents.push('verdure');
+    }
+    if (needsHealthyFat && fallbacks?.healthyFat) {
+        completedItems.push(fallbacks.healthyFat);
+        addedComponents.push('grassi buoni');
+    }
+
+    return {
+        items: uniquePlanningStrings(completedItems),
+        addedComponents
+    };
+}
+
+function tokenizePantryInput(value) {
+    return uniquePlanningStrings(String(value || '').split(/[;,\n|]+/).map((item) => item.trim()))
+        .map((item) => ({ raw: item, normalized: normalizePlanningText(item) }))
+        .filter((item) => item.normalized.length >= 2);
+}
+
+const SHOPPING_ITEM_RULES = [
+    { label: 'verdure di stagione', category: 'produce', keywords: ['verdure di stagione', 'verdure miste', 'verdure', 'orto'] },
+    { label: 'insalata', category: 'produce', keywords: ['insalata mista', 'insalata'] },
+    { label: 'pomodori', category: 'produce', keywords: ['pomodorini', 'pomodori', 'pomodoro'] },
+    { label: 'rucola', category: 'produce', keywords: ['rucola'] },
+    { label: 'avocado', category: 'produce', keywords: ['avocado'] },
+    { label: 'zucchine', category: 'produce', keywords: ['zucchine', 'zucchina'] },
+    { label: 'carote', category: 'produce', keywords: ['carote', 'carota'] },
+    { label: 'spinaci', category: 'produce', keywords: ['spinaci', 'spinacio'] },
+    { label: 'broccoli', category: 'produce', keywords: ['broccoli', 'broccolo'] },
+    { label: 'cavolo nero', category: 'produce', keywords: ['cavolo nero'] },
+    { label: 'melanzane', category: 'produce', keywords: ['melanzane', 'melanzana'] },
+    { label: 'peperoni', category: 'produce', keywords: ['peperoni', 'peperone'] },
+    { label: 'cetrioli', category: 'produce', keywords: ['cetrioli', 'cetriolo'] },
+    { label: 'finocchi', category: 'produce', keywords: ['finocchi', 'finocchio'] },
+    { label: 'cipolle', category: 'produce', keywords: ['cipolle', 'cipolla'] },
+    { label: 'aglio', category: 'produce', keywords: ['aglio'] },
+    { label: 'limoni', category: 'produce', keywords: ['limone', 'limoni'] },
+    { label: 'frutta fresca', category: 'produce', keywords: ['frutta fresca', 'frutta', 'banana', 'mela', 'pere', 'pera', 'frutti di bosco', 'agrumi'] },
+    { label: 'patate', category: 'produce', keywords: ['patate', 'patata'] },
+    { label: 'ceci', category: 'legumes-plant-proteins', keywords: ['ceci'] },
+    { label: 'lenticchie', category: 'legumes-plant-proteins', keywords: ['lenticchie', 'lenticchia'] },
+    { label: 'fagioli', category: 'legumes-plant-proteins', keywords: ['fagioli', 'fagiolo', 'cannellini', 'borlotti'] },
+    { label: 'piselli', category: 'legumes-plant-proteins', keywords: ['piselli', 'pisello'] },
+    { label: 'edamame', category: 'legumes-plant-proteins', keywords: ['edamame'] },
+    { label: 'tofu', category: 'legumes-plant-proteins', keywords: ['tofu'] },
+    { label: 'tempeh', category: 'legumes-plant-proteins', keywords: ['tempeh'] },
+    { label: 'hummus', category: 'legumes-plant-proteins', keywords: ['hummus'] },
+    { label: 'burger vegetali', category: 'legumes-plant-proteins', keywords: ['burger vegetali', 'burger di lupini', 'burger'] },
+    { label: 'yogurt di soia', category: 'legumes-plant-proteins', keywords: ['yogurt di soia'] },
+    { label: 'bevanda di soia', category: 'legumes-plant-proteins', keywords: ['bevanda di soia', 'latte di soia'] },
+    { label: 'pasta', category: 'grains-bakery', keywords: ['pasta'] },
+    { label: 'riso', category: 'grains-bakery', keywords: ['riso'] },
+    { label: 'quinoa', category: 'grains-bakery', keywords: ['quinoa'] },
+    { label: 'farro', category: 'grains-bakery', keywords: ['farro'] },
+    { label: 'orzo', category: 'grains-bakery', keywords: ['orzo'] },
+    { label: 'cous cous', category: 'grains-bakery', keywords: ['cous cous', 'cous-cous'] },
+    { label: 'polenta', category: 'grains-bakery', keywords: ['polenta'] },
+    { label: 'miglio', category: 'grains-bakery', keywords: ['miglio'] },
+    { label: 'avena', category: 'grains-bakery', keywords: ['avena'] },
+    { label: 'pane', category: 'grains-bakery', keywords: ['pane', 'crostini', 'bruschette', 'bruschetta'] },
+    { label: 'piadina', category: 'grains-bakery', keywords: ['piadina'] },
+    { label: 'crackers integrali', category: 'grains-bakery', keywords: ['crackers', 'cracker'] },
+    { label: 'feta', category: 'fridge-fresh', keywords: ['feta'] },
+    { label: 'ricotta', category: 'fridge-fresh', keywords: ['ricotta'] },
+    { label: 'mozzarella', category: 'fridge-fresh', keywords: ['mozzarella'] },
+    { label: 'yogurt', category: 'fridge-fresh', keywords: ['yogurt greco', 'skyr', 'yogurt'] },
+    { label: 'uova', category: 'fish-meat-eggs', keywords: ['uova', 'uovo'] },
+    { label: 'pollo', category: 'fish-meat-eggs', keywords: ['pollo', 'tacchino'] },
+    { label: 'manzo', category: 'fish-meat-eggs', keywords: ['manzo', 'ragu di manzo', 'carne'] },
+    { label: 'branzino', category: 'fish-meat-eggs', keywords: ['branzino'] },
+    { label: 'orata', category: 'fish-meat-eggs', keywords: ['orata'] },
+    { label: 'merluzzo', category: 'fish-meat-eggs', keywords: ['merluzzo', 'baccala'] },
+    { label: 'salmone', category: 'fish-meat-eggs', keywords: ['salmone'] },
+    { label: 'olio EVO', category: 'condiments-pantry', keywords: ['olio evo', 'olio extravergine', 'olio'] },
+    { label: 'olive', category: 'condiments-pantry', keywords: ['olive'] },
+    { label: 'semi di lino o chia', category: 'condiments-pantry', keywords: ['semi di lino', 'semi di chia', 'chia', 'lino'] },
+    { label: 'semi di girasole', category: 'condiments-pantry', keywords: ['semi di girasole'] },
+    { label: 'frutta secca', category: 'condiments-pantry', keywords: ['frutta secca', 'noci', 'mandorle'] },
+    { label: 'tahina', category: 'condiments-pantry', keywords: ['tahina'] },
+    { label: 'paprika', category: 'condiments-pantry', keywords: ['paprika'] },
+    { label: 'curry', category: 'condiments-pantry', keywords: ['curry'] },
+    { label: 'erbe aromatiche', category: 'condiments-pantry', keywords: ['aromi', 'rosmarino', 'basilico', 'erbe aromatiche'] }
+];
+
+function cleanShoppingPhrase(value) {
+    return String(value || '')
+        .replace(/\([^)]*\)/g, ' ')
+        .replace(/\b(inizio con|apertura con|eventuale|contorno di|quota|fonte proteica prioritaria|come base proteica|come scelta principale|come quota glucidica|di accompagnamento|di supporto|ben dichiarat[oaie]|preferibilmente a crudo|struttura facile da preparare o portare fuori casa)\b/gi, ' ')
+        .replace(/\b(al cartoccio|al forno|al vapore|in padella|tostat[oaie]|grigliat[oaie]|semplice|semplici|legger[oaie]|cott[oaie]|crud[oaie])\b/gi, ' ')
+        .replace(/[.:]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function extractShoppingItemsFromText(value) {
+    const normalized = normalizePlanningText(value);
+    if (!normalized || hasPlanningKeyword(normalized, ['eventuale', 'controllo', 'focus del giorno'])) {
+        return [];
+    }
+
+    const matched = SHOPPING_ITEM_RULES
+        .filter((rule) => hasPlanningKeyword(normalized, rule.keywords))
+        .map((rule) => rule.label);
+
+    if (matched.length > 0) {
+        return uniquePlanningStrings(matched);
+    }
+
+    return uniquePlanningStrings(
+        cleanShoppingPhrase(value)
+            .split(/,|;|\/|\boppure\b|\be\b/gi)
+            .map((item) => item.trim())
+            .filter((item) => item.length >= 3 && !hasPlanningKeyword(item, ['fame', 'giornata', 'profilo', 'rotazione', 'struttura']))
+            .slice(0, 3)
+    );
+}
+
+function buildWeeklyShoppingInsights(week, pantryRaw) {
+    const pantryTokens = tokenizePantryInput(pantryRaw);
+    const allItems = uniquePlanningStrings((Array.isArray(week?.days) ? week.days : []).flatMap((day) =>
+        (Array.isArray(day?.meals) ? day.meals : []).flatMap((meal) => (Array.isArray(meal?.items) ? meal.items : []))
+    ));
+    const extractedItems = uniquePlanningStrings(allItems.flatMap((item) => extractShoppingItemsFromText(item)));
+    const alreadyCovered = [];
+    const toBuy = [];
+
+    extractedItems.forEach((item) => {
+        const normalizedItem = normalizePlanningText(item);
+        const hasMatch = pantryTokens.some((token) => normalizedItem.includes(token.normalized) || token.normalized.includes(normalizedItem));
+        if (hasMatch) {
+            alreadyCovered.push(item);
+        } else {
+            toBuy.push(item);
+        }
+    });
+
+    return {
+        pantryLabels: pantryTokens.map((token) => token.raw),
+        alreadyCovered: uniquePlanningStrings(alreadyCovered),
+        toBuy: uniquePlanningStrings(toBuy)
+    };
+}
+
+function getShoppingCategoryLabel(key) {
+    return {
+        produce: 'Ortofrutta',
+        'legumes-plant-proteins': 'Legumi e proteine vegetali',
+        'grains-bakery': 'Cereali, pane e forno',
+        'fridge-fresh': 'Banco frigo e freschi',
+        'fish-meat-eggs': 'Pescheria, carni e uova',
+        'condiments-pantry': 'Dispensa, condimenti e semi',
+        other: 'Altro'
+    }[key] || 'Altro';
+}
+
+function categorizeShoppingItem(item) {
+    const normalized = normalizePlanningText(item);
+    const matchedRule = SHOPPING_ITEM_RULES.find((rule) => normalizePlanningText(rule.label) === normalized || hasPlanningKeyword(normalized, rule.keywords));
+
+    if (matchedRule) {
+        return matchedRule.category;
+    }
+
+    if (hasPlanningKeyword(normalized, ['verdur', 'insalata', 'pomodor', 'rucola', 'avocado', 'zucchine', 'carote', 'spinaci', 'olive', 'radicchio', 'stagione', 'frutta', 'patate'])) {
+        return 'produce';
+    }
+
+    if (hasPlanningKeyword(normalized, ['ceci', 'lenticchie', 'fagioli', 'piselli', 'edamame', 'tofu', 'tempeh', 'hummus', 'burger vegetali'])) {
+        return 'legumes-plant-proteins';
+    }
+
+    if (hasPlanningKeyword(normalized, ['pasta', 'riso', 'quinoa', 'farro', 'polenta', 'piadina', 'pane', 'cous cous', 'cous-cous', 'tagliatelle', 'miglio', 'avena'])) {
+        return 'grains-bakery';
+    }
+
+    if (hasPlanningKeyword(normalized, ['feta', 'ricotta', 'mozzarella', 'yogurt', 'skyr'])) {
+        return 'fridge-fresh';
+    }
+
+    if (hasPlanningKeyword(normalized, ['pesce', 'branzino', 'orata', 'merluzzo', 'pollo', 'manzo', 'uova', 'uovo'])) {
+        return 'fish-meat-eggs';
+    }
+
+    if (hasPlanningKeyword(normalized, ['olio', 'semi', 'girasole', 'aromi', 'rosmarino', 'paprika', 'limone', 'curry', 'tahina'])) {
+        return 'condiments-pantry';
+    }
+
+    return 'other';
+}
+
+function groupShoppingItemsByCategory(items) {
+    const groups = {
+        produce: [],
+        'legumes-plant-proteins': [],
+        'grains-bakery': [],
+        'fridge-fresh': [],
+        'fish-meat-eggs': [],
+        'condiments-pantry': [],
+        other: []
+    };
+
+    (items || []).forEach((item) => {
+        groups[categorizeShoppingItem(item)].push(item);
+    });
+
+    return Object.entries(groups)
+        .filter(([, values]) => values.length > 0)
+        .map(([key, values]) => ({
+            key,
+            label: getShoppingCategoryLabel(key),
+            items: uniquePlanningStrings(values)
+        }));
+}
+
+function refreshWeeklyPlanDerivedViews() {
+    if (lastWeeklyPlanPayload) {
+        renderAIWeeklyPlanResults(lastWeeklyPlanPayload);
+    }
 }
 
 function getLunchContextLabel(value) {
@@ -3929,12 +6295,12 @@ function getDinnerProteinFrequencyLabel(value) {
     const normalized = normalizeDinnerProteinFrequency(value);
 
     return {
-        libera: 'Frequenza libera, senza obiettivo settimanale fisso',
-        '1-2': 'Circa 1-2 volte a settimana',
-        '2-3': 'Circa 2-3 volte a settimana',
-        '3-4': 'Circa 3-4 volte a settimana',
-        '5+': 'Quasi ogni giorno'
-    }[normalized] || 'Frequenza libera, senza obiettivo settimanale fisso';
+        libera: 'Libero durante la settimana',
+        '1-2': 'Circa 1-2 cene a settimana',
+        '2-3': 'Circa 2-3 cene a settimana',
+        '3-4': 'Circa 3-4 cene a settimana',
+        '5+': 'Quasi ogni sera'
+    }[normalized] || 'Libero durante la settimana';
 }
 
 function getDinnerProteinPreferencePrompt(value) {
@@ -4112,8 +6478,31 @@ const AI_RECIPE_MODE_SLOTS = [
     { key: 'base', label: 'Cucina base', difficulty: 'Semplice' },
     { key: 'media', label: 'Cucina media', difficulty: 'Media' },
     { key: 'chef', label: 'Chef mode', difficulty: 'Chef' },
-    { key: 'salvafrigo', label: 'Salvafrigo', difficulty: 'Semplice' }
+    { key: 'salvafrigo', label: 'Salvafrigo', difficulty: 'Salvafrigo' }
 ];
+
+function normalizeAIRecipeRequestedMode(value) {
+    const normalized = String(value || '').trim().toLowerCase();
+
+    if (normalized.includes('salvafrigo')) return 'salvafrigo';
+    if (normalized.includes('chef')) return 'chef';
+    if (normalized.includes('media')) return 'media';
+    return 'base';
+}
+
+function getAIRecipeModeSlot(recipe, requestedMode) {
+    const requestedSlot = AI_RECIPE_MODE_SLOTS.find((slot) => slot.key === normalizeAIRecipeRequestedMode(requestedMode));
+    const recipeSignals = [
+        String(recipe?.mode_key || recipe?.modeKey || ''),
+        String(recipe?.mode_label || recipe?.modeLabel || ''),
+        String(recipe?.difficolta || ''),
+        String(recipe?.style || '')
+    ].join(' ').toLowerCase();
+
+    return requestedSlot
+        || AI_RECIPE_MODE_SLOTS.find((slot) => recipeSignals.includes(slot.key) || recipeSignals.includes(slot.label.toLowerCase()) || recipeSignals.includes(slot.difficulty.toLowerCase()))
+        || AI_RECIPE_MODE_SLOTS[0];
+}
 
 const AI_NUTRITION_METHODOLOGY = {
     summary: [
@@ -4227,6 +6616,109 @@ function renderAINutritionMethodology() {
     `;
 }
 
+function normalizeAIRecipeMealType(value) {
+    const normalized = String(value || '').trim().toLowerCase();
+
+    if (['colazione', 'pranzo', 'cena', 'spuntino'].includes(normalized)) {
+        return normalized;
+    }
+
+    return 'pranzo';
+}
+
+function getAIRecipeMealTypeMeta(value) {
+    const mealType = normalizeAIRecipeMealType(value);
+
+    if (mealType === 'colazione') {
+        return {
+            label: 'Colazione',
+            tone: 'mattutina, pratica e pulita',
+            className: 'ai-recipe-mealtype-breakfast'
+        };
+    }
+
+    if (mealType === 'spuntino') {
+        return {
+            label: 'Spuntino',
+            tone: 'breve, porzionabile e non invadente',
+            className: 'ai-recipe-mealtype-snack'
+        };
+    }
+
+    if (mealType === 'cena') {
+        return {
+            label: 'Cena',
+            tone: 'serale, ordinata e piu leggera nella struttura',
+            className: 'ai-recipe-mealtype-dinner'
+        };
+    }
+
+    return {
+        label: 'Pranzo',
+        tone: 'centrale, saziante e da piatto portante',
+        className: 'ai-recipe-mealtype-lunch'
+    };
+}
+
+function getCompactAIRecipeTitle(recipe, mealType, modeLabel = '') {
+    const rawTitle = String(recipe?.nome_ricetta || recipe?.title || '').trim();
+    if (!rawTitle) {
+        return 'Ricetta su misura';
+    }
+
+    const normalizedMealType = normalizeAIRecipeMealType(mealType);
+    const normalizedTitle = rawTitle.toLowerCase();
+    const removablePrefixes = [
+        `${normalizedMealType} base con `,
+        `${normalizedMealType} media con `,
+        `${normalizedMealType} chef con `,
+        `${normalizedMealType} con `,
+        'chef breakfast con ',
+        'salvafrigo breakfast con ',
+        'salvafrigo snack con ',
+        'salvafrigo cena con ',
+        'salvafrigo pranzo con ',
+        'snack chef con ',
+        'pranzo chef con ',
+        'cena chef con ',
+        'colazione media con ',
+        'spuntino media consistenza con ',
+        'pranzo media con ',
+        'cena media con ',
+        'colazione base con ',
+        'spuntino base con ',
+        'pranzo base con ',
+        'cena base con ',
+        'versione media con ',
+        'chef mode con ',
+        'salvafrigo di ',
+        'pasta o padellata base con '
+    ];
+
+    const matchedPrefix = removablePrefixes.find((prefix) => normalizedTitle.startsWith(prefix));
+    if (!matchedPrefix) {
+        return rawTitle;
+    }
+
+    const compactTail = rawTitle.slice(matchedPrefix.length).trim();
+    if (!compactTail) {
+        return rawTitle;
+    }
+
+    const normalizedMode = String(modeLabel || '').trim().toLowerCase();
+    const intro = normalizedMode.includes('chef')
+        ? 'Interpretazione'
+        : normalizedMode.includes('salvafrigo')
+            ? 'Da'
+            : 'Con';
+
+    if (intro === 'Da') {
+        return `Da ${compactTail}`;
+    }
+
+    return `${intro} ${compactTail}`;
+}
+
 function decorateAIRecipeModes(recipes) {
     return AI_RECIPE_MODE_SLOTS.map((slot, index) => {
         const recipe = Array.isArray(recipes) ? recipes[index] : null;
@@ -4242,13 +6734,147 @@ function decorateAIRecipeModes(recipes) {
     }).filter(Boolean);
 }
 
-function getAIFallbackRecipes(ingredients, people, profile) {
+function getFallbackRecipePrepTime(mealType, modeKey) {
+    const presets = {
+        colazione: { base: 8, media: 12, chef: 18, salvafrigo: 6 },
+        spuntino: { base: 6, media: 10, chef: 14, salvafrigo: 4 },
+        cena: { base: 18, media: 26, chef: 34, salvafrigo: 10 },
+        pranzo: { base: 20, media: 30, chef: 35, salvafrigo: 12 }
+    };
+
+    return presets[mealType]?.[modeKey] || 20;
+}
+
+function buildFallbackIngredientTable(items, mealType, modeKey) {
+    const quantityPresets = {
+        colazione: {
+            base: [170, 40, 120, 150, 30],
+            media: [160, 45, 120, 80, 35],
+            chef: [150, 60, 100, 25, 15],
+            salvafrigo: [140, 35, 100, 120]
+        },
+        spuntino: {
+            base: [130, 125, 15],
+            media: [120, 80, 20, 15],
+            chef: [100, 40, 12],
+            salvafrigo: [100, 25, 15]
+        },
+        cena: {
+            base: [180, 200, 12, 120, 60],
+            media: [180, 220, 12, 8, 80],
+            chef: [180, 160, 20, 15, 80],
+            salvafrigo: [170, 180, 10, 100]
+        },
+        pranzo: {
+            base: [140, 80, 150, 12, 8, 10],
+            media: [160, 90, 140, 20, 12, 8],
+            chef: [150, 70, 20, 8, 12],
+            salvafrigo: [140, 120, 150, 10, 50]
+        }
+    };
+
+    const preset = quantityPresets[mealType]?.[modeKey] || [120, 80, 150, 12, 10];
+
+    return (Array.isArray(items) ? items : []).map((name, index) => ({
+        n: String(name || '').trim(),
+        qty: preset[index] || preset[preset.length - 1] || 60,
+        k: 0,
+        p: 0,
+        c: 0,
+        g: 0
+    })).filter((row) => row.n);
+}
+
+function getFallbackRecipeTechnique(mealType, modeKey, goal) {
+    const modeLabel = modeKey === 'chef'
+        ? 'tecnica piu precisa'
+        : modeKey === 'media'
+            ? 'cottura controllata ma domestica'
+            : modeKey === 'salvafrigo'
+                ? 'assemblaggio o rigenerazione rapida'
+                : 'tecnica semplice e leggibile';
+
+    if (mealType === 'cena') {
+        return `${modeLabel} con gestione delicata delle cotture per favorire digeribilita serale e controllo dei grassi, in coerenza con l'obiettivo ${goal || 'mantenere'}.`;
+    }
+
+    if (mealType === 'colazione') {
+        return `${modeLabel} pensata per preservare leggibilita, praticita mattutina e una quota proteica facile da distribuire.`;
+    }
+
+    if (mealType === 'spuntino') {
+        return `${modeLabel} breve e porzionabile, cosi lo snack resta compatto, credibile e coerente con il profilo.`;
+    }
+
+    return `${modeLabel} con struttura da piatto centrale, utile a mantenere sazieta e gestione energetica nella parte attiva della giornata.`;
+}
+
+function getFallbackChefNote(mealType, modeKey, goal) {
+    if (modeKey === 'chef') {
+        return mealType === 'cena'
+            ? `Ho scelto una finitura piu precisa e una cottura controllata per aumentare l'appetibilita senza appesantire la digestione serale in fase di ${goal || 'mantenimento'}.`
+            : `Ho scelto una tecnica piu precisa e una finitura netta per rendere il piatto piu appagante e coerente con l'obiettivo ${goal || 'mantenimento'}.`;
+    }
+
+    if (modeKey === 'salvafrigo') {
+        return 'Ho tenuto una tecnica breve e una sola base dominante per ridurre spreco, attrito decisionale e passaggi inutili.';
+    }
+
+    return mealType === 'cena'
+        ? 'Ho privilegiato una cottura pulita e poco aggressiva per tenere il pasto serale piu digeribile e ordinato.'
+        : 'Ho privilegiato una tecnica semplice ma controllata per tenere appetibilita, ripetibilita e coerenza nutrizionale nello stesso piatto.';
+}
+
+function getFallbackBioavailabilityTip(mealType, modeKey) {
+    if (mealType === 'colazione') {
+        return 'La presenza di una quota proteica insieme ai carboidrati aiuta a rendere la colazione piu stabile sul piano della sazieta e della risposta energetica.';
+    }
+
+    if (mealType === 'spuntino') {
+        return 'Ho mantenuto una porzione compatta e con abbinamenti semplici per favorire tollerabilita digestiva e continuita tra un pasto e l altro.';
+    }
+
+    if (modeKey === 'chef') {
+        return 'Una componente acida o ricca di vitamina C puo aiutare l assorbimento del ferro vegetale e rendere il piatto piu leggibile anche sul piano sensoriale.';
+    }
+
+    return mealType === 'cena'
+        ? 'Ho evitato combinazioni troppo dense e tenuto una quota di grassi misurata per favorire digestione e tollerabilita serale.'
+        : 'L abbinamento tra verdure, fonte proteica e una quota di grassi buoni aiuta disponibilita dei micronutrienti e maggiore sazieta del pasto.';
+}
+
+function buildFallbackRecipeCard(config) {
+    return {
+        title: config.title,
+        nome_ricetta: config.title,
+        style: config.style,
+        mode_key: config.modeKey,
+        summary: config.summary,
+        whyItFits: config.whyItFits,
+        ingredients: config.ingredients,
+        ingredienti_tabella: buildFallbackIngredientTable(config.ingredients, config.mealType, config.modeKey),
+        procedimento: config.steps,
+        steps: config.steps,
+        tempo_prep_min: getFallbackRecipePrepTime(config.mealType, config.modeKey),
+        tecnica_cottura: getFallbackRecipeTechnique(config.mealType, config.modeKey, config.goalTag),
+        chef_note: getFallbackChefNote(config.mealType, config.modeKey, config.goalTag),
+        bioavailability_tip: getFallbackBioavailabilityTip(config.mealType, config.modeKey),
+        wasteTip: config.wasteTip,
+        anti_spreco: config.wasteTip,
+        goalTag: config.goalTag || 'mantenere'
+    };
+}
+
+function getAIFallbackRecipes(ingredients, people, profile, mealType = 'pranzo') {
     const safeIngredients = ingredients.length > 0 ? ingredients : ['verdure miste'];
     const lead = safeIngredients.slice(0, 3);
     const leadText = lead.join(', ');
     const goal = profile.goal || 'mantenere';
     const diet = profile.diet || 'equilibrato';
     const jobType = profile.jobType || 'moderato';
+    const normalizedMealType = ['colazione', 'pranzo', 'cena', 'spuntino'].includes(String(mealType || '').toLowerCase())
+        ? String(mealType).toLowerCase()
+        : 'pranzo';
     const lunchContext = profile.lunchContextPreference === 'free-day' ? 'free-day' : 'workday';
     const lunchContextNote = getLunchContextRecipeNote(lunchContext);
     const clinicalContext = getClinicalNutritionContext(profile);
@@ -4272,63 +6898,215 @@ function getAIFallbackRecipes(ingredients, people, profile) {
         attivo: 'Funziona bene anche come pasto post giornata intensa.'
     };
 
-    return decorateAIRecipeModes([
-        {
-            title: `Pasta o padellata base con ${lead[0] || 'frigo'} e ${lead[1] || 'dispensa'}`,
-            style: 'Cucina base',
-            summary: `Una proposta fondamentale per ${people} ${people === 1 ? 'persona' : 'persone'} che valorizza ${leadText} con una tecnica sola e leggibile.`,
-            whyItFits: `Ideata per l'obiettivo ${goal} ${goalHintMap[goal] || goalHintMap.mantenere}. ${dietHint} ${jobHintMap[jobType] || jobHintMap.moderato} ${lunchContextNote}${clinicalRecipeTail}`,
-            ingredients: [...lead, 'olio EVO', 'aglio o cipolla', 'erbe aromatiche'],
-            steps: [
-                'Prepara un fondo semplice oppure una cottura diretta senza costruire piu componenti.',
-                'Cuoci l ingrediente principale con un solo passaggio chiaro e leggibile.',
-                'Chiudi il piatto in modo essenziale, senza salse complesse o impiattamenti tecnici.'
+    const mealTypeConfig = normalizedMealType === 'colazione'
+        ? {
+            baseTitle: `Colazione base con ${lead[0] || 'yogurt'} e ${lead[1] || 'cereali'}`,
+            mediumTitle: `Colazione media con ${lead[0] || 'avena'} e ${lead[1] || 'frutta'}`,
+            chefTitle: `Chef breakfast con ${lead[0] || 'frutta'}`,
+            salvageTitle: `Salvafrigo breakfast con ${lead[0] || 'frigo'} e ${lead[1] || 'dispensa'}`,
+            baseSummary: `Una colazione semplice per ${people} ${people === 1 ? 'persona' : 'persone'} che resta davvero mattutina, pratica e leggibile.`,
+            mediumSummary: 'Una colazione un po piu costruita della base, ma ancora rapida e coerente con il formato breakfast.',
+            chefSummary: 'Una colazione piu curata e precisa, con due texture chiare ma senza sembrare un pranzo o un dessert pesante.',
+            salvageSummary: 'La modalita piu rapida e anti-spreco per costruire una colazione utile con quello che c e gia aperto.',
+            baseWhy: `Tiene il tono della colazione: pratica, controllata e coerente con l'obiettivo ${goal}. ${dietHint}`,
+            mediumWhy: `Aggiunge un po piu di struttura senza perdere il formato da colazione. ${lunchContextNote}${clinicalRecipeTail}`,
+            chefWhy: `Alza il livello della colazione senza farla sembrare un pranzo nascosto. ${lunchContextNote}${clinicalRecipeTail}`,
+            salvageWhy: `Riduce spreco e attrito decisionale nella mattina, restando coerente col profilo. ${lunchContextNote}${clinicalRecipeTail}`,
+            baseIngredients: [...lead, 'yogurt o latte', 'cereale semplice'],
+            mediumIngredients: [...safeIngredients.slice(0, 3), 'uova o yogurt', 'avena o farina'],
+            chefIngredients: [...safeIngredients.slice(0, 3), 'base cremosa', 'elemento croccante'],
+            salvageIngredients: [...safeIngredients.slice(0, 3), 'base rapida'],
+            baseSteps: [
+                'Prepara una base rapida e molto leggibile.',
+                'Bilancia carboidrati e quota proteica senza appesantire il piatto.',
+                'Servi subito con una finitura minima.'
             ],
-            wasteTip: 'Usa gambi, foglie tenere e parti esterne ben lavate per dare piu volume al piatto.',
-            goalTag: goal || 'mantenere'
-        },
-        {
-            title: `Versione media con ${lead[0] || 'ingrediente principale'} e accompagnamento`,
-            style: 'Cucina media',
-            summary: `Una ricetta piu costruita della base, con elemento principale piu crema, salsa o verdura di supporto per ${people} ${people === 1 ? 'persona' : 'persone'}.`,
-            whyItFits: `Pensata per darti un gradino tecnico in piu ma restare ancora dentro una cucina domestica concreta. ${lunchContextNote}${clinicalRecipeTail}`,
-            ingredients: [...safeIngredients.slice(0, 4), 'pangrattato o semi', 'olio EVO', 'spezie a piacere'],
-            steps: [
-                'Prepara un elemento principale con una lavorazione in piu rispetto alla base.',
-                'Abbinalo a una crema, salsa o verdura di accompagnamento ben distinta.',
-                'Servi le due componenti in modo ordinato ma ancora semplice e domestico.'
+            mediumSteps: [
+                'Costruisci una base piu ricca ma semplice, come porridge, pancake o coppa.',
+                'Mantieni porzione e densita sotto controllo.',
+                'Chiudi con topping essenziale e coerente col mattino.'
             ],
-            wasteTip: 'Se avanzano porzioni, riusale il giorno dopo come ripieno per piadina, bowl o insalata.',
-            goalTag: goal || 'mantenere'
-        },
-        {
-            title: `Chef mode con ${lead[0] || 'ingrediente guida'}`,
-            style: 'Chef mode',
-            summary: 'Una terza opzione che mette davvero alla prova: piu tecnica, piu precisa e meno perdonante della modalita media.',
-            whyItFits: `Ti lascia un piatto che richiede controllo e mano, non solo un nome piu elegante della versione media. ${lunchContextNote}${clinicalRecipeTail}`,
-            ingredients: [...safeIngredients.slice(0, 3), 'elemento croccante', 'finitura aromatica'],
-            steps: [
-                'Cuoci separatamente l ingrediente principale con controllo preciso di tempo e temperatura.',
-                'Aggiungi almeno una seconda componente tecnica, come crema, salsa, crosta o guarnizione strutturale.',
-                'Chiudi con una finitura coerente e un impiattamento piu rigoroso del solito.'
+            chefSteps: [
+                'Costruisci due texture nette.',
+                'Mantieni dolcezza e grassi sotto controllo.',
+                'Chiudi con una finitura pulita e chiaramente da breakfast.'
             ],
-            wasteTip: 'Anche qui puoi recuperare ritagli e componenti secondari come topping, fondi o finiture.',
-            goalTag: goal || 'mantenere'
-        },
-        {
-            title: `Salvafrigo con ${lead[0] || 'avanzi utili'} e ${lead[1] || 'dispensa'}`,
-            style: 'Salvafrigo',
-            summary: 'La modalita piu facile e diretta: pochi passaggi, utilita massima e zero pretese estetiche.',
-            whyItFits: `Serve quando vuoi la soluzione piu banale in senso pratico: usare quello che hai e cucinare senza pensare troppo. ${lunchContextNote}${clinicalRecipeTail}`,
-            ingredients: [...safeIngredients.slice(0, 3), 'condimento essenziale', 'pane, riso o legumi se servono'],
-            steps: [
-                'Riunisci gli ingredienti piu semplici da usare subito.',
-                'Scaldali in una padella unica oppure assemblali a freddo se sono gia pronti.',
-                'Condisci il minimo indispensabile e servi appena pronto.'
+            salvageSteps: [
+                'Recupera gli ingredienti gia aperti.',
+                'Combinali in modo lineare e rapido.',
+                'Mantieni il risultato molto leggibile e mattutino.'
             ],
-            wasteTip: 'Qui l obiettivo e finire ingredienti aperti o mezze porzioni senza creare altro spreco.',
-            goalTag: goal || 'mantenere'
+            wasteTip: 'Frutta matura, yogurt aperto o cereali gia iniziati si recuperano molto bene in questo formato.'
         }
+        : normalizedMealType === 'spuntino'
+            ? {
+                baseTitle: `Spuntino base con ${lead[0] || 'frutta'} e ${lead[1] || 'supporto proteico'}`,
+                mediumTitle: `Spuntino media consistenza con ${lead[0] || 'frutta'} e ${lead[1] || 'cremosita'}`,
+                chefTitle: `Snack chef con ${lead[0] || 'contrasto'}`,
+                salvageTitle: `Salvafrigo snack con ${lead[0] || 'frigo'} e ${lead[1] || 'dispensa'}`,
+                baseSummary: 'Spuntino semplice, rapido e controllato, pensato per stare davvero tra due pasti.',
+                mediumSummary: 'Uno spuntino un po piu costruito, ma ancora molto chiaro, porzionabile e contenuto.',
+                chefSummary: 'Piccolo snack piu curato, ma ancora credibile come spuntino e non come dessert completo.',
+                salvageSummary: 'Snack rapidissimo e utile, pensato per non sprecare e non complicare la giornata.',
+                baseWhy: `Controlla fame e aderenza senza trasformarsi in un pranzo nascosto. ${goalHintMap[goal] || goalHintMap.mantenere}. ${clinicalRecipeTail}`,
+                mediumWhy: `Utile quando serve qualcosa di piu stabile di un semplice frutto, ma senza sfondare la logica dello snack. ${clinicalRecipeTail}`,
+                chefWhy: `Aggiunge precisione e piacere senza perdere il controllo del formato e della funzione dello spuntino. ${clinicalRecipeTail}`,
+                salvageWhy: `Riduce spreco e decisioni superflue, restando coerente con il ruolo di uno spuntino. ${clinicalRecipeTail}`,
+                baseIngredients: [...lead.slice(0, 2), 'yogurt o frutta secca'],
+                mediumIngredients: [...safeIngredients.slice(0, 2), 'base cremosa', 'elemento saziante'],
+                chefIngredients: [...safeIngredients.slice(0, 2), 'finitura tecnica'],
+                salvageIngredients: [...safeIngredients.slice(0, 2), 'elemento rapido'],
+                baseSteps: [
+                    'Prepara una porzione breve.',
+                    'Evita eccessi di volume e condimenti.',
+                    'Servi o porta con te facilmente.'
+                ],
+                mediumSteps: [
+                    'Lavora su una consistenza piacevole.',
+                    'Non appesantire con troppe componenti.',
+                    'Chiudi in formato piccolo e leggibile.'
+                ],
+                chefSteps: [
+                    'Mantieni il formato piccolo.',
+                    'Evita accumuli calorici inutili.',
+                    'Rendi il gesto tecnico breve ma visibile.'
+                ],
+                salvageSteps: [
+                    'Usa solo il necessario.',
+                    'Non costruire un piatto completo.',
+                    'Chiudi in forma molto pratica.'
+                ],
+                wasteTip: 'Perfetto per finire piccole quantita senza farle diventare un pasto intero.'
+            }
+            : normalizedMealType === 'cena'
+                ? {
+                    baseTitle: `Cena base con ${lead[0] || 'proteina'} e ${lead[1] || 'verdure'}`,
+                    mediumTitle: `Cena media con ${lead[0] || 'ingrediente principale'} e contorno strutturato`,
+                    chefTitle: `Cena chef con ${lead[0] || 'proteina guida'}`,
+                    salvageTitle: `Salvafrigo cena con ${lead[0] || 'frigo'} e ${lead[1] || 'dispensa'}`,
+                    baseSummary: `Cena base per ${people} ${people === 1 ? 'persona' : 'persone'}, con struttura serale chiara: proteina, verdure e chiusura leggera.`,
+                    mediumSummary: 'Cena intermedia con secondo e contorno ben distinti, adatta a una routine serale piu ordinata.',
+                    chefSummary: 'Cena piu precisa e tecnica, pensata come secondo elegante con vegetali e finitura controllata.',
+                    salvageSummary: 'Cena essenziale e anti-spreco, con struttura chiara e poco attrito decisionale.',
+                    baseWhy: `Mantiene la cena leggibile e anti-fame senza trasformarla in un pranzo travestito. ${goalHintMap[goal] || goalHintMap.mantenere}. ${clinicalRecipeTail}`,
+                    mediumWhy: `Distingue meglio la cena dal pranzo: meno piatto unico centrale, piu struttura proteina piu vegetali. ${clinicalRecipeTail}`,
+                    chefWhy: `Alza il livello senza spostare il formato verso un primo importante o un piatto da brunch. ${clinicalRecipeTail}`,
+                    salvageWhy: `Aiuta a chiudere la giornata con una cena utile, leggibile e coerente col profilo. ${clinicalRecipeTail}`,
+                    baseIngredients: [...lead, 'olio EVO', 'verdura di supporto'],
+                    mediumIngredients: [...safeIngredients.slice(0, 4), 'olio EVO', 'erbe aromatiche'],
+                    chefIngredients: [...safeIngredients.slice(0, 3), 'finitura tecnica', 'contrasto vegetale'],
+                    salvageIngredients: [...safeIngredients.slice(0, 3), 'olio EVO', 'verdura rapida'],
+                    baseSteps: [
+                        'Costruisci il piatto attorno a una proteina centrale.',
+                        'Tieni le verdure come apertura o accompagnamento ben separato.',
+                        'Usa una quota amidacea piccola solo se migliora equilibrio e sazieta.'
+                    ],
+                    mediumSteps: [
+                        'Cuoci la proteina come centro del piatto.',
+                        'Costruisci un contorno riconoscibile e non accessorio.',
+                        'Mantieni l insieme serale, pulito e non eccessivo.'
+                    ],
+                    chefSteps: [
+                        'Tieni la proteina come asse dominante.',
+                        'Usa il contrasto vegetale per leggerezza e profondita, non come riempitivo.',
+                        'Mantieni il piatto raffinato ma ancora chiaramente serale.'
+                    ],
+                    salvageSteps: [
+                        'Usa un solo centro proteico.',
+                        'Abbina una verdura che alleggerisca il piatto.',
+                        'Evita di accumulare pane, pasta e condimenti superflui tutti insieme.'
+                    ],
+                    wasteTip: 'Funziona bene con proteine gia cotte, verdure avanzate e piccole basi da finire senza appesantire la cena.'
+                }
+                : {
+                    baseTitle: `Pranzo base con ${lead[0] || 'ingrediente guida'} e ${lead[1] || 'base portante'}`,
+                    mediumTitle: `Pranzo media con ${lead[0] || 'ingrediente principale'} e accompagnamento`,
+                    chefTitle: `Pranzo chef con ${lead[0] || 'ingrediente guida'}`,
+                    salvageTitle: `Salvafrigo pranzo con ${lead[0] || 'avanzi utili'} e ${lead[1] || 'dispensa'}`,
+                    baseSummary: `Pranzo centrale per ${people} ${people === 1 ? 'persona' : 'persone'}, pensato come primo completo o piatto unico ordinato.`,
+                    mediumSummary: 'Una ricetta pranzo piu costruita della base, con elemento principale e accompagnamento ma ancora pienamente domestica.',
+                    chefSummary: 'Una proposta pranzo piu tecnica e precisa, pensata come piatto centrale raffinato e non come cena di sola proteina.',
+                    salvageSummary: 'La versione pranzo piu semplice e diretta: poca tecnica, pochi passaggi, massima utilita e buona sazieta.',
+                    baseWhy: `Ideata per l'obiettivo ${goal} ${goalHintMap[goal] || goalHintMap.mantenere}. ${dietHint} ${jobHintMap[jobType] || jobHintMap.moderato} ${lunchContextNote}${clinicalRecipeTail}`,
+                    mediumWhy: `Rende il pranzo piu articolato senza spostarlo sulla logica del secondo serale. ${clinicalRecipeTail}`,
+                    chefWhy: `Alza davvero il livello del pranzo mantenendo un anima da piatto portante e strutturato. ${clinicalRecipeTail}`,
+                    salvageWhy: `Resta un pranzo vero, non solo un assemblaggio casuale: usa quello che c e ma con un centro chiaro. ${clinicalRecipeTail}`,
+                    baseIngredients: [...lead, 'olio EVO', 'base amidacea o legumi', 'erbe aromatiche'],
+                    mediumIngredients: [...safeIngredients.slice(0, 4), 'pangrattato o semi', 'olio EVO', 'spezie a piacere'],
+                    chefIngredients: [...safeIngredients.slice(0, 3), 'elemento croccante', 'finitura aromatica'],
+                    salvageIngredients: [...safeIngredients.slice(0, 3), 'condimento essenziale', 'pane, riso o legumi se servono'],
+                    baseSteps: [
+                        'Tieni una base portante ben evidente.',
+                        'Fai convergere il resto del piatto su quella base senza frammentarlo.',
+                        'Chiudi in modo pratico e saziante, adatto alla fascia centrale della giornata.'
+                    ],
+                    mediumSteps: [
+                        'Prepara un asse centrale piu curato rispetto alla versione base.',
+                        'Abbinalo a un supporto leggibile, ma non farlo diventare una cena a due tempi.',
+                        'Tieni il pranzo coeso, pratico e trasportabile se serve.'
+                    ],
+                    chefSteps: [
+                        'Gestisci un piatto principale con controllo tecnico vero.',
+                        'Usa una seconda componente come supporto strutturale e non come semplice contorno.',
+                        'Impiatta in modo rigoroso ma ancora coerente con un pranzo reale.'
+                    ],
+                    salvageSteps: [
+                        'Metti insieme una sola base portante con gli ingredienti da finire.',
+                        'Evita di disperdere il piatto in troppi elementi slegati.',
+                        'Servi subito come pranzo rapido ma con logica nutrizionale leggibile.'
+                    ],
+                    wasteTip: 'Ottimo per riusare sughi leggeri, cereali cotti o verdure avanzate dentro un piatto unico.'
+                };
+
+    return decorateAIRecipeModes([
+        buildFallbackRecipeCard({
+            title: mealTypeConfig.baseTitle,
+            style: 'Cucina base',
+            modeKey: 'base',
+            mealType: normalizedMealType,
+            summary: mealTypeConfig.baseSummary,
+            whyItFits: mealTypeConfig.baseWhy,
+            ingredients: mealTypeConfig.baseIngredients,
+            steps: mealTypeConfig.baseSteps,
+            wasteTip: mealTypeConfig.wasteTip,
+            goalTag: goal || 'mantenere'
+        }),
+        buildFallbackRecipeCard({
+            title: mealTypeConfig.mediumTitle,
+            style: 'Cucina media',
+            modeKey: 'media',
+            mealType: normalizedMealType,
+            summary: mealTypeConfig.mediumSummary,
+            whyItFits: mealTypeConfig.mediumWhy,
+            ingredients: mealTypeConfig.mediumIngredients,
+            steps: mealTypeConfig.mediumSteps,
+            wasteTip: mealTypeConfig.wasteTip,
+            goalTag: goal || 'mantenere'
+        }),
+        buildFallbackRecipeCard({
+            title: mealTypeConfig.chefTitle,
+            style: 'Chef mode',
+            modeKey: 'chef',
+            mealType: normalizedMealType,
+            summary: mealTypeConfig.chefSummary,
+            whyItFits: mealTypeConfig.chefWhy,
+            ingredients: mealTypeConfig.chefIngredients,
+            steps: mealTypeConfig.chefSteps,
+            wasteTip: mealTypeConfig.wasteTip,
+            goalTag: goal || 'mantenere'
+        }),
+        buildFallbackRecipeCard({
+            title: mealTypeConfig.salvageTitle,
+            style: 'Salvafrigo',
+            modeKey: 'salvafrigo',
+            mealType: normalizedMealType,
+            summary: mealTypeConfig.salvageSummary,
+            whyItFits: mealTypeConfig.salvageWhy,
+            ingredients: mealTypeConfig.salvageIngredients,
+            steps: mealTypeConfig.salvageSteps,
+            wasteTip: mealTypeConfig.wasteTip,
+            goalTag: goal || 'mantenere'
+        })
     ]);
 }
 
@@ -4336,49 +7114,47 @@ function renderAIRecipeResults(recipes, metadata = {}) {
     const resultBox = document.getElementById('ai-recipe-result');
     if (!resultBox) return;
 
-    aiGeneratedRecipes = decorateAIRecipeModes(recipes);
-    const hasNutritionTables = aiGeneratedRecipes.some((recipe) => recipe?.nutrition);
-    const peopleCount = Math.max(1, Number(metadata.people || 1));
+    const safeRecipes = Array.isArray(recipes) ? recipes.filter(Boolean) : [];
+    const requestedMode = normalizeAIRecipeRequestedMode(metadata.requestedMode || metadata.difficulty);
+    const isSingleRecipe = safeRecipes.length === 1;
+    const sourceLabel = metadata.source === 'gemini'
+        ? 'Ricetta generata da Gemini'
+        : 'Ricetta fallback locale';
+    const diagnosticText = metadata.sourceReason
+        ? `${sourceLabel}. Motivo fallback: ${metadata.sourceReason}`
+        : sourceLabel;
 
-    const sourceLabel = metadata.source === 'fallback'
-        ? 'Suggerimenti smart di backup'
-        : '4 proposte generate per il tuo profilo';
+    aiGeneratedRecipes = isSingleRecipe
+        ? safeRecipes.map((recipe) => {
+            const slot = getAIRecipeModeSlot(recipe, requestedMode);
 
-    const sourceNote = metadata.source === 'fallback'
-        ? `<p class="ai-mode-subtitle"><strong>Nota:</strong> in questo momento stai vedendo il motore di backup e non la AI live.${metadata.reason ? ` Motivo: ${escapeHtml(metadata.reason)}.` : ''}</p>`
-        : '<p class="ai-mode-subtitle">AI live attiva: le ricette sono divise in Cucina base, Cucina media, Chef mode e Salvafrigo.</p>';
-    const lunchContext = metadata.lunchContext === 'free-day' ? 'free-day' : 'workday';
-    const lunchContextNote = `<p class="ai-mode-subtitle"><strong>Contesto profilo:</strong> ${escapeHtml(getLunchContextRecipeNote(lunchContext))}</p>`;
+            return {
+                ...recipe,
+                mode_key: recipe.mode_key || recipe.modeKey || slot.key,
+                mode_label: recipe.mode_label || recipe.modeLabel || slot.label,
+                difficolta: recipe.difficolta || slot.difficulty,
+                style: recipe.style || slot.label
+            };
+        })
+        : decorateAIRecipeModes(safeRecipes);
 
     resultBox.style.display = 'block';
     resultBox.innerHTML = `
-        <div class="ai-mode-header">
-            <div>
-                <h4 class="ai-mode-title">${escapeHtml(sourceLabel)}</h4>
-                ${sourceNote}
-                ${lunchContextNote}
-            </div>
-        </div>
+        <p class="ai-mode-subtitle">${escapeHtml(diagnosticText)}</p>
         <div class="ai-recipe-grid">
             ${aiGeneratedRecipes.map((recipe, index) => `
                 <article class="ai-recipe-card">
                     <div class="ai-recipe-card-top">
-                        <span class="ai-recipe-index">${escapeHtml(recipe.mode_label || `Opzione ${index + 1}`)}</span>
-                        <span class="ai-recipe-tag">${escapeHtml(recipe.difficolta || recipe.style || recipe.goalTag || 'Ricetta')}</span>
+                        <span class="ai-recipe-index">${escapeHtml(recipe.tipo_pasto || metadata.mealType || `Ricetta ${index + 1}`)}</span>
+                        <span class="ai-recipe-tag">${escapeHtml(recipe.difficolta || recipe.style || 'Ricetta')}</span>
                     </div>
-                    <h5>${escapeHtml(recipe.nome_ricetta || recipe.title)}</h5>
-                    <p class="ai-recipe-fit"><strong>ID:</strong> ${escapeHtml(recipe.id || `R${index + 1}`)} • <strong>Tempo:</strong> ${escapeHtml(recipe.tempo_prep_min || 0)} min</p>
-                    <p class="ai-recipe-fit"><strong>Per:</strong> ${escapeHtml(peopleCount)} ${peopleCount === 1 ? 'persona' : 'persone'}</p>
-                    <p class="ai-recipe-summary">${escapeHtml(recipe.summary || '')}</p>
-                    <p class="ai-recipe-fit"><strong>Perche ti puo aiutare:</strong> ${escapeHtml(recipe.whyItFits || '')}</p>
-                    ${(recipe.allergeni_esclusi && recipe.allergeni_esclusi.length > 0) ? `
-                        <p class="ai-recipe-fit"><strong>Allergeni esclusi:</strong> ${escapeHtml(recipe.allergeni_esclusi.join(', '))}</p>
-                    ` : ''}
+                    <h5>${escapeHtml(recipe.nome_ricetta || recipe.title || `Ricetta ${index + 1}`)}</h5>
+                    <p class="ai-recipe-fit"><strong>Tempo di cottura:</strong> ${escapeHtml(recipe.tempo_prep_min || 0)} min</p>
                     <div class="ai-recipe-section">
                         <strong>Ingredienti</strong>
                         <ul>
                             ${((recipe.ingredienti_tabella && recipe.ingredienti_tabella.length > 0)
-                                ? recipe.ingredienti_tabella.map((item) => `${item.n}${item.qty ? ` (${item.qty} g)` : ''}`)
+                                ? recipe.ingredienti_tabella.map((item) => formatIngredientDisplay(item))
                                 : (recipe.ingredients || [])).map((item) => `<li>${escapeHtml(item)}</li>`).join('')}
                         </ul>
                     </div>
@@ -4388,67 +7164,19 @@ function renderAIRecipeResults(recipes, metadata = {}) {
                             ${(recipe.procedimento || recipe.steps || []).map((step) => `<li>${escapeHtml(step)}</li>`).join('')}
                         </ol>
                     </div>
-                    ${(recipe.substitutions && recipe.substitutions.length > 0) ? `
-                        <div class="ai-recipe-section">
-                            <strong>Sostituzioni compatibili</strong>
-                            <ul>
-                                ${recipe.substitutions.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}
-                            </ul>
-                        </div>
-                    ` : ''}
                     ${(recipe.tecnica_cottura || recipe.healthyCooking) ? `
                         <p class="ai-recipe-fit"><strong>Cottura consigliata:</strong> ${escapeHtml(recipe.tecnica_cottura || recipe.healthyCooking)}</p>
                     ` : ''}
-                    ${recipe.nutrition ? `
-                        <div class="ai-recipe-section">
-                            <strong>Tabella nutrizionale</strong>
-                            <div class="ai-nutrition-table-wrap">
-                                <table class="ai-nutrition-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Ingrediente</th>
-                                            <th>Kcal</th>
-                                            <th>P</th>
-                                            <th>C</th>
-                                            <th>G</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${(recipe.nutrition.ingredients || []).map((row) => `
-                                            <tr>
-                                                <td>
-                                                    <div class="ai-nutrition-cell-main">${escapeHtml(row.name)}</div>
-                                                    ${row.note ? `<div class="ai-nutrition-row-note">${escapeHtml(row.note)}</div>` : ''}
-                                                </td>
-                                                <td>${escapeHtml(row.kcal)}</td>
-                                                <td>${escapeHtml(row.protein)}</td>
-                                                <td>${escapeHtml(row.carbs)}</td>
-                                                <td>${escapeHtml(row.fat)}</td>
-                                            </tr>
-                                        `).join('')}
-                                    </tbody>
-                                    ${recipe.nutrition.total ? `
-                                        <tfoot>
-                                            <tr>
-                                                <td>Totale</td>
-                                                <td>${escapeHtml(recipe.nutrition.total.kcal)}</td>
-                                                <td>${escapeHtml(recipe.nutrition.total.protein)}</td>
-                                                <td>${escapeHtml(recipe.nutrition.total.carbs)}</td>
-                                                <td>${escapeHtml(recipe.nutrition.total.fat)}</td>
-                                            </tr>
-                                        </tfoot>
-                                    ` : ''}
-                                </table>
-                            </div>
-                            <p class="ai-nutrition-footnote">Valori medi indicativi: la composizione reale varia con materia prima, acqua, stagione, lavorazione e cottura.</p>
+                    <p class="ai-recipe-waste"><strong>Tip anti-spreco:</strong> ${escapeHtml(recipe.anti_spreco || recipe.wasteTip || '')}</p>
+                    ${recipe.bioavailability_tip ? `
+                        <div class="ai-recipe-insight ai-recipe-insight-bio">
+                            <strong>Bioavailability tip</strong>
+                            <p>${escapeHtml(recipe.bioavailability_tip)}</p>
                         </div>
                     ` : ''}
-                    <p class="ai-recipe-waste"><strong>Tip anti-spreco:</strong> ${escapeHtml(recipe.anti_spreco || recipe.wasteTip || '')}</p>
-                    <button type="button" class="ai-recipe-save-btn" onclick="salvaRicettaAI(${index})">Salva tra i miei piatti</button>
                 </article>
             `).join('')}
         </div>
-        ${hasNutritionTables ? renderAINutritionMethodology() : ''}
     `;
     updateAiModeResultsVisibility('ai-recipe-result');
 }
@@ -4460,7 +7188,7 @@ function renderAIRecipeLoading(ingredients, people) {
     resultBox.style.display = 'block';
     resultBox.innerHTML = `
         <div class="ai-mode-loading">
-            <h4 class="ai-mode-title">Sto costruendo 4 idee per te...</h4>
+            <h4 class="ai-mode-title">Sto costruendo la ricetta per te...</h4>
             <p class="ai-mode-subtitle">Ingredienti analizzati: <strong>${escapeHtml(ingredients.join(', ') || 'dispensa di casa')}</strong> per <strong>${people}</strong> ${people === 1 ? 'persona' : 'persone'}.</p>
         </div>
     `;
@@ -4492,8 +7220,8 @@ async function generaRicettaAI() {
             .filter(Boolean);
 
     const persone = parseInt(document.getElementById('discover-people').value, 10) || 1;
-    const mealType = document.getElementById('chef-recipe-meal-type')?.value || 'pranzo';
-    const difficulty = document.getElementById('chef-recipe-difficulty')?.value || 'semplice';
+    const mealType = document.getElementById('chef-recipe-meal-type')?.value || '';
+    const difficulty = document.getElementById('chef-recipe-difficulty')?.value || '';
     const profilePayload = getAIProfilePayload();
 
     if (persone < 1) {
@@ -4506,47 +7234,68 @@ async function generaRicettaAI() {
         return;
     }
 
+    if (!mealType) {
+        alert('Seleziona prima il tipo di pasto.');
+        return;
+    }
+
+    if (!difficulty) {
+        alert('Seleziona la difficolta dopo aver scelto il tipo di pasto.');
+        return;
+    }
+
     renderAIRecipeLoading(ingredienti, persone);
 
     try {
-        const response = await fetch('/.netlify/functions/ai-recipes', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                ingredients: ingredienti,
-                people: persone,
-                mealType,
-                difficulty,
-                profile: profilePayload
+        const geminiPayload = await generaRicettaGemini({
+            mode: 'ricetta-su-misura',
+            payload: buildGeminiRecipeRequestPayload(profilePayload, {
+                tipo_pasto: mealType,
+                difficolta: getGeminiRecipeDifficultyLabel(difficulty),
+                modalita_ui: difficulty,
+                kcal_target: Math.round(profilePayload.targetCalories || 0),
+                allergie: profilePayload.allergies || 'nessuna indicata',
+                ingrediente_o_base: ingredienti.join(', '),
+                persone,
+                richiesta_base: `Voglio un ${mealType} con ${ingredienti.join(', ')}`
             })
         });
 
-        if (!response.ok) {
-            throw new Error('Endpoint AI non raggiungibile in questo deploy.');
+        if (!geminiPayload || typeof geminiPayload !== 'object' || !Array.isArray(geminiPayload.ingredienti) || geminiPayload.ingredienti.length === 0) {
+            throw new Error('Gemini ha restituito una ricetta senza ingredienti validi.');
         }
 
-        const payload = await response.json();
-        if (!payload || !Array.isArray(payload.recipes) || payload.recipes.length === 0) {
-            throw new Error('La risposta AI non contiene ricette valide.');
-        }
-
-        renderAIRecipeResults(payload.recipes.slice(0, 4), {
-            ...(payload.meta || {}),
+        const normalizedRecipe = adaptGeminiRecipeToCard(geminiPayload, {
+            id: 'GEM-1',
+            difficulty,
             people: persone,
+            profile: profilePayload
+        });
+
+        renderAIRecipeResults([normalizedRecipe], {
+            source: 'gemini',
+            sourceReason: '',
+            people: persone,
+            mealType,
+            requestedMode: difficulty,
             lunchContext: profilePayload.lunchContextPreference
         });
     } catch (error) {
         console.error('AI Mode error:', error);
-        const fallbackRecipes = getAIFallbackRecipes(ingredienti, persone, profilePayload);
+        const fallbackRecipes = getAIFallbackRecipes(ingredienti, persone, profilePayload, mealType)
+            .filter((recipe) => recipe.mode_key === normalizeAIRecipeRequestedMode(difficulty));
         renderAIRecipeResults(fallbackRecipes, {
             source: 'fallback',
+            sourceReason: error?.message || 'Errore non specificato nella pipeline Gemini',
             people: persone,
+            mealType,
+            requestedMode: difficulty,
             lunchContext: profilePayload.lunchContextPreference
         });
     }
 }
+
+window.generaRicettaAI = generaRicettaAI;
 
 function getAIBreakfastSnackFallback(profile, preferences) {
     const proteinTarget = Number(profile.proteinTargetGrams || 0);
@@ -4664,12 +7413,35 @@ function getAIDailyPlanFallback(profile, preferences, lunchContext = 'workday') 
     const snackStrategy = getLunchContextSnackStrategy(lunchContext);
     const dinnerStrategy = getLunchContextDinnerStrategy(lunchContext, profile.dinnerProteinPreference);
     const clinicalContext = getClinicalNutritionContext(profile);
+    const lunchCompletion = completePlanMealItems(
+        'Pranzo',
+        isFreeDayLunch
+            ? ['Inizio con verdure crude semplici come insalata, carota o finocchio', 'base amidacea come farro, riso integrale, pasta, quinoa o cous-cous', 'legumi gia cotti o edamame come quota proteico-fibrosa', 'verdure cotte o crude piu presenti', 'olio EVO ben dichiarato', 'eventuale piccola nota dolce finale solo se coerente con il profilo']
+            : ['Inizio con verdure crude semplici se praticabile', 'base amidacea come farro, riso integrale, pasta, quinoa o cous-cous', 'legumi gia cotti o edamame come quota proteico-fibrosa', 'verdure di accompagnamento', 'olio EVO ben dichiarato', 'struttura facile da preparare o portare fuori casa'],
+        {
+            protein: 'aggiungi una fonte proteica leggibile come legumi, pesce, uova, tofu o carne bianca',
+            cereal: 'completa con una base amidacea chiara come riso, farro, pasta o pane integrale',
+            vegetables: 'assicurati che ci sia una quota di verdure ben leggibile',
+            healthyFat: 'dichiara una quota di grassi buoni come olio EVO o semi'
+        }
+    );
+    const dinnerCompletion = completePlanMealItems(
+        'Cena',
+        dinnerStrategy.items,
+        {
+            protein: 'aggiungi una fonte proteica chiara coerente con la serata',
+            cereal: 'se manca, completa con pane, cereale semplice o patate',
+            vegetables: 'aggiungi una quota di verdure cotte o crude ben leggibile',
+            healthyFat: 'dichiara una quota misurata di grassi buoni come olio EVO'
+        }
+    );
 
     if (clinicalContext.applicable) {
         const dailyPattern = cloneClinicalGuidanceValue(clinicalContext.dailyPattern || {});
 
         return {
             title: 'Giornata alimentare ispirata a uno schema clinico-pratico personalizzato',
+            daily_theme: isFreeDayLunch ? 'Giornata: Strategia Clinica e Recupero Disteso' : 'Giornata: Strategia Clinica e Continuita Energetica',
             rationale: `Esempio di giornata per profilo adulto in sovrappeso con deficit moderato, costruito distinguendo fabbisogno e piano calorico e mantenendo una struttura semplice e aderente nel tempo.${preferences ? ` Nota considerata: ${preferences}.` : ''}`,
             lunchContext,
             targets: {
@@ -4693,7 +7465,12 @@ function getAIDailyPlanFallback(profile, preferences, lunchContext = 'workday') 
                     slot: 'Pranzo',
                     title: isFreeDayLunch ? dailyPattern.lunch.titleFreeDay : dailyPattern.lunch.titleWorkday,
                     whyItFits: isFreeDayLunch ? dailyPattern.lunch.whyFreeDay : dailyPattern.lunch.whyWorkday,
-                    items: dailyPattern.lunch.items,
+                    items: completePlanMealItems('Pranzo', dailyPattern.lunch.items, {
+                        protein: 'aggiungi una fonte proteica leggibile come legumi, pesce, uova o carne bianca',
+                        cereal: 'completa con una base amidacea chiara come riso, farro, pasta o pane semplice',
+                        vegetables: 'assicurati che sia presente una quota di verdure ben leggibile',
+                        healthyFat: 'dichiara una quota misurata di grassi buoni come olio EVO a crudo'
+                    }).items,
                     kcal: lunchKcal || 520,
                     protein: Math.max(24, Math.round(proteinGrams * 0.3)),
                     carbs: dailyPattern.lunch.carbs,
@@ -4707,6 +7484,12 @@ function getAIDailyPlanFallback(profile, preferences, lunchContext = 'workday') 
                 {
                     slot: 'Cena',
                     ...dailyPattern.dinner,
+                    items: completePlanMealItems('Cena', dailyPattern.dinner.items, {
+                        protein: 'aggiungi una fonte proteica chiara coerente con il pasto serale',
+                        cereal: 'se manca, completa con pane semplice, cereale o patate',
+                        vegetables: 'aggiungi una quota di verdure cotte o crude ben leggibile',
+                        healthyFat: 'mantieni una quota dichiarata di grassi buoni come olio EVO a crudo'
+                    }).items,
                     kcal: dinnerKcal || 470,
                     protein: Math.max(28, Math.round(proteinGrams * 0.28)),
                     carbs: dailyPattern.dinner.carbs,
@@ -4717,6 +7500,7 @@ function getAIDailyPlanFallback(profile, preferences, lunchContext = 'workday') 
                 clinicalContext.weightNote,
                 'Per la fame, le verdure crude possono essere usate liberamente come supporto di sazieta.',
                 clinicalContext.proteinRotation,
+                'Controllo completezza attivo anche nel fallback: pranzo e cena vengono verificati per proteine, cereali, verdure e grassi buoni.',
                 ...(dailyPattern.notes || []),
                 clinicalContext.avoidFoods,
             ]
@@ -4725,6 +7509,7 @@ function getAIDailyPlanFallback(profile, preferences, lunchContext = 'workday') 
 
     return {
         title: 'Giornata alimentare ragionata sul tuo profilo',
+        daily_theme: isFreeDayLunch ? 'Giornata: Recupero, Distensione e Sazieta Pulita' : 'Giornata: Focus Energetico e Ritmo Sostenibile',
         rationale: `Esempio di giornata costruito per l obiettivo ${goal}, distinguendo fabbisogno, piano calorico e distribuzione della quota proteica, con pranzo da ${getLunchContextLabel(lunchContext).toLowerCase()}. ${preferences ? `Nota considerata: ${preferences}.` : ''}`.trim(),
         lunchContext,
         targets: {
@@ -4764,9 +7549,7 @@ function getAIDailyPlanFallback(profile, preferences, lunchContext = 'workday') 
                 whyItFits: isFreeDayLunch
                     ? 'Sfrutta un ritmo piu calmo e una struttura piu curata, senza perdere coerenza con il piano.'
                     : 'Tiene insieme energia, sazieta e praticita in una pausa pranzo piu rapida e gestibile.',
-                items: isFreeDayLunch
-                    ? ['Inizio con verdure crude semplici come insalata, carota o finocchio', 'base amidacea come farro, riso integrale, pasta, quinoa o cous-cous', 'legumi gia cotti o edamame come quota proteico-fibrosa', 'verdure cotte o crude piu presenti', 'olio EVO ben dichiarato', 'eventuale piccola nota dolce finale solo se coerente con il profilo']
-                    : ['Inizio con verdure crude semplici se praticabile', 'base amidacea come farro, riso integrale, pasta, quinoa o cous-cous', 'legumi gia cotti o edamame come quota proteico-fibrosa', 'verdure di accompagnamento', 'olio EVO ben dichiarato', 'struttura facile da preparare o portare fuori casa'],
+                items: lunchCompletion.items,
                 kcal: lunchKcal,
                 protein: Math.max(28, Math.round(proteinGrams * 0.3)),
                 carbs: 55,
@@ -4786,7 +7569,7 @@ function getAIDailyPlanFallback(profile, preferences, lunchContext = 'workday') 
                 slot: 'Cena',
                 title: dinnerStrategy.title,
                 whyItFits: dinnerStrategy.why,
-                items: dinnerStrategy.items,
+                items: dinnerCompletion.items,
                 kcal: dinnerKcal,
                 protein: Math.max(28, Math.round(proteinGrams * 0.28)),
                 carbs: dinnerStrategy.carbs,
@@ -4800,6 +7583,12 @@ function getAIDailyPlanFallback(profile, preferences, lunchContext = 'workday') 
             isFreeDayLunch
                 ? 'Nel giorno libero il pranzo puo essere un po piu disteso e curato, ma non deve perdere struttura nutrizionale.'
                 : 'Nel giorno lavorativo il pranzo deve restare pratico, digeribile e sostenibile anche fuori casa.',
+            lunchCompletion.addedComponents.length > 0
+                ? `Controllo pranzo completato: integrate ${lunchCompletion.addedComponents.join(', ')}.`
+                : 'Controllo pranzo completato: struttura gia completa e leggibile.',
+            dinnerCompletion.addedComponents.length > 0
+                ? `Controllo cena completato: integrate ${dinnerCompletion.addedComponents.join(', ')}.`
+                : 'Controllo cena completato: struttura gia completa e leggibile.',
             `Preferenza proteica serale considerata: ${getDinnerProteinPreferenceLabel(profile.dinnerProteinPreference || 'variata')}.`
             ,`Frequenza serale suggerita: ${getDinnerProteinFrequencyLabel(profile.dinnerProteinFrequency || 'libera')}.`
         ]
@@ -4843,6 +7632,8 @@ function renderAIBreakfastSnackResults(payload) {
     const guidance = Array.isArray(payload.guidance) ? payload.guidance : [];
     const lunchContext = payload?.meta?.lunchContext === 'free-day' ? 'free-day' : 'workday';
     const snackBadge = getSnackContextBadge(lunchContext);
+    const breakfastMealTypeMeta = getAIRecipeMealTypeMeta('colazione');
+    const snackMealTypeMeta = getAIRecipeMealTypeMeta('spuntino');
     const sourceNote = payload?.meta?.source === 'fallback'
         ? `<p class="ai-mode-subtitle"><strong>Nota:</strong> stai vedendo il motore di backup.${payload?.meta?.reason ? ` ${escapeHtml(payload.meta.reason)}` : ''}</p>`
         : '<p class="ai-mode-subtitle">AI live attiva: le opzioni sono equivalenti come logica nutrizionale, non rigide.</p>';
@@ -4866,7 +7657,11 @@ function renderAIBreakfastSnackResults(payload) {
                             <span class="ai-recipe-index">Colazione ${index + 1}</span>
                             <span class="ai-recipe-tag">Opzione equivalente</span>
                         </div>
-                        <h5>${escapeHtml(option.title || `Colazione ${index + 1}`)}</h5>
+                        <div class="ai-recipe-card-meta-row">
+                            <span class="ai-recipe-mealtype ${escapeHtml(breakfastMealTypeMeta.className)}">${escapeHtml(breakfastMealTypeMeta.label)}</span>
+                            <span class="ai-recipe-mealtype-note">${escapeHtml(breakfastMealTypeMeta.tone)}</span>
+                        </div>
+                        <h5>${escapeHtml(getCompactAIRecipeTitle({ title: option.title || `Colazione ${index + 1}` }, 'colazione', 'equivalente'))}</h5>
                         <p class="ai-recipe-fit"><strong>Perche ti puo aiutare:</strong> ${escapeHtml(option.whyItFits || '')}</p>
                         <div class="ai-recipe-section">
                             <strong>Componenti</strong>
@@ -4890,7 +7685,11 @@ function renderAIBreakfastSnackResults(payload) {
                             <span class="ai-recipe-index">Spuntino ${index + 1}</span>
                             <span class="ai-recipe-tag ${escapeHtml(snackBadge.className)}">${escapeHtml(snackBadge.label)}</span>
                         </div>
-                        <h5>${escapeHtml(option.title || `Spuntino ${index + 1}`)}</h5>
+                        <div class="ai-recipe-card-meta-row">
+                            <span class="ai-recipe-mealtype ${escapeHtml(snackMealTypeMeta.className)}">${escapeHtml(snackMealTypeMeta.label)}</span>
+                            <span class="ai-recipe-mealtype-note">${escapeHtml(snackMealTypeMeta.tone)}</span>
+                        </div>
+                        <h5>${escapeHtml(getCompactAIRecipeTitle({ title: option.title || `Spuntino ${index + 1}` }, 'spuntino', snackBadge.label))}</h5>
                         <p class="ai-recipe-fit"><strong>Perche ti puo aiutare:</strong> ${escapeHtml(option.whyItFits || '')}</p>
                         <div class="ai-recipe-section">
                             <strong>Componenti</strong>
@@ -4937,6 +7736,7 @@ function renderAIDailyPlanResults(payload) {
     const sourceNote = payload?.meta?.source === 'fallback'
         ? `<p class="ai-mode-subtitle"><strong>Nota:</strong> stai vedendo il motore di backup.${payload?.meta?.reason ? ` ${escapeHtml(payload.meta.reason)}` : ''}</p>`
         : '<p class="ai-mode-subtitle">AI live attiva: il piano e organizzato come esempio di giornata completa.</p>';
+    const dailyTheme = String(plan.daily_theme || plan.dailyTheme || '').trim();
 
     resultBox.style.display = 'block';
     resultBox.innerHTML = `
@@ -4945,6 +7745,7 @@ function renderAIDailyPlanResults(payload) {
                 <div>
                     <h4 class="ai-mode-title">${escapeHtml(plan.title || 'Piano giornaliero su misura')}</h4>
                     ${sourceNote}
+                    ${dailyTheme ? `<p class="ai-plan-theme ai-plan-theme-main">${escapeHtml(dailyTheme)}</p>` : ''}
                     <p class="ai-mode-subtitle"><strong>Contesto serale:</strong> ${escapeHtml(dinnerProfileContext)}</p>
                 </div>
             </div>
@@ -4992,52 +7793,84 @@ function getAIWeeklyPlanFallback(profile, preferences, lunchContext = 'workday')
     const dailyPattern = cloneClinicalGuidanceValue(clinicalContext.dailyPattern || {});
     const targetCalories = Math.round(profile.targetCalories || 0);
     const proteinGrams = Math.round(profile.proteinTargetGrams || 0);
+    const carbsGrams = Math.round(profile.carbsTargetGrams || 0);
+    const fatGrams = Math.round(profile.fatTargetGrams || 0);
 
-    const days = (weeklyPattern.days || []).map((day, index) => ({
-        day: day.day,
-        focus: day.focus,
-        meals: [
-            {
-                slot: 'Colazione',
-                title: dailyPattern.breakfast?.title || 'Colazione semplice',
-                items: dailyPattern.breakfast?.items || []
-            },
-            {
-                slot: 'Spuntini',
-                title: 'Frutta fresca come base degli spuntini',
-                items: ['Mattina: 200 g frutta fresca', 'Pomeriggio: 200 g frutta fresca', clinicalContext.hungerStrategy]
-            },
-            {
-                slot: 'Pranzo',
-                title: day.lunch,
-                items: index === 5 || index === 6
-                    ? [
-                        '80 g pasta o riso o farro o orzo con condimenti vegetali',
-                        'verdure cotte o crude a piacere',
-                        '20 g olio EVO preferibilmente a crudo',
-                        '20 g pane semplice senza sale'
-                    ]
-                    : (dailyPattern.lunch?.items || [])
-            },
-            {
-                slot: 'Cena',
-                title: `Cena con ${day.dinnerProtein}`,
-                items: [
-                    'brodo o passato di verdure senza patate o legumi a piacere',
-                    `fonte proteica prioritaria: ${day.dinnerProtein}`,
-                    'verdura cotta o cruda a piacere',
-                    '10 g olio EVO preferibilmente a crudo',
-                    '60 g pane semplice senza sale'
-                ]
-            }
-        ],
-        notes: [
-            `Focus del giorno: ${day.focus}`,
+    const days = (weeklyPattern.days || []).map((day, index) => {
+        const lunchCompletion = completePlanMealItems(
+            'Pranzo',
             index === 5 || index === 6
-                ? 'Nel fine settimana la struttura puo essere un po piu distesa, ma senza perdere ordine nutrizionale.'
-                : `Nel contesto ${getLunchContextLabel(lunchContext).toLowerCase()} la priorita resta la praticita.`
-        ]
-    }));
+                ? [
+                    '80 g pasta o riso o farro o orzo con condimenti vegetali',
+                    'verdure cotte o crude a piacere',
+                    '20 g olio EVO preferibilmente a crudo',
+                    '20 g pane semplice senza sale'
+                ]
+                : (dailyPattern.lunch?.items || []),
+            {
+                protein: 'aggiungi una fonte proteica leggibile come legumi, pesce, uova o carne bianca secondo la rotazione della settimana',
+                cereal: 'completa con una base amidacea chiara come farro, riso, pasta, pane o orzo',
+                vegetables: 'assicurati che siano presenti verdure di contorno o apertura vegetale',
+                healthyFat: 'mantieni una quota dichiarata di grassi buoni come olio EVO a crudo'
+            }
+        );
+        const dinnerCompletion = completePlanMealItems(
+            'Cena',
+            [
+                'brodo o passato di verdure senza patate o legumi a piacere',
+                `fonte proteica prioritaria: ${day.dinnerProtein}`,
+                'verdura cotta o cruda a piacere',
+                '10 g olio EVO preferibilmente a crudo',
+                '60 g pane semplice senza sale'
+            ],
+            {
+                protein: 'aggiungi una proteina chiara coerente con la rotazione settimanale',
+                cereal: 'se manca, completa con una quota semplice di pane, cereale o patate',
+                vegetables: 'aggiungi una quota di verdure cotte o crude ben leggibile',
+                healthyFat: 'dichiara sempre una quota misurata di grassi buoni, preferibilmente olio EVO'
+            }
+        );
+
+        return {
+            day: day.day,
+            daily_theme: `${day.day}: ${day.focus}`,
+            focus: day.focus,
+            meals: [
+                {
+                    slot: 'Colazione',
+                    title: dailyPattern.breakfast?.title || 'Colazione semplice',
+                    items: dailyPattern.breakfast?.items || []
+                },
+                {
+                    slot: 'Spuntini',
+                    title: 'Frutta fresca come base degli spuntini',
+                    items: ['Mattina: 200 g frutta fresca', 'Pomeriggio: 200 g frutta fresca', clinicalContext.hungerStrategy || 'Aumenta il volume con verdure se serve sazieta extra']
+                },
+                {
+                    slot: 'Pranzo',
+                    title: day.lunch,
+                    items: lunchCompletion.items
+                },
+                {
+                    slot: 'Cena',
+                    title: `Cena con ${day.dinnerProtein}`,
+                    items: dinnerCompletion.items
+                }
+            ],
+            notes: [
+                `Focus del giorno: ${day.focus}`,
+                index === 5 || index === 6
+                    ? 'Nel fine settimana la struttura puo essere un po piu distesa, ma senza perdere ordine nutrizionale.'
+                    : `Nel contesto ${getLunchContextLabel(lunchContext).toLowerCase()} la priorita resta la praticita.`,
+                lunchCompletion.addedComponents.length > 0
+                    ? `Controllo pranzo completato: integrate ${lunchCompletion.addedComponents.join(', ')}.`
+                    : 'Controllo pranzo completato: struttura gia completa e leggibile.',
+                dinnerCompletion.addedComponents.length > 0
+                    ? `Controllo cena completato: integrate ${dinnerCompletion.addedComponents.join(', ')}.`
+                    : 'Controllo cena completato: struttura gia completa e leggibile.'
+            ]
+        };
+    });
 
     return {
         title: weeklyPattern.title || 'Settimana alimentare coerente con il profilo',
@@ -5048,12 +7881,17 @@ function getAIWeeklyPlanFallback(profile, preferences, lunchContext = 'workday')
             deltaCalories: Math.round(profile.goalCalorieDelta || 0),
             proteinGrams,
             proteinPerKg: Number(profile.proteinTargetPerKg || 0).toFixed(1),
+            carbsGrams,
+            fatGrams,
+            fiberGrams: Math.round(profile.fiberTargetGrams || 0),
             hydrationLiters: Number(profile.waterTargetLiters || 0).toFixed(1)
         },
         days,
         notes: [
             clinicalContext.weightNote,
             clinicalContext.proteinRotation,
+            'Il menu settimanale resta uno strumento flessibile: puoi modificare i singoli pasti in base a impegni, pasti fuori casa e desideri senza perdere il filo nutrizionale.',
+            'Per ogni pasto controlla la completezza della struttura: cereale o altra base amidacea, proteina, verdure e grassi buoni quando coerenti con il profilo.',
             ...(weeklyPattern.notes || []),
             clinicalContext.avoidFoods
         ]
@@ -5064,13 +7902,53 @@ function renderAIWeeklyPlanResults(payload) {
     const resultBox = document.getElementById('ai-day-plan-result');
     if (!resultBox) return;
 
+    lastWeeklyPlanPayload = payload;
+
+    const profilePayload = getAIProfilePayload();
     const week = payload.week || payload;
     const targets = week.targets || {};
     const days = Array.isArray(week.days) ? week.days : [];
     const notes = Array.isArray(week.notes) ? week.notes : [];
+    const pantryRaw = document.getElementById('weekly-plan-pantry')?.value || '';
+    const shoppingInsights = buildWeeklyShoppingInsights(week, pantryRaw);
+    const shoppingGroups = groupShoppingItemsByCategory(shoppingInsights.toBuy);
     const sourceNote = payload?.meta?.source === 'fallback'
         ? `<p class="ai-mode-subtitle"><strong>Nota:</strong> stai vedendo il motore di backup.${payload?.meta?.reason ? ` ${escapeHtml(payload.meta.reason)}` : ''}</p>`
+        : payload?.meta?.source === 'example'
+            ? '<p class="ai-mode-subtitle"><strong>Esempio:</strong> stai vedendo uno schema settimanale statico caricato manualmente.</p>'
         : '<p class="ai-mode-subtitle">AI live attiva: il piano e organizzato come schema settimanale coerente con il profilo.</p>';
+    const proteinStat = targets.proteinLabel
+        ? escapeHtml(targets.proteinLabel)
+        : (targets.proteinGrams || targets.proteinPerKg)
+            ? `${escapeHtml(targets.proteinGrams || 0)} g (${escapeHtml(targets.proteinPerKg || 0)} g/kg)`
+            : '-';
+    const carbsStat = targets.carbsLabel
+        ? escapeHtml(targets.carbsLabel)
+        : (targets.carbsGrams ? `${escapeHtml(targets.carbsGrams)} g` : '-');
+    const fatStat = targets.fatLabel
+        ? escapeHtml(targets.fatLabel)
+        : (targets.fatGrams ? `${escapeHtml(targets.fatGrams)} g` : '-');
+    const fiberStat = targets.fiberLabel
+        ? escapeHtml(targets.fiberLabel)
+        : (targets.fiberGrams ? `${escapeHtml(targets.fiberGrams)} g` : '-');
+    const hydrationStat = targets.hydrationLabel
+        ? escapeHtml(targets.hydrationLabel)
+        : (targets.hydrationLiters ? `${escapeHtml(targets.hydrationLiters)} L` : '-');
+    const weeklyGuide = shouldUseVeganPlanning(profilePayload)
+        ? [
+            'In un menu 100% vegetale fai comparire cereali o derivati a ogni pasto principale e legumi o altre proteine vegetali almeno due volte al giorno.',
+            'A pranzo e cena tieni abbondanti le verdure; distribuisci frutta 2-3 volte al giorno e usa semi, frutta secca e olio EVO con misura nel corso della giornata.',
+            'Controlla piu volte al giorno la presenza di cibi vegetali ricchi di calcio e decidi dove inserire semi di lino o chia per il capitolo Omega 3.',
+            'Usa il piano come traccia flessibile e mediterranea: molte ricette italiane sono gia naturalmente vegetali e non richiedono sostituzioni complicate.',
+            'Quando hai finito, confronta il menu con dispensa, frigo e freezer e organizza la spesa per corsie, non come elenco casuale di piatti.'
+        ]
+        : [
+            'Parti dalle proteine dei pasti principali e verifica la rotazione della settimana: legumi, pesce, carne, uova e formaggi vanno alternati con buon senso.',
+            'Completa poi ogni pranzo e ogni cena con cereali o altra base amidacea, verdure e una quota dichiarata di grassi buoni.',
+            'Usa il piano come traccia flessibile: puoi spostare o sostituire pasti in base a lavoro, famiglia, mensa, uscite e weekend.',
+            'Quando hai finito, evidenzia quello che hai gia in dispensa, frigo o freezer e scrivi la spesa solo per cio che manca.',
+            'Procedi per piccoli passi: un menu semplice ma ripetibile vale piu di una settimana perfetta ma difficile da mantenere.'
+        ];
 
     resultBox.style.display = 'block';
     resultBox.innerHTML = `
@@ -5088,8 +7966,11 @@ function renderAIWeeklyPlanResults(payload) {
                 <div class="ai-plan-stat"><strong>Fabbisogno</strong><span>${escapeHtml(targets.maintenanceCalories || 0)} kcal</span></div>
                 <div class="ai-plan-stat"><strong>Piano</strong><span>${escapeHtml(targets.targetCalories || 0)} kcal</span></div>
                 <div class="ai-plan-stat"><strong>Delta</strong><span>${escapeHtml(formatDeltaKcal(targets.deltaCalories || 0))}</span></div>
-                <div class="ai-plan-stat"><strong>Proteine</strong><span>${escapeHtml(targets.proteinGrams || 0)} g (${escapeHtml(targets.proteinPerKg || 0)} g/kg)</span></div>
-                <div class="ai-plan-stat"><strong>Acqua</strong><span>${escapeHtml(targets.hydrationLiters || 0)} L</span></div>
+                <div class="ai-plan-stat"><strong>Proteine</strong><span>${proteinStat}</span></div>
+                <div class="ai-plan-stat"><strong>Carboidrati</strong><span>${carbsStat}</span></div>
+                <div class="ai-plan-stat"><strong>Grassi</strong><span>${fatStat}</span></div>
+                <div class="ai-plan-stat"><strong>Fibra</strong><span>${fiberStat}</span></div>
+                <div class="ai-plan-stat"><strong>Acqua</strong><span>${hydrationStat}</span></div>
                 <div class="ai-plan-stat"><strong>Giorni</strong><span>${escapeHtml(days.length || 0)}</span></div>
             </div>
 
@@ -5100,6 +7981,7 @@ function renderAIWeeklyPlanResults(payload) {
                             <span class="ai-recipe-index">${escapeHtml(day.day || 'Giorno')}</span>
                             <span class="ai-recipe-tag">Settimana</span>
                         </div>
+                        ${day.daily_theme ? `<p class="ai-plan-theme">${escapeHtml(day.daily_theme)}</p>` : ''}
                         <h5>${escapeHtml(day.focus || 'Struttura del giorno')}</h5>
                         ${(Array.isArray(day.meals) ? day.meals : []).map((meal) => `
                             <div class="ai-recipe-section">
@@ -5119,6 +8001,27 @@ function renderAIWeeklyPlanResults(payload) {
                     <ul class="ai-plan-note-list">${renderAICardList(notes)}</ul>
                 </div>
             ` : ''}
+
+            <div class="ai-recipe-card">
+                <h5>Come usare il meal plan</h5>
+                <ul class="ai-plan-note-list">${renderAICardList(weeklyGuide)}</ul>
+            </div>
+
+            <div class="ai-recipe-card">
+                <h5>Dispensa riconosciuta</h5>
+                <ul class="ai-plan-note-list">${renderAICardList(shoppingInsights.pantryLabels.length > 0 ? shoppingInsights.pantryLabels : ['Non hai ancora indicato ingredienti gia presenti in casa.'])}</ul>
+            </div>
+
+            <div class="ai-recipe-card">
+                <h5>Lista della spesa suggerita</h5>
+                ${shoppingGroups.length > 0 ? shoppingGroups.map((group) => `
+                    <div class="ai-recipe-section">
+                        <strong>${escapeHtml(group.label)}</strong>
+                        <ul class="ai-plan-note-list">${renderAICardList(group.items)}</ul>
+                    </div>
+                `).join('') : `<ul class="ai-plan-note-list">${renderAICardList(['In base alla dispensa indicata non emergono componenti mancanti da acquistare.'])}</ul>`}
+                ${shoppingInsights.alreadyCovered.length > 0 ? `<p class="ai-recipe-fit"><strong>Gia coperti in casa:</strong> ${escapeHtml(shoppingInsights.alreadyCovered.join(', '))}</p>` : ''}
+            </div>
         </div>
     `;
     updateAiModeResultsVisibility('ai-day-plan-result');
@@ -5181,29 +8084,25 @@ async function generaPianoGiornalieroAI() {
     );
 
     try {
-        const response = await fetch('/.netlify/functions/ai-meal-plan', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                mode: 'daily-plan',
-                preferences,
-                lunchContext,
-                profile: profilePayload
+        const geminiPayload = await generaRicettaGemini({
+            mode: 'piano-giornaliero',
+            payload: buildGeminiDailyPlanRequestPayload(profilePayload, {
+                preferenze: preferences,
+                contesto_pranzo: lunchContext,
+                crononutrizione: 'Colazione densa, pranzo per energia, cena leggera e digeribile',
+                logica_zero_sprechi: 'Riutilizza ingredienti compatibili tra pranzo e cena quando sensato',
+                ordine_atteso_pasti: GEMINI_DAILY_SLOTS
             })
         });
 
-        if (!response.ok) {
-            throw new Error('Endpoint AI non raggiungibile in questo deploy.');
+        if (!geminiPayload || !Array.isArray(geminiPayload.pasti) || geminiPayload.pasti.length === 0) {
+            throw new Error('Gemini ha restituito un piano giornaliero senza pasti validi.');
         }
 
-        const payload = await response.json();
-        if (!payload || !payload.plan || !Array.isArray(payload.plan.meals)) {
-            throw new Error('La risposta AI non contiene un piano valido.');
-        }
-
-        renderAIDailyPlanResults(payload);
+        renderAIDailyPlanResults(adaptGeminiDailyPlan(geminiPayload, profilePayload, {
+            preferences,
+            lunchContext
+        }));
     } catch (error) {
         console.error('AI daily plan error:', error);
         renderAIDailyPlanResults({
@@ -5228,29 +8127,27 @@ async function generaPianoSettimanaleAI() {
     );
 
     try {
-        const response = await fetch('/.netlify/functions/ai-meal-plan', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                mode: 'weekly-plan',
-                preferences,
-                lunchContext,
-                profile: profilePayload
+        const geminiPayload = await generaRicettaGemini({
+            mode: 'piano-settimanale',
+            payload: buildGeminiWeeklyPlanRequestPayload(profilePayload, {
+                preferenze: preferences,
+                contesto_pranzo: lunchContext,
+                pasti_al_giorno: profilePayload.mealsPerDay,
+                obiettivo_settimanale: profilePayload.goal || 'mantenere',
+                rotazione_proteica: 'Distribuisci fonti proteiche in modo sensato senza ripetizioni monotone',
+                giorni_attesi: GEMINI_WEEK_DAYS,
+                ordine_atteso_pasti: GEMINI_DAILY_SLOTS
             })
         });
 
-        if (!response.ok) {
-            throw new Error('Endpoint AI non raggiungibile in questo deploy.');
+        if (!geminiPayload || !Array.isArray(geminiPayload.giorni) || geminiPayload.giorni.length === 0) {
+            throw new Error('Gemini ha restituito un piano settimanale senza giorni validi.');
         }
 
-        const payload = await response.json();
-        if (!payload || !payload.week || !Array.isArray(payload.week.days)) {
-            throw new Error('La risposta AI non contiene un piano settimanale valido.');
-        }
-
-        renderAIWeeklyPlanResults(payload);
+        renderAIWeeklyPlanResults(adaptGeminiWeeklyPlan(geminiPayload, profilePayload, {
+            preferences,
+            lunchContext
+        }));
     } catch (error) {
         console.error('AI weekly plan error:', error);
         renderAIWeeklyPlanResults({
@@ -5419,17 +8316,19 @@ function salvaRicettaAI(index) {
         fe: 0,
         ca: 0,
         b12: 0,
-        items: (recipe.ingredients || []).map((ingredient) => ({
-            n: ingredient,
-            qty: 0,
-            k: 0,
-            p: 0,
-            c: 0,
-            g: 0,
-            fe: 0,
-            ca: 0,
-            b12: 0
-        })),
+        items: (Array.isArray(recipe.ingredienti_tabella) && recipe.ingredienti_tabella.length > 0
+            ? recipe.ingredienti_tabella
+            : (recipe.ingredients || []).map((ingredient) => ({ n: ingredient, qty: 0, k: 0, p: 0, c: 0, g: 0 }))).map((ingredient) => ({
+                n: String(ingredient.n || ingredient.name || ingredient.ingredient || ingredient || '').trim(),
+                qty: Number(ingredient.qty || 0),
+                k: Number(ingredient.k || ingredient.kcal || 0),
+                p: Number(ingredient.p || ingredient.protein || 0),
+                c: Number(ingredient.c || ingredient.carbs || 0),
+                g: Number(ingredient.g || ingredient.fat || 0),
+                fe: 0,
+                ca: 0,
+                b12: 0
+            })),
         aiGenerated: true,
         aiId: recipe.id || '',
         aiDifficulty: recipe.difficolta || '',
@@ -5506,6 +8405,7 @@ function mapOpenFoodFactsProduct(product, fallbackCode = '') {
     const kjValue = Number(nutriments.energy_100g || nutriments.energy || 0);
     const kcalFromKj = kjValue > 0 ? (kjValue / 4.184) : 0;
     const kcal = kcalValue > 0 ? kcalValue : kcalFromKj;
+    const scanResult = mapOpenFoodFactsScanResult(product, `Fonte OpenFoodFacts (barcode ${fallbackCode || 'n/d'})`);
 
     return {
         nome: String(product.product_name_it || product.product_name || `Prodotto ${fallbackCode || 'scannerizzato'}`).trim(),
@@ -5516,7 +8416,8 @@ function mapOpenFoodFactsProduct(product, fallbackCode = '') {
         fe: 0,
         ca: 0,
         b12: 0,
-        isOFF: true
+        isOFF: true,
+        scanResult
     };
 }
 
@@ -5581,6 +8482,12 @@ function collectKaggleBarcodes(product) {
 function mapKaggleProductToScanResult(product, note = 'Fonte dataset Kaggle (locale)') {
     const nutriScoreRaw = pickFirstDefined(product, ['nutriscore_grade', 'nutriscore', 'nutri_score_grade'], '?');
     const nutriScore = String(nutriScoreRaw || '?').toUpperCase().replace(/[^A-E]/g, '') || '?';
+    const barcode = collectKaggleBarcodes(product)[0] || '';
+    const brand = String(pickFirstDefined(product, ['brands', 'brand', 'brand_name', 'brand_owner', 'marca'], '')).trim();
+    const category = String(pickFirstDefined(product, ['food_category', 'category', 'categories', 'food_type'], '')).trim();
+    const quantity = String(pickFirstDefined(product, ['quantity', 'serving_size', 'package_size'], '')).trim();
+    const ingredients = String(pickFirstDefined(product, ['ingredients_text', 'ingredients', 'ingredienti'], '')).trim();
+    const imageUrl = String(pickFirstDefined(product, ['image_url', 'image_front_url', 'image_front_small_url'], '')).trim();
 
     const sodiumMgDirect = toNumberSafe(pickFirstDefined(product, ['sodium_mg_100g', 'sodium_mg']));
     const sodiumG = toNumberSafe(pickFirstDefined(product, ['sodium_100g', 'sodium']));
@@ -5591,7 +8498,13 @@ function mapKaggleProductToScanResult(product, note = 'Fonte dataset Kaggle (loc
 
     return {
         alimento: String(pickFirstDefined(product, ['product_name_it', 'product_name', 'food_name', 'name', 'title'], 'Alimento')).trim(),
-        descrizione: String(pickFirstDefined(product, ['brands', 'brand', 'brand_name', 'brand_owner', 'food_category', 'category', 'food_type', 'marca'], '')).trim(),
+        descrizione: String(brand || category).trim(),
+        brand,
+        category,
+        quantity,
+        ingredients,
+        imageUrl,
+        barcode,
         per_100g: {
             kcal: toNumberSafe(pickFirstDefined(product, ['energy-kcal_100g', 'energy_kcal_100g', 'kcal_100g', 'kcal', 'energy_kcal', 'calories'])),
             proteine: toNumberSafe(pickFirstDefined(product, ['proteins_100g', 'proteine_100g', 'protein_100g', 'proteins', 'proteine', 'protein_g'])),
@@ -5604,7 +8517,8 @@ function mapKaggleProductToScanResult(product, note = 'Fonte dataset Kaggle (loc
         },
         nutriscore: nutriScore,
         note,
-        source: 'kaggle'
+        source: 'kaggle',
+        sourceLabel: 'Dataset locale Kaggle'
     };
 }
 
@@ -5931,10 +8845,13 @@ async function gestisciBarcodeScansionato(barcode) {
         }
 
         selectedFood = mappedFood;
-        document.getElementById('add-panel').style.display = 'block';
-        document.getElementById('selected-name').innerText = mappedFood.nome;
-        document.getElementById('qty').value = 100;
-        updateSelectedFoodPreview();
+        // Mostra schermata info nutrizionali prodotto
+        showProductInfoModal(mappedFood.scanResult || mappedFood);
+        // Se vuoi anche mostrare il pannello aggiunta, decommenta le righe sotto:
+        // document.getElementById('add-panel').style.display = 'block';
+        // document.getElementById('selected-name').innerText = mappedFood.nome;
+        // document.getElementById('qty').value = 100;
+        // updateSelectedFoodPreview();
     } catch (error) {
         console.error('Errore nel recupero prodotto scannerizzato:', error);
         alert('Errore durante il recupero del prodotto.');
@@ -6126,6 +9043,12 @@ function buildSearchTermsFromOcr(ocrText) {
 
 function mapOpenFoodFactsScanResult(product, note = 'Fonte OpenFoodFacts') {
     const nutriments = product?.nutriments || {};
+    const barcode = String(product?.code || '').trim();
+    const brand = String(product?.brands || '').trim();
+    const category = String(product?.categories_tags?.[0] || product?.categories || '').replace(/^en:/i, '').trim();
+    const quantity = String(product?.quantity || '').trim();
+    const ingredients = String(product?.ingredients_text_it || product?.ingredients_text || '').trim();
+    const imageUrl = getProductImageUrl(product);
 
     const energyKcal = Number(nutriments['energy-kcal_100g'] || nutriments['energy-kcal'] || 0);
     const energyKj = Number(nutriments.energy_100g || nutriments.energy || 0);
@@ -6136,7 +9059,13 @@ function mapOpenFoodFactsScanResult(product, note = 'Fonte OpenFoodFacts') {
 
     return {
         alimento: String(product.product_name_it || product.product_name || 'Alimento').trim(),
-        descrizione: String(product.brands || '').trim(),
+        descrizione: brand,
+        brand,
+        category,
+        quantity,
+        ingredients,
+        imageUrl,
+        barcode,
         per_100g: {
             kcal: Number(kcal || 0),
             proteine: Number(nutriments.proteins_100g || 0),
@@ -6149,7 +9078,8 @@ function mapOpenFoodFactsScanResult(product, note = 'Fonte OpenFoodFacts') {
         },
         nutriscore: String(product.nutriscore_grade || '?').toUpperCase().replace(/[^A-E]/g, '') || '?',
         note,
-        source: 'openfoodfacts'
+        source: 'openfoodfacts',
+        sourceLabel: 'OpenFoodFacts'
     };
 }
 

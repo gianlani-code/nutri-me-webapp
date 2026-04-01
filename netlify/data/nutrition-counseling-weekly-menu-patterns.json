@@ -1,0 +1,120 @@
+{
+  "version": "1.0",
+  "category": "metodo-ragionamento-nutrizionale-menu-settimanale",
+  "overview": {
+    "summary": "Organizzare i pasti con un menu settimanale serve a tenere insieme equilibrio alimentare, risparmio di tempo, riduzione degli sprechi e maggiore varieta nella settimana reale.",
+    "principles": [
+      "Il menu settimanale e una mappa organizzativa, non una gabbia rigida da eseguire alla perfezione.",
+      "Pianificare in anticipo aiuta a gestire meglio scelta dei pasti, spesa, cucina e frequenza di consumo degli alimenti.",
+      "Una buona settimana alimentare deve restare equilibrata ma anche flessibile rispetto a impegni, pasti fuori casa, esigenze familiari e weekend."
+    ]
+  },
+  "protein_rotation_frequencies": {
+    "summary": "Per una dieta onnivora, le frequenze di consumo dei secondi piatti sono una guida orientativa da modulare sulle esigenze individuali, non una prescrizione rigida.",
+    "key_points": [
+      "Legumi: circa 3-5 volte a settimana.",
+      "Pesce: almeno 3 volte a settimana, preferendo il pesce azzurro e limitando quello conservato.",
+      "Carne: al massimo 3 volte a settimana, privilegiando la carne bianca e limitando la carne rossa a circa 1 volta.",
+      "Formaggi: circa 1-2 volte a settimana.",
+      "Uova: circa 1-2 volte a settimana.",
+      "La rotazione delle fonti proteiche resta piu importante della ripetizione dello stesso alimento."
+    ]
+  },
+  "benefits": {
+    "summary": "Il valore del menu settimanale non e solo nutrizionale, ma anche pratico e comportamentale.",
+    "key_points": [
+      "Semplifica la vita quotidiana e riduce il tempo speso a decidere cosa mangiare.",
+      "Alleggerisce il carico mentale della domanda quotidiana su cosa cucinare.",
+      "Permette di portarsi avanti con alcune preparazioni e di riutilizzare lo stesso ingrediente in ricette diverse.",
+      "Riduce il ricorso a piatti pronti, processati o scelte dell ultimo minuto.",
+      "Aiuta anche a risparmiare, perche spinge ad acquistare solo cio che serve davvero.",
+      "Aiuta a evitare monotonia e sprechi grazie a una visione d insieme della settimana.",
+      "Rende la spesa piu mirata, veloce e coerente con quello che verra cucinato.",
+      "Aumenta la consapevolezza sulla propria alimentazione e sulla rotazione degli alimenti."
+    ]
+  },
+  "planning_logic": {
+    "summary": "La pianificazione settimanale deve partire dalla struttura dei pasti e dalla realta della persona.",
+    "steps": [
+      "Parti dagli impegni reali della settimana: lavoro, hobby, mensa, pasti fuori casa, famiglia e fine settimana.",
+      "Definisci prima la fonte proteica dei pasti principali, poi completa con cereali, verdure e grassi buoni.",
+      "Se vuoi scambiare tra loro due fonti proteiche nello stesso pasto, puoi farlo mantenendo il piatto bilanciato e dimezzando la porzione di ciascuna.",
+      "Lavora in sequenza semplice: inserisci per prime le proteine, aggiungi i cereali o le basi amidacee, concludi con verdura abbondante variando colori e stagionalita.",
+      "Alterna tra piatti unici pratici e combinazioni piu tradizionali come primo, secondo e contorno quando serve.",
+      "Controlla ogni pasto alla fine: devono comparire cereali, proteine, verdure e una quota di grassi buoni quando coerente con il profilo.",
+      "Mantieni margine di modifica quotidiano, cosi il piano resta agile e non si spezza alla prima variazione della routine."
+    ]
+  },
+  "balance_logic": {
+    "summary": "L equilibrio della settimana nasce da completezza del singolo pasto e varieta tra i giorni.",
+    "patterns": [
+      "Ogni pasto principale dovrebbe rendere leggibili cereali o altra base amidacea, fonte proteica, verdure e grassi di buona qualita.",
+      "La varietà va costruita settimana dopo settimana seguendo stagionalita di frutta e verdura e rotazione delle fonti proteiche.",
+      "Il pranzo puo essere piu pratico o da trasporto, mentre la cena puo gestire meglio tempi un po piu distesi senza perdere ordine nutrizionale."
+    ]
+  },
+  "anti_waste_logic": {
+    "summary": "La pianificazione e uno strumento anti-spreco, non solo una strategia dietetica.",
+    "principles": [
+      "Sapere in anticipo cosa verra cucinato consente di comprare in modo piu preciso e di usare meglio dispensa, frigo e freezer.",
+      "Le preparazioni vanno pensate anche per recuperare ingredienti aperti, avanzi utili e basi gia cotte.",
+      "La lista della spesa nasce dal menu pianificato dopo avere controllato quello che e gia disponibile in casa.",
+      "Una volta terminato il menu, conviene segnare cosa e gia presente in dispensa e costruire la spesa solo su cio che manca.",
+      "Riutilizzare lo stesso ingrediente in piatti diversi durante la settimana aumenta ordine, risparmio e riduce la sensazione di frigo vuoto."
+    ]
+  },
+  "reference_week_example": {
+    "summary": "Un esempio utile di settimana credibile alterna piatti vegetali, pesce, pollo, uova, formaggi e carne senza perdere semplicita domestica.",
+    "days": [
+      "lunedi: quinoa con fagioli rossi, avocado e verdure di stagione; branzino al cartoccio con aromi, pane e insalata mista con semi di girasole",
+      "martedi: insalata di farro con pomodorini, rucola, feta e olive; straccetti di pollo al limone con contorno di insalata e pane",
+      "mercoledi: bastoncini di polenta con ragu di lenticchie e insalata; orata al forno con patate e verdure di stagione al vapore o al forno",
+      "giovedi: piadina fatta in casa con hummus di ceci e verdure grigliate; pasta con ricotta e zucchine",
+      "venerdi: crocchette di miglio con piselli e carote; crema di verdure alla paprika con pane tostato e uova in camicia",
+      "sabato: cous cous con ceci e verdure al curry; merluzzo con pomodorini e olive, insalata e pane",
+      "domenica: tagliatelle al ragu di manzo e verdure di stagione in padella; uova strapazzate con spinaci in padella e pane bruschettato con olio aromatico al rosmarino"
+    ]
+  },
+  "behavior_and_adherence": {
+    "summary": "Cambiare abitudini richiede piccoli passi, ripetizione e obiettivi fattibili.",
+    "key_points": [
+      "Meglio iniziare con una pianificazione semplice e ripetibile che con un menu troppo ambizioso.",
+      "Scegliere in anticipo le ricette riduce il carico decisionale quotidiano e facilita una sola spesa ben costruita.",
+      "La curiosita verso nuovi sapori puo essere usata come leva positiva: il meal prep settimanale non deve togliere gusto o fantasia."
+    ]
+  },
+  "energy_and_nutrient_guardrails": {
+    "summary": "Fabbisogno energetico, macro e micronutrienti vanno sempre adattati alla persona e non trasformati in regole universali.",
+    "principles": [
+      "Eta, peso, attivita fisica e contesto clinico modificano il fabbisogno calorico individuale.",
+      "Eventuali medie divulgative come circa 2200 kcal o ripartizioni semplificate dei macronutrienti possono valere solo come esempio grezzo, non come schema clinico fisso.",
+      "Una settimana ben fatta non guarda solo ai macronutrienti ma anche a cibi ricchi di vitamine, sali minerali, fibra e composti protettivi come gli antiossidanti."
+    ]
+  },
+  "flexibility_guardrails": {
+    "summary": "Organizzazione non significa rigidita: il menu funziona solo se resta modificabile.",
+    "principles": [
+      "Le variazioni quotidiane non sono un fallimento del piano ma parte della sua buona riuscita.",
+      "Il piano deve adattarsi a fame, desideri, orari e imprevisti senza perdere il suo asse nutrizionale.",
+      "Un menu troppo rigido riduce aderenza; uno flessibile ma strutturato la migliora."
+    ]
+  },
+  "chef_use": {
+    "when_relevant": [
+      "Quando l IA costruisce menu settimanali o usa la logica del meal prep e dell organizzazione dei pasti.",
+      "Quando ricette, pranzi e cene devono inserirsi in una settimana credibile e non sembrare scelte isolate.",
+      "Quando serve esplicitare vantaggi pratici come semplificazione, equilibrio, consapevolezza e spesa intelligente."
+    ],
+    "how_to_use": [
+      "Usa il modulo come metodo di ragionamento, non come testo da copiare.",
+      "Trasforma i principi in scelte concrete: rotazione, completezza dei pasti, flessibilita, stagionalita e praticita reale.",
+      "Fai emergere il controllo finale del pasto: verifica se sono presenti componente amidacea, proteine, verdure e grassi buoni.",
+      "Quando utile, usa anche la logica dispensa-pasto-spesa: prima pianifica, poi evidenzia cosa hai gia in casa, infine genera solo la lista mancante."
+    ],
+    "guardrails": [
+      "Non presentare il menu settimanale come prescrizione clinica rigida.",
+      "Non trasformare la completezza del pasto in una formula meccanica uguale per tutti.",
+      "Non ignorare impegni reali, pasti fuori casa o possibilita di modifica quotidiana."
+    ]
+  }
+}

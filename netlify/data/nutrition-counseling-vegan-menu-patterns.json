@@ -1,0 +1,116 @@
+{
+  "version": "1.0",
+  "category": "metodo-ragionamento-nutrizionale-menu-settimanale-vegano",
+  "overview": {
+    "summary": "Un menu settimanale 100% vegetale ben costruito puo essere completo, mediterraneo, pratico e utile anche come ispirazione per chi non segue un regime strettamente vegano.",
+    "principles": [
+      "Anche in un regime onnivoro, la maggior parte dei pasti quotidiani puo restare completamente vegetale.",
+      "Il menu settimanale va usato come griglia organizzativa flessibile, non come schema rigido.",
+      "L obiettivo non e imitare i piatti con sostituzioni forzate, ma valorizzare cereali, legumi, ortaggi, frutta, semi, frutta secca e tradizione mediterranea vegetale."
+    ]
+  },
+  "weekly_grid_method": {
+    "summary": "Per pianificare la settimana conviene partire da una griglia semplice e compilare i pasti reali che verranno cucinati.",
+    "steps": [
+      "Dividi la settimana in 7 colonne, una per ogni giorno.",
+      "Prevedi 3-5 momenti alimentari al giorno in base alla routine e all eventuale uso degli spuntini.",
+      "Scrivi nelle caselle piatti reali, colazioni semplici e spuntini veloci che sai di poter ripetere davvero.",
+      "Quando ci sono pasti fuori casa o persone assenti, calcola quantita e porzioni solo per chi mangera davvero quel pasto."
+    ]
+  },
+  "daily_balance_rules": {
+    "summary": "La completezza del menu vegetale nasce dalla ricorrenza dei gruppi alimentari chiave, non dalla perfezione del singolo piatto isolato.",
+    "key_points": [
+      "Cereali e derivati dovrebbero comparire a ogni pasto principale, variando il tipo di cereale durante la settimana.",
+      "Legumi e altri cibi vegetali proteici dovrebbero comparire almeno due volte al giorno; vanno bene anche soia e yogurt di soia, tofu, tempeh, farine di legumi e pasta di legumi.",
+      "Verdure abbondanti dovrebbero comparire sia a pranzo sia a cena.",
+      "La frutta puo comparire 2-3 volte al giorno, negli spuntini o a fine pasto.",
+      "Frutta secca, semi oleosi e altri grassi vegetali non devono comparire a ogni pasto, ma dovrebbero essere distribuiti in piccole quantita nell arco della giornata."
+    ]
+  },
+  "micronutrient_focus": {
+    "summary": "Nel ragionamento vegano non conta solo la quota proteica: servono anche attenzione a calcio, Omega 3, fibra e densita micronutrizionale.",
+    "key_points": [
+      "Controlla che i cibi vegetali ricchi di calcio compaiano piu volte nel corso della giornata.",
+      "Decidi in quali piatti inserire olio di lino, semi di lino o semi di chia per coprire meglio il capitolo Omega 3.",
+      "Verdure, legumi, frutta, erbe aromatiche e semi aiutano a costruire una settimana ricca di fibra, folati, potassio e composti protettivi.",
+      "In un percorso vegano strutturato, eventuali temi come vitamina B12 o supplementazioni restano da contestualizzare a livello professionale e non vanno banalizzati."
+    ]
+  },
+  "shopping_logic": {
+    "summary": "La lista della spesa deve nascere dal menu, tenendo conto di quello che e gia presente in casa e organizzando gli acquisti per corsie.",
+    "principles": [
+      "Prima pianifica i pasti, poi controlla dispensa, frigo e freezer, infine compra solo cio che manca.",
+      "Organizzare la spesa per corsie come ortofrutta, banco frigo e freschi vegetali, cereali e forno, legumi e proteine vegetali, condimenti e dispensa fa risparmiare tempo.",
+      "Riutilizzare ingredienti in piatti diversi della stessa settimana riduce spreco, costi e carico mentale.",
+      "Una buona settimana domestica riduce il ricorso a processati, take-away e improvvisazioni dell ultimo minuto."
+    ]
+  },
+  "italian_plant_tradition": {
+    "summary": "La cucina italiana possiede gia una base fortissima di piatti vegetali e poveri, utili anche per menu vegani credibili e non artificiali.",
+    "examples": [
+      "bruschetta al pomodoro con olio EVO e basilico",
+      "caponata siciliana",
+      "verdure grigliate e sott olio",
+      "pasta aglio, olio e peperoncino",
+      "pasta al sugo di pomodoro ben fatto",
+      "panzanella toscana",
+      "ribollita",
+      "minestrone di verdure",
+      "insalate di legumi del Sud",
+      "farro o orzo con legumi e verdure",
+      "sorbetto al limone",
+      "granita siciliana senza panna",
+      "castagnaccio"
+    ]
+  },
+  "egg_replacements": {
+    "summary": "Quando servono ricette senza uova, e utile ragionare per funzione tecnologica e non per sostituzione meccanica unica.",
+    "sweet": [
+      "mezza banana schiacciata per dare umidita e morbidezza in torte e biscotti",
+      "salsa di mele per aggiungere umidita con sapore neutro",
+      "semi di lino o chia macinati con acqua per creare un gel legante",
+      "yogurt di soia o di cocco per torte e impasti morbidi",
+      "acqua frizzante per impasti piu leggeri",
+      "agar agar quando serve piu struttura"
+    ],
+    "savory": [
+      "farina di ceci con acqua per frittate vegane e torte salate",
+      "pure di patate o zucca per polpette, burger e ripieni",
+      "amido di mais o tapioca per addensare creme e salse",
+      "pangrattato o fiocchi d avena come leganti pratici",
+      "aquafaba per mousse, maionese vegetale e preparazioni dove servirebbe un albume montato"
+    ]
+  },
+  "reference_week_example": {
+    "summary": "Una settimana vegana credibile alterna piatti tradizionali, basi ripetibili e fonti proteiche vegetali ben distribuite nella giornata.",
+    "days": [
+      "lunedi: porridge con bevanda di soia, mela e noci; pasta al pomodoro con ceci e insalata; ribollita con cavolo nero e pane tostato",
+      "martedi: pane integrale con crema 100% di frutta secca e frutta; insalata di farro con lenticchie, pomodorini e rucola; caponata con hummus e pane",
+      "mercoledi: yogurt di soia con avena e frutti di bosco; panzanella con fagioli bianchi; zuppa di orzo e piselli con verdure di stagione",
+      "giovedi: chia pudding con pera e semi di zucca; cous cous con ceci e verdure al curry; polpette di lenticchie con contorno di broccoli e pane",
+      "venerdi: pancake senza uova con banana e yogurt di soia; pasta e fagioli con verdure; teglia di patate, tofu, cipolle e rosmarino",
+      "sabato: pane tostato con crema di ceci e agrumi; riso integrale con edamame e zucchine; minestrone con crostini e semi di lino macinati",
+      "domenica: colazione lenta con torta vegana semplice e frutta; lasagne al pesto in versione vegetale o pasta al forno di verdure; bruschette, verdure grigliate e crema di cannellini"
+    ]
+  },
+  "chef_use": {
+    "when_relevant": [
+      "Quando il profilo dichiara dieta vegana, 100% vegetale o plant-based.",
+      "Quando si vogliono proporre piatti mediterranei piu vegetali anche a chi segue altri regimi alimentari.",
+      "Quando serve costruire liste della spesa per corsie e settimane organizzate con forte logica anti-spreco."
+    ],
+    "how_to_use": [
+      "Usa il modulo come metodo di pianificazione e selezione piatti, non come testo da copiare.",
+      "Verifica che i pasti principali mostrino base amidacea, quota proteico-leguminosa, verdure abbondanti e grassi buoni coerenti.",
+      "Privilegia piatti italiani o mediterranei gia naturalmente vegetali prima di ricorrere a sostituzioni artificiose.",
+      "Quando una ricetta richiederebbe l uovo, ragiona sulla funzione: legare, dare umidita, montare o addensare."
+    ],
+    "guardrails": [
+      "Non presentare il vegan come elenco di privazioni o di sostituti obbligati.",
+      "Non trascurare calcio, Omega 3, fibra e densita micronutrizionale.",
+      "Non costruire menu vegetali basati solo su insalate leggere o piatti poco sazianti.",
+      "Non rendere il menu rigido: deve restare realistico per famiglia, spesa, batch cooking e pasti fuori casa."
+    ]
+  }
+}

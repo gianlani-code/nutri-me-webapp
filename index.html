@@ -9,7 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
 <body>
 
@@ -34,12 +34,11 @@
                 <label>Username<span style="color:#000;">*</span></label>
                 <input type="text" id="username" placeholder="Inserisci il tuo username" />
                 <label>Genere<span style="color:#000;">*</span></label>
-                <select id="user-sex">
-                    <option value="">Seleziona</option>
-                    <option value="donna">Donna</option>
-                    <option value="uomo">Uomo</option>
-                    <option value="neutro">Altro/Preferisco non specificare</option>
-                </select>
+                                <input type="hidden" id="user-sex" value="">
+                                <div class="meal-selector chip-group">
+                                    <button type="button" class="chip" data-value="donna" onclick="selezionaOpzioneChip(this, 'user-sex', 'donna')">Donna</button>
+                                    <button type="button" class="chip" data-value="uomo" onclick="selezionaOpzioneChip(this, 'user-sex', 'uomo')">Uomo</button>
+                                </div>
                 <label>Età<span style="color:#000;">*</span></label>
                 <input type="number" id="wizard-age" placeholder="Età" min="0" max="120" />
                 <label>Peso (kg)<span style="color:#000;">*</span></label>
@@ -64,12 +63,12 @@
 
             <div class="wizard-step" data-step="3">
                 <label>Tipo di lavoro<span style="color:#000;">*</span></label>
-                <select id="wizard-job">
-                    <option value="">Seleziona</option>
-                    <option value="sedentario">Sedentario</option>
-                    <option value="moderato">Moderato</option>
-                    <option value="attivo">Attivo</option>
-                </select>
+                                <input type="hidden" id="wizard-job" value="">
+                                <div class="meal-selector chip-group">
+                                    <button type="button" class="chip" data-value="sedentario" onclick="selezionaOpzioneChip(this, 'wizard-job', 'sedentario')">Sedentario</button>
+                                    <button type="button" class="chip" data-value="moderato" onclick="selezionaOpzioneChip(this, 'wizard-job', 'moderato')">Moderato</button>
+                                    <button type="button" class="chip" data-value="attivo" onclick="selezionaOpzioneChip(this, 'wizard-job', 'attivo')">Attivo</button>
+                                </div>
                 <label>Quante volte ti alleni a settimana?<span style="color:#000;">*</span></label>
                 <input type="number" id="wizard-workouts" placeholder="Numero allenamenti" min="0" max="10" />
                 <div id="wizard-sport-details" class="wizard-conditional-block" style="display:none;">
@@ -85,12 +84,12 @@
                     </div>
                 </div>
                 <label>Obiettivo<span style="color:#000;">*</span></label>
-                <select id="wizard-goal">
-                    <option value="">Seleziona</option>
-                    <option value="dimagrire">Vorrei perdere peso</option>
-                    <option value="mantenere">Vorrei mantenere il mio peso forma</option>
-                    <option value="massa">Vorrei aumentare la massa muscolare</option>
-                </select>
+                                <input type="hidden" id="wizard-goal" value="">
+                                <div class="meal-selector chip-group">
+                                    <button type="button" class="chip" data-value="dimagrire" onclick="selezionaOpzioneChip(this, 'wizard-goal', 'dimagrire')">Vorrei perdere peso</button>
+                                    <button type="button" class="chip" data-value="mantenere" onclick="selezionaOpzioneChip(this, 'wizard-goal', 'mantenere')">Vorrei mantenere il mio peso forma</button>
+                                    <button type="button" class="chip" data-value="massa" onclick="selezionaOpzioneChip(this, 'wizard-goal', 'massa')">Vorrei aumentare la massa muscolare</button>
+                                </div>
                 <small class="required-note">*i seguenti campi sono obbligatori.</small>
             </div>
 
@@ -314,7 +313,7 @@
                 <div class="search-box diary-search-box">
                     <div class="diary-search-row">
                         <input type="text" id="food-search" placeholder="Cerca cibo o ricetta..." oninput="cercaAlimento(event, 'main')">
-                        <button type="button" class="scan-trigger-btn" onclick="avviaScansioneIntelligente()"><i data-lucide="scan-line" style="width:15px;height:15px;vertical-align:middle;margin-right:5px;"></i>Scansiona</button>
+                        <button type="button" class="scan-trigger-btn" onclick="avviaScansioneIntelligente()"><i data-lucide="scan-line"></i>Scansiona</button>
                     </div>
                     <div id="reader" class="barcode-reader" style="display:none;"></div>
                     <div id="search-results" class="search-dropdown"></div>
@@ -386,6 +385,152 @@
 
             <div class="organic-panel curiosity-panel" style="display: none; margin: 20px auto; background: #f8f9fa; border-radius: 15px; border-left: 4px solid var(--info);">
                 <details class="curiosity-details">
+                    <summary class="curiosity-summary">Pasti express pronti in 20 minuti</summary>
+                    <div class="chef-mode-guide curiosity-content">
+                        <div class="chef-mode-guide-grid">
+                            <article class="chef-mode-guide-card">
+                                <strong>Quando il tempo e poco</strong>
+                                <p>Quando il tempo scarseggia, la qualita dei pasti tende a peggiorare. Tra lavoro, famiglia e imprevisti, e facile scegliere qualcosa di veloce ma poco equilibrato invece di un pasto che ti sazi davvero e ti faccia stare bene.</p>
+                            </article>
+                            <article class="chef-mode-guide-card">
+                                <strong>La logica dei pasti express</strong>
+                                <p>In Planter un pasto express e un pasto completo costruito con una sola preparazione, al massimo due, pronto in meno di 20 minuti e con pochi ingredienti scelti con criterio.</p>
+                            </article>
+                            <article class="chef-mode-guide-card">
+                                <strong>Non basta essere veloci</strong>
+                                <p>Essere rapido non basta. Un buon pasto express deve restare nutriente, saziante, semplice da preparare e facile da ripetere durante la settimana, altrimenti non diventera mai un'abitudine utile.</p>
+                            </article>
+                            <article class="chef-mode-guide-card">
+                                <strong>Fast food</strong>
+                                <p>Il fast food punta soprattutto su gusto e immediatezza, ma spesso porta con se troppo sale, grassi saturi e zuccheri, con poca fibra e pochi micronutrienti. La priorita e la velocita, non l'equilibrio.</p>
+                            </article>
+                            <article class="chef-mode-guide-card">
+                                <strong>Piatti pronti industriali</strong>
+                                <p>I piatti pronti industriali sono comodi, ma spesso hanno ingredienti numerosi, porzioni piccole e un profilo nutrizionale poco soddisfacente. Possono essere una soluzione occasionale, non la base della routine.</p>
+                            </article>
+                            <article class="chef-mode-guide-card">
+                                <strong>Pasto express ben costruito</strong>
+                                <p>Un pasto express ben costruito usa ingredienti semplici, freschi o pratici ma di buona qualita, con un bilanciamento chiaro tra proteine, carboidrati, grassi buoni e fibra. Non e un ripiego: e organizzazione fatta bene.</p>
+                            </article>
+                            <article class="chef-mode-guide-card">
+                                <strong>Criterio 1: entro 20 minuti</strong>
+                                <p>Preparazione e cottura incluse non devono superare i 20 minuti. Funzionano ingredienti che cuociono in fretta o che puoi usare subito, senza tecniche lunghe o passaggi inutilmente complessi.</p>
+                            </article>
+                            <article class="chef-mode-guide-card">
+                                <strong>Criterio 2: pochi ingredienti</strong>
+                                <p>Pochi ingredienti significano piu ordine, meno stress e piu probabilita di ripetere davvero quella ricetta. Se una preparazione e troppo lunga o richiede ingredienti difficili da trovare, difficilmente restera nel tuo schema alimentare.</p>
+                            </article>
+                            <article class="chef-mode-guide-card">
+                                <strong>Criterio 3: equilibrio nutrizionale</strong>
+                                <p>Anche se rapido, il pasto deve includere una fonte proteica, carboidrati complessi, grassi di buona qualita, fibra e micronutrienti. Se manca questo equilibrio, resta un pasto veloce ma non un pasto completo.</p>
+                            </article>
+                            <article class="chef-mode-guide-card">
+                                <strong>Proteine vegetali pratiche</strong>
+                                <p>Legumi gia cotti, tofu, tempeh, seitan e yogurt di soia sono alleati molto pratici: aiutano a costruire un pasto piu saziante e nutriente senza allungare i tempi di preparazione.</p>
+                            </article>
+                            <article class="chef-mode-guide-card">
+                                <strong>Carboidrati complessi e grassi buoni</strong>
+                                <p>Cereali integrali a cottura rapida, pane integrale e pasta danno energia piu stabile. Un filo di olio extravergine, frutta secca, semi o avocado rende il pasto piu appagante e meglio bilanciato.</p>
+                            </article>
+                            <article class="chef-mode-guide-card">
+                                <strong>Verdure, fibra e micronutrienti</strong>
+                                <p>Le verdure restano fondamentali: crude o saltate velocemente aggiungono volume al piatto, aumentano la sazieta e migliorano l'apporto di vitamine, minerali e fibra senza complicare la preparazione.</p>
+                            </article>
+                            <article class="chef-mode-guide-card">
+                                <strong>Perche funzionano davvero</strong>
+                                <p>I pasti express funzionano perche riducono il tempo ai fornelli, alleggeriscono il peso del decidere ogni giorno cosa mangiare e aiutano a mantenere continuita. La qualita della dieta dipende soprattutto dalla regolarita, non dal singolo pasto perfetto.</p>
+                            </article>
+                        </div>
+                    </div>
+                </details>
+            </div>
+
+            <hr class="spacer">
+
+            <div class="organic-panel curiosity-panel" style="display: none; margin: 20px auto; background: #f8f9fa; border-radius: 15px; border-left: 4px solid var(--info);">
+                <details class="curiosity-details">
+                    <summary class="curiosity-summary">Menu settimanale su misura</summary>
+                    <div class="chef-mode-guide curiosity-content">
+                        <div id="weekly-guidance-grid" class="chef-mode-guide-grid"></div>
+                    </div>
+                </details>
+            </div>
+
+            <hr class="spacer">
+
+            <div class="organic-panel curiosity-panel" style="display: none; margin: 20px auto; background: #f8f9fa; border-radius: 15px; border-left: 4px solid var(--info);">
+                <details class="curiosity-details">
+                    <summary class="curiosity-summary">Che cosa rende davvero sano un pasto</summary>
+                    <div class="chef-mode-guide curiosity-content">
+                        <div class="chef-mode-guide-grid">
+                            <article class="chef-mode-guide-card">
+                                <strong>Il principio base</strong>
+                                <p>Un pasto sano non e solo una somma di alimenti: e una combinazione equilibrata di nutrienti che deve fornire energia, sazieta e benessere nel tempo. Per funzionare davvero deve essere vario, equilibrato e moderato, quindi completo ma senza eccessi.</p>
+                            </article>
+                            <article class="chef-mode-guide-card">
+                                <strong>Il piatto della salute</strong>
+                                <p>Il modello del "Piatto della Salute" suggerisce una guida molto pratica: meta del pasto tra frutta e verdura, un quarto cereali preferibilmente integrali e un quarto proteine di buona qualita. Acqua come bevanda principale, olio extravergine come condimento base, poco sale e piu erbe aromatiche e spezie.</p>
+                            </article>
+                            <article class="chef-mode-guide-card">
+                                <strong>I numeri chiave</strong>
+                                <p>30 g al giorno e la quota raccomandata di fibre per un adulto. 50 g a settimana e una soglia prudente per le carni lavorate da non superare con facilita. Il 45-60% dell'energia quotidiana dovrebbe arrivare dai carboidrati, soprattutto da cereali e derivati di buona qualita.</p>
+                            </article>
+                            <article class="chef-mode-guide-card">
+                                <strong>Non serve tutto nello stesso piatto</strong>
+                                <p>La rappresentazione del piatto sano non deve comparire per forza in una sola portata. Puoi distribuire gli alimenti tra primo, secondo e contorno, purche il pasto complessivo rispetti proporzioni e porzioni. Nella tradizione italiana il compromesso migliore e moderare il primo, abbondare con le verdure e favorire soprattutto pesce e legumi come secondo.</p>
+                            </article>
+                            <article class="chef-mode-guide-card">
+                                <strong>Esempi di pasto completo</strong>
+                                <p>Una pasta integrale con verdure di stagione seguita da pesce al forno e insalata mista puo essere un pasto sano. Lo stesso vale per un minestrone con legumi, pane integrale e frutta fresca, oppure per riso con zucca, un uovo al tegamino e spinaci saltati.</p>
+                            </article>
+                            <article class="chef-mode-guide-card">
+                                <strong>Verdura protagonista</strong>
+                                <p>La verdura dovrebbe avere un ruolo centrale ogni giorno: aiuta digestione, sazieta e apporto di fibre, vitamine, minerali e antiossidanti. L'obiettivo pratico e inserirla sia a pranzo sia a cena, variando colori e stagionalita. Come riferimento, 200 g per le verdure e circa 80 g per l'insalata.</p>
+                            </article>
+                            <article class="chef-mode-guide-card">
+                                <strong>Cereali e derivati</strong>
+                                <p>Riso, grano, farro, orzo, pasta e pane rappresentano una base energetica importante, meglio se integrale. Le versioni integrali aiutano ad aumentare fibre e micronutrienti e funzionano bene con condimenti semplici come olio EVO e verdure.</p>
+                            </article>
+                            <article class="chef-mode-guide-card">
+                                <strong>Proteine da ruotare</strong>
+                                <p>Le proteine dovrebbero comparire ogni giorno, alternando legumi, pesce, carne bianca, uova e formaggi non troppo grassi, con carne rossa piu contenuta e carni processate da limitare il piu possibile. I legumi restano una scelta particolarmente utile, sana e sostenibile.</p>
+                            </article>
+                            <article class="chef-mode-guide-card">
+                                <strong>Grassi buoni e frutta secca</strong>
+                                <p>I grassi di qualita non vanno trascurati: olio extravergine di oliva, meglio se a crudo, e piccole porzioni di frutta secca possono migliorare equilibrio, palatabilita e sazieta senza appesantire inutilmente il pasto.</p>
+                            </article>
+                            <article class="chef-mode-guide-card">
+                                <strong>Frutta e chiusura del pasto</strong>
+                                <p>La frutta fresca puo funzionare bene sia come spuntino sia come chiusura del pasto. Aggiunge dolcezza naturale, fibra, vitamine e aiuta a ridurre il ricorso a dessert industriali o snack poco soddisfacenti dal punto di vista nutrizionale.</p>
+                            </article>
+                            <article class="chef-mode-guide-card">
+                                <strong>Condimenti, cotture e sostenibilita</strong>
+                                <p>Un pasto sano dipende anche da come cucini. Meglio cotture al vapore, al forno, in padella antiaderente o in pentola a pressione. Riduci il sale, usa spezie, erbe aromatiche e limone per dare gusto, e quando possibile scegli ingredienti locali, freschi e di stagione.</p>
+                            </article>
+                            <article class="chef-mode-guide-card">
+                                <strong>Il movimento completa il quadro</strong>
+                                <p>Mangiare bene e muoversi ogni giorno sono due parti dello stesso equilibrio. L'attivita fisica quotidiana, anche moderata, aiuta a controllare il peso, migliorare l'umore, sostenere il metabolismo e ridurre il rischio di molte malattie croniche.</p>
+                            </article>
+                        </div>
+                    </div>
+                </details>
+            </div>
+
+            <hr class="spacer">
+
+            <div class="organic-panel curiosity-panel" style="display: none; margin: 20px auto; background: #f8f9fa; border-radius: 15px; border-left: 4px solid var(--info);">
+                <details class="curiosity-details">
+                    <summary class="curiosity-summary">Ricette smart su misura</summary>
+                    <div class="chef-mode-guide curiosity-content">
+                        <div id="smart-recipes-guidance-grid" class="chef-mode-guide-grid"></div>
+                    </div>
+                </details>
+            </div>
+
+            <hr class="spacer">
+
+            <div class="organic-panel curiosity-panel" style="display: none; margin: 20px auto; background: #f8f9fa; border-radius: 15px; border-left: 4px solid var(--info);">
+                <details class="curiosity-details">
                     <summary class="curiosity-summary">Curiosita</summary>
                     <div class="chef-mode-guide curiosity-content">
                         <div class="chef-mode-guide-grid">
@@ -433,29 +578,36 @@
                 <p class="ai-mode-subtitle">Componi il tuo piatto con un flusso guidato: scegli il risultato che vuoi ottenere e completa solo i campi pertinenti.</p>
 
                 <label for="ai-mode-selector" class="ai-mode-field-label">Seleziona cosa vuoi generare</label>
-                <select id="ai-mode-selector" class="main-input" onchange="toggleAiMode()">
-                    <option value="recipe">Ricetta su misura</option>
-                    <option value="daily">Piano giornaliero</option>
-                    <option value="weekly">Piano settimanale</option>
-                </select>
+                                <input type="hidden" id="ai-mode-selector" value="">
+                                <div class="meal-selector chip-group">
+                                    <button type="button" class="chip" data-value="recipe" onclick="selezionaOpzioneChip(this, 'ai-mode-selector', 'recipe');toggleAiMode()">Ricetta su misura</button>
+                                    <button type="button" class="chip" data-value="daily" onclick="selezionaOpzioneChip(this, 'ai-mode-selector', 'daily');toggleAiMode()">Piano giornaliero</button>
+                                    <button type="button" class="chip" data-value="weekly" onclick="selezionaOpzioneChip(this, 'ai-mode-selector', 'weekly');toggleAiMode()">Piano settimanale</button>
+                                </div>
 
                 <div id="ai-mode-recipes-fields" class="ai-mode-fields">
                     <div id="chef-mode-recipe-options" class="ai-mode-fields">
-                        <label for="chef-recipe-meal-type" class="ai-mode-field-label">Tipo di pasto</label>
-                        <select id="chef-recipe-meal-type" class="main-input">
-                            <option value="colazione">Colazione</option>
-                            <option value="pranzo">Pranzo</option>
-                            <option value="cena">Cena</option>
-                            <option value="spuntino">Spuntino</option>
-                        </select>
+                        <div id="chef-mode-meal-type-group" class="ai-mode-fields" style="display:none;">
+                            <label for="chef-recipe-meal-type" class="ai-mode-field-label">Tipo di pasto</label>
+                                                    <input type="hidden" id="chef-recipe-meal-type" value="">
+                                                    <div class="meal-selector chip-group">
+                                                        <button type="button" class="chip" data-value="colazione" onclick="selezionaOpzioneChip(this, 'chef-recipe-meal-type', 'colazione');toggleChefModeRecipeFlow()">Colazione</button>
+                                                        <button type="button" class="chip" data-value="pranzo" onclick="selezionaOpzioneChip(this, 'chef-recipe-meal-type', 'pranzo');toggleChefModeRecipeFlow()">Pranzo</button>
+                                                        <button type="button" class="chip" data-value="cena" onclick="selezionaOpzioneChip(this, 'chef-recipe-meal-type', 'cena');toggleChefModeRecipeFlow()">Cena</button>
+                                                        <button type="button" class="chip" data-value="spuntino" onclick="selezionaOpzioneChip(this, 'chef-recipe-meal-type', 'spuntino');toggleChefModeRecipeFlow()">Spuntino</button>
+                                                    </div>
+                        </div>
 
-                        <label for="chef-recipe-difficulty" class="ai-mode-field-label">Difficolta</label>
-                        <select id="chef-recipe-difficulty" class="main-input">
-                            <option value="semplice">Semplice</option>
-                            <option value="media">Media</option>
-                            <option value="chef">Chef</option>
-                            <option value="salvafrigo">Salvafrigo</option>
-                        </select>
+                        <div id="chef-mode-difficulty-group" class="ai-mode-fields" style="display:none;">
+                            <label for="chef-recipe-difficulty" class="ai-mode-field-label">Difficolta</label>
+                                                    <input type="hidden" id="chef-recipe-difficulty" value="">
+                                                    <div class="meal-selector chip-group">
+                                                        <button type="button" class="chip" data-value="semplice" onclick="selezionaOpzioneChip(this, 'chef-recipe-difficulty', 'semplice')">Semplice</button>
+                                                        <button type="button" class="chip" data-value="media" onclick="selezionaOpzioneChip(this, 'chef-recipe-difficulty', 'media')">Media</button>
+                                                        <button type="button" class="chip" data-value="chef" onclick="selezionaOpzioneChip(this, 'chef-recipe-difficulty', 'chef')">Chef</button>
+                                                        <button type="button" class="chip" data-value="salvafrigo" onclick="selezionaOpzioneChip(this, 'chef-recipe-difficulty', 'salvafrigo')">Salvafrigo</button>
+                                                    </div>
+                        </div>
                     </div>
 
                     <input type="hidden" id="discover-ingredients" class="main-input" placeholder="Ingredienti a disposizione (es. Zucchine, uova...)" style="display:none;">
@@ -488,6 +640,7 @@
                         <option value="free-day">Giorno libero</option>
                     </select>
                     <input type="text" id="weekly-plan-ai-notes" class="main-input" placeholder="Preferenze, vincoli o richieste per la settimana (opzionale)">
+                    <input type="text" id="weekly-plan-pantry" class="main-input" placeholder="Cosa hai gia in dispensa, frigo o freezer? Es. riso, ceci, olio EVO, spinaci" oninput="refreshWeeklyPlanDerivedViews()">
                     <button id="chef-generate-weekly-btn" onclick="generaPianoSettimanaleAI()" class="btn-main orange">GENERA PIANO SETTIMANALE</button>
                 </div>
 
@@ -548,18 +701,18 @@
                                 <input type="text" id="profilo-other-pathologies" class="main-input" placeholder="Altri tipi di patologie">
                             <input type="number" id="profilo-meals" class="main-input" placeholder="Pasti al giorno">
                             <select id="profilo-dinner-protein-preference">
-                                <option value="variata">Cena proteica: nessuna preferenza</option>
-                                <option value="uova">Cena proteica: preferisco uova</option>
-                                <option value="tofu-tempeh">Cena proteica: preferisco tofu o tempeh</option>
-                                <option value="latticini-light">Cena proteica: preferisco latticini light</option>
-                                <option value="burger-vegetali">Cena proteica: preferisco burger vegetali o lupini</option>
+                                <option value="variata">Preferenza serale: nessuna preferenza</option>
+                                <option value="uova">Preferenza serale: preferisco uova</option>
+                                <option value="tofu-tempeh">Preferenza serale: preferisco tofu o tempeh</option>
+                                <option value="latticini-light">Preferenza serale: preferisco latticini light</option>
+                                <option value="burger-vegetali">Preferenza serale: preferisco burger vegetali o lupini</option>
                             </select>
                             <select id="profilo-dinner-protein-frequency">
-                                <option value="libera">Cena proteica: frequenza libera</option>
-                                <option value="1-2">Cena proteica: circa 1-2 volte a settimana</option>
-                                <option value="2-3">Cena proteica: circa 2-3 volte a settimana</option>
-                                <option value="3-4">Cena proteica: circa 3-4 volte a settimana</option>
-                                <option value="5+">Cena proteica: quasi ogni giorno</option>
+                                <option value="libera">Uso suggerito: libero durante la settimana</option>
+                                <option value="1-2">Uso suggerito: circa 1-2 cene a settimana</option>
+                                <option value="2-3">Uso suggerito: circa 2-3 cene a settimana</option>
+                                <option value="3-4">Uso suggerito: circa 3-4 cene a settimana</option>
+                                <option value="5+">Uso suggerito: quasi ogni sera</option>
                             </select>
                             <input type="text" id="profilo-weakpoint" class="main-input" placeholder="Punto debole">
                             <input type="number" step="0.1" id="profilo-water" class="main-input" placeholder="Acqua giornaliera (L)">
@@ -610,6 +763,7 @@
 
     <script src="avatar-assets.js"></script>
     <script src="data/clinical-nutrition-overweight-50plus.js"></script>
+    <script src="app-config.js" onerror="this.remove()"></script>
     <script src="script.js"></script>
 </body>
 </html>
