@@ -1090,6 +1090,14 @@ function getConfiguredGeminiModelOverride() {
     return 'gemini-2.5-flash';
 }
 
+function isGeminiQuotaExceededMessage(message) {
+    const normalized = String(message || '').toLowerCase();
+    return normalized.includes('quota exceeded')
+        || normalized.includes('generate_content_free_tier_requests')
+        || normalized.includes('free_tier_requests')
+        || (normalized.includes('429') && normalized.includes('quota'));
+}
+
 function isLocalNetworkHostname(hostname) {
     const normalized = String(hostname || '').trim().toLowerCase();
     if (!normalized) {
@@ -1188,8 +1196,8 @@ async function fetchGeminiJsonPayload(prompt, mode = 'generic') {
 
                 if (res.status === 429) {
                     const quotaMessage = details
-                        ? `Gemini temporaneamente non disponibile per limite richieste o quota: ${details}`
-                        : 'Gemini temporaneamente non disponibile per limite richieste o quota. Riprova tra poco.';
+                        ? `Gemini temporaneamente non disponibile: la function pubblica risponde correttamente, ma Gemini ha esaurito la quota disponibile per il modello configurato. ${details}`
+                        : 'Gemini temporaneamente non disponibile: la function pubblica risponde correttamente, ma la quota del modello Gemini configurato e momentaneamente esaurita. Riprova tra poco.';
                     throw new Error(quotaMessage);
                 }
 
@@ -1207,6 +1215,10 @@ async function fetchGeminiJsonPayload(prompt, mode = 'generic') {
     }
 
     if (configuredEndpointOverride) {
+        if (isGeminiQuotaExceededMessage(lastError)) {
+            throw new Error(lastError);
+        }
+
         throw new Error(`${lastError} Controlla che la function pubblica configurata sia raggiungibile, che l'origin sia autorizzato e che la quota Gemini non sia esaurita.`);
     }
 
