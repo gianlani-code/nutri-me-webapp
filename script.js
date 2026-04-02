@@ -1087,7 +1087,7 @@ function getConfiguredGeminiModelOverride() {
         return '';
     }
 
-    return 'gemini-2.5-flash';
+    return 'gemini-2.0-flash';
 }
 
 function isGeminiQuotaExceededMessage(message) {
@@ -1096,6 +1096,40 @@ function isGeminiQuotaExceededMessage(message) {
         || normalized.includes('generate_content_free_tier_requests')
         || normalized.includes('free_tier_requests')
         || (normalized.includes('429') && normalized.includes('quota'));
+}
+
+function extractRetryAfterSecondsFromText(message) {
+    const normalized = String(message || '').trim();
+    const retryMatch = normalized.match(/retry in\s*([\d.]+)\s*s/i);
+    if (retryMatch?.[1]) {
+        const retrySeconds = Math.ceil(Number.parseFloat(retryMatch[1]));
+        if (Number.isFinite(retrySeconds) && retrySeconds > 0) {
+            return retrySeconds;
+        }
+    }
+
+    const italianMatch = normalized.match(/riprova\s+tra\s+(?:circa\s+)?(\d+)\s+second/i);
+    if (italianMatch?.[1]) {
+        const retrySeconds = Number.parseInt(italianMatch[1], 10);
+        if (Number.isFinite(retrySeconds) && retrySeconds > 0) {
+            return retrySeconds;
+        }
+    }
+
+    return 0;
+}
+
+function buildGeminiUserFacingErrorMessage(errorLike) {
+    const rawMessage = String(errorLike?.message || errorLike || '').trim();
+    const retryAfterSeconds = extractRetryAfterSecondsFromText(rawMessage);
+
+    if (isGeminiQuotaExceededMessage(rawMessage)) {
+        return retryAfterSeconds > 0
+            ? `Gemini e temporaneamente in quota. Riprova tra circa ${retryAfterSeconds} secondi.`
+            : 'Gemini e temporaneamente in quota. Riprova tra poco.';
+    }
+
+    return rawMessage || 'Gemini non disponibile al momento. Riprova tra poco.';
 }
 
 function isLocalNetworkHostname(hostname) {
@@ -1154,19 +1188,42 @@ function buildGeminiEndpointCandidates() {
 
 async function readGeminiErrorDetails(response) {
     try {
+        const retryAfterHeader = Number.parseInt(String(response?.headers?.get('Retry-After') || '').trim(), 10);
         const text = await response.text();
         if (!text) {
-            return '';
+            return {
+                details: '',
+                retryAfterSeconds: Number.isFinite(retryAfterHeader) && retryAfterHeader > 0 ? retryAfterHeader : 0
+            };
         }
 
         try {
             const parsed = JSON.parse(text);
-            return parsed?.details?.error?.message || parsed?.details?.message || parsed?.details || parsed?.error || text;
+            const details = parsed?.details?.error?.message
+                || parsed?.details?.message
+                || parsed?.details
+                || parsed?.error
+                || text;
+
+            return {
+                details,
+                retryAfterSeconds: Number.isFinite(retryAfterHeader) && retryAfterHeader > 0
+                    ? retryAfterHeader
+                    : extractRetryAfterSecondsFromText(details)
+            };
         } catch (error) {
-            return text;
+            return {
+                details: text,
+                retryAfterSeconds: Number.isFinite(retryAfterHeader) && retryAfterHeader > 0
+                    ? retryAfterHeader
+                    : extractRetryAfterSecondsFromText(text)
+            };
         }
     } catch (error) {
-        return '';
+        return {
+            details: '',
+            retryAfterSeconds: 0
+        };
     }
 }
 
@@ -1188,16 +1245,17 @@ async function fetchGeminiJsonPayload(prompt, mode = 'generic') {
             });
 
             if (!res.ok) {
-                const details = await readGeminiErrorDetails(res);
+                const errorInfo = await readGeminiErrorDetails(res);
+                const details = errorInfo.details;
                 if (res.status === 404 || res.status === 405) {
                     lastError = `Endpoint Gemini non disponibile su ${endpoint} (${res.status}).`;
                     continue;
                 }
 
                 if (res.status === 429) {
-                    const quotaMessage = details
-                        ? `Gemini temporaneamente non disponibile: la function pubblica risponde correttamente, ma Gemini ha esaurito la quota disponibile per il modello configurato. ${details}`
-                        : 'Gemini temporaneamente non disponibile: la function pubblica risponde correttamente, ma la quota del modello Gemini configurato e momentaneamente esaurita. Riprova tra poco.';
+                    const quotaMessage = errorInfo.retryAfterSeconds > 0
+                        ? `Gemini temporaneamente in quota. Riprova tra circa ${errorInfo.retryAfterSeconds} secondi.`
+                        : buildGeminiUserFacingErrorMessage(details || 'Gemini temporaneamente in quota.');
                     throw new Error(quotaMessage);
                 }
 
@@ -7807,22 +7865,23 @@ async function generaRicettaAI() {
         });
     } catch (error) {
         console.error('AI Mode error:', error);
+        const userFacingError = buildGeminiUserFacingErrorMessage(error);
         const cachedRecipeEntry = loadBestGeminiRecipeCacheEntry(recipeRequestPayload, mealType, difficulty);
 
         if (cachedRecipeEntry?.responsePayload?.recipes?.length) {
             renderAIRecipeResults(cachedRecipeEntry.responsePayload.recipes, {
                 source: 'gemini-cache',
-                sourceReason: error?.message || 'Gemini non disponibile in questo tentativo.',
+                sourceReason: userFacingError,
                 people: persone,
                 mealType,
                 requestedMode: difficulty,
                 lunchContext: profilePayload.lunchContextPreference,
-                description: 'Gemini non era disponibile adesso: sto mostrando una ricetta compatibile gia generata in precedenza da Gemini.'
+                description: 'Gemini live non e disponibile in questo momento: sto mostrando una ricetta compatibile gia generata in precedenza da Gemini.'
             });
             return;
         }
 
-        renderAIRecipeError(error?.message || 'Gemini non disponibile. Nessuna ricetta locale verra mostrata: riprova tra poco.');
+        renderAIRecipeError(userFacingError || 'Gemini non disponibile. Nessuna ricetta locale verra mostrata: riprova tra poco.');
     }
 }
 
@@ -8628,6 +8687,7 @@ async function generaPianoGiornalieroAI() {
         });
     } catch (error) {
         console.error('AI daily plan error:', error);
+        const userFacingError = buildGeminiUserFacingErrorMessage(error);
         const cachedDailyPlan = loadGeminiCacheEntry('daily', dailyPlanRequestPayload, (entry) => String(entry?.metadata?.lunchContext || '') === String(lunchContext || ''));
         if (cachedDailyPlan?.responsePayload) {
             renderAIDailyPlanResults({
@@ -8635,7 +8695,7 @@ async function generaPianoGiornalieroAI() {
                 meta: {
                     ...(cachedDailyPlan.responsePayload.meta || {}),
                     source: 'gemini-cache',
-                    reason: error?.message || 'Gemini non disponibile in questo tentativo.'
+                    reason: userFacingError
                 }
             });
             return;
@@ -8643,7 +8703,7 @@ async function generaPianoGiornalieroAI() {
         renderAIBoxError(
             'ai-day-plan-result',
             'Piano giornaliero non disponibile',
-            error?.message || 'Gemini non ha risposto. Nessun piano locale verra mostrato.'
+            userFacingError || 'Gemini non ha risposto. Nessun piano locale verra mostrato.'
         );
     }
 }
@@ -8689,6 +8749,7 @@ async function generaPianoSettimanaleAI() {
         });
     } catch (error) {
         console.error('AI weekly plan error:', error);
+        const userFacingError = buildGeminiUserFacingErrorMessage(error);
         const cachedWeeklyPlan = loadGeminiCacheEntry('weekly', weeklyPlanRequestPayload, (entry) => String(entry?.metadata?.lunchContext || '') === String(lunchContext || ''));
         if (cachedWeeklyPlan?.responsePayload) {
             renderAIWeeklyPlanResults({
@@ -8696,7 +8757,7 @@ async function generaPianoSettimanaleAI() {
                 meta: {
                     ...(cachedWeeklyPlan.responsePayload.meta || {}),
                     source: 'gemini-cache',
-                    reason: error?.message || 'Gemini non disponibile in questo tentativo.'
+                    reason: userFacingError
                 }
             });
             return;
@@ -8704,7 +8765,7 @@ async function generaPianoSettimanaleAI() {
         renderAIBoxError(
             'ai-day-plan-result',
             'Piano settimanale non disponibile',
-            error?.message || 'Gemini non ha risposto. Nessun piano locale verra mostrato.'
+            userFacingError || 'Gemini non ha risposto. Nessun piano locale verra mostrato.'
         );
     }
 }
