@@ -1132,6 +1132,63 @@ function buildGeminiUserFacingErrorMessage(errorLike) {
     return rawMessage || 'Gemini non disponibile al momento. Riprova tra poco.';
 }
 
+function removeRetryAfterHintFromMessage(message) {
+    return String(message || '')
+        .replace(/\s*riprova\s+tra\s+circa\s+\d+\s+secondi\.?/i, '')
+        .replace(/\s*retry in\s*[\d.]+\s*s\.?/i, '')
+        .trim();
+}
+
+function formatAIRetryCountdownLabel(seconds) {
+    const safeSeconds = Math.max(0, Number.parseInt(String(seconds || 0), 10) || 0);
+    if (safeSeconds <= 0) {
+        return 'Puoi riprovare ora.';
+    }
+
+    return `Nuovo tentativo live tra ${safeSeconds} ${safeSeconds === 1 ? 'secondo' : 'secondi'}.`;
+}
+
+function buildAIRetryCountdownHtml(message, className = 'ai-retry-countdown') {
+    const retryAfterSeconds = extractRetryAfterSecondsFromText(message);
+    if (retryAfterSeconds <= 0) {
+        return '';
+    }
+
+    return `<p class="${escapeHtml(className)}" data-ai-retry-countdown="${retryAfterSeconds}">${escapeHtml(formatAIRetryCountdownLabel(retryAfterSeconds))}</p>`;
+}
+
+function activateAIRetryCountdown(rootElement) {
+    if (!rootElement) return;
+
+    const countdownElements = rootElement.querySelectorAll('[data-ai-retry-countdown]');
+    countdownElements.forEach((element) => {
+        const existingInterval = Number.parseInt(String(element.dataset.aiRetryCountdownInterval || ''), 10);
+        if (Number.isFinite(existingInterval) && existingInterval > 0) {
+            window.clearInterval(existingInterval);
+        }
+
+        let remainingSeconds = Number.parseInt(String(element.getAttribute('data-ai-retry-countdown') || '0'), 10);
+        if (!Number.isFinite(remainingSeconds) || remainingSeconds <= 0) {
+            element.textContent = formatAIRetryCountdownLabel(0);
+            return;
+        }
+
+        element.textContent = formatAIRetryCountdownLabel(remainingSeconds);
+
+        const intervalId = window.setInterval(() => {
+            remainingSeconds -= 1;
+            element.textContent = formatAIRetryCountdownLabel(remainingSeconds);
+
+            if (remainingSeconds <= 0) {
+                window.clearInterval(intervalId);
+                delete element.dataset.aiRetryCountdownInterval;
+            }
+        }, 1000);
+
+        element.dataset.aiRetryCountdownInterval = String(intervalId);
+    });
+}
+
 function isLocalNetworkHostname(hostname) {
     const normalized = String(hostname || '').trim().toLowerCase();
     if (!normalized) {
@@ -7014,6 +7071,7 @@ function buildAiSourceBannerHtml(metadata = {}) {
     const source = String(metadata?.source || 'fallback').trim().toLowerCase();
     const reason = String(metadata?.sourceReason || metadata?.reason || '').trim();
     const descriptionOverride = String(metadata?.description || '').trim();
+    const retryCountdownHtml = buildAIRetryCountdownHtml(reason, 'ai-source-banner-retry');
     let className = 'ai-source-banner-fallback';
     let badge = 'Fallback locale';
     let title = 'Risposta non generata live da Gemini';
@@ -7049,6 +7107,7 @@ function buildAiSourceBannerHtml(metadata = {}) {
             </div>
             <p class="ai-source-banner-copy">${escapeHtml(description)}</p>
             ${reason ? `<p class="ai-source-banner-detail"><strong>Dettaglio tecnico:</strong> ${escapeHtml(reason)}</p>` : ''}
+            ${retryCountdownHtml}
         </div>
     `;
 }
@@ -7749,6 +7808,7 @@ function renderAIRecipeResults(recipes, metadata = {}) {
             `).join('')}
         </div>
     `;
+    activateAIRetryCountdown(resultBox);
     updateAiModeResultsVisibility('ai-recipe-result');
 }
 
@@ -7776,9 +7836,11 @@ function renderAIRecipeError(message) {
     resultBox.innerHTML = `
         <div class="ai-mode-error">
             <h4 class="ai-mode-title">AI Mode non disponibile</h4>
-            <p class="ai-mode-subtitle">${escapeHtml(message)}</p>
+            <p class="ai-mode-subtitle">${escapeHtml(removeRetryAfterHintFromMessage(message) || message)}</p>
+            ${buildAIRetryCountdownHtml(message)}
         </div>
     `;
+    activateAIRetryCountdown(resultBox);
     updateAiModeResultsVisibility('ai-recipe-result');
 }
 
@@ -8207,9 +8269,11 @@ function renderAIBoxError(resultId, title, message) {
     resultBox.innerHTML = `
         <div class="ai-mode-error">
             <h4 class="ai-mode-title">${escapeHtml(title)}</h4>
-            <p class="ai-mode-subtitle">${escapeHtml(message)}</p>
+            <p class="ai-mode-subtitle">${escapeHtml(removeRetryAfterHintFromMessage(message) || message)}</p>
+            ${buildAIRetryCountdownHtml(message)}
         </div>
     `;
+    activateAIRetryCountdown(resultBox);
     updateAiModeResultsVisibility(resultId);
 }
 
@@ -8307,6 +8371,7 @@ function renderAIBreakfastSnackResults(payload) {
             ` : ''}
         </div>
     `;
+    activateAIRetryCountdown(resultBox);
     updateAiModeResultsVisibility('ai-breakfast-result');
 }
 
@@ -8382,6 +8447,7 @@ function renderAIDailyPlanResults(payload) {
             ` : ''}
         </div>
     `;
+    activateAIRetryCountdown(resultBox);
     updateAiModeResultsVisibility('ai-day-plan-result');
 }
 
@@ -8627,6 +8693,7 @@ function renderAIWeeklyPlanResults(payload) {
             </div>
         </div>
     `;
+    activateAIRetryCountdown(resultBox);
     updateAiModeResultsVisibility('ai-day-plan-result');
 }
 

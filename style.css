@@ -1080,6 +1080,20 @@ h1, h2, h3, h4, h5 { margin: 0; font-family: 'Poppins', sans-serif; }
     margin-top: 6px;
 }
 
+.ai-source-banner-retry,
+.ai-retry-countdown {
+    margin: 10px 0 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 10px;
+    border-radius: 999px;
+    background: #edf6ff;
+    color: #1f5fa5;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
 .ai-source-banner-live {
     border-color: #cfe8da;
     background: linear-gradient(180deg, #f6fcf8 0%, #edf8f2 100%);
@@ -3015,6 +3029,12 @@ hr.spacer {
 [data-theme="dark"] .ai-source-banner-copy,
 [data-theme="dark"] .ai-source-banner-detail {
     color: #94a3b8;
+}
+
+[data-theme="dark"] .ai-source-banner-retry,
+[data-theme="dark"] .ai-retry-countdown {
+    background: rgba(59, 130, 246, 0.16);
+    color: #bfdbfe;
 }
 
 [data-theme="dark"] .ai-source-banner-live {
