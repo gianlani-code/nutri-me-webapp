@@ -16,6 +16,8 @@ L'architettura prevista qui resta gratuita finche resti nei limiti dei piani fre
 - backend function: Netlify Functions free tier;
 - modello AI: Gemini con quota gratuita disponibile sul tuo account Google AI Studio.
 
+Per ridurre i 429 sul free tier, il backend puo usare un modello primario, fallback automatici su piu modelli Gemini e anche una seconda chiave/progetto Gemini separata come backup operativo.
+
 La chiave Gemini non viene distribuita al browser: resta lato server nella function.
 
 ## 1. Versione con avatar incorporati
@@ -55,7 +57,7 @@ GitHub Pages non esegue Netlify Functions. Se il frontend viene pubblicato li, d
 
 In questo modo ogni dispositivo che apre il sito usa lo stesso backend Gemini, senza configurazioni manuali nel browser.
 
-Per il frontend pubblicato su `https://gianlani-code.github.io/nutri-me-webapp/`, l'origin da autorizzare lato backend e `https://gianlani-code.github.io`.
+Per rendere Gemini disponibile a qualunque dispositivo o utente, lascia la function in modalita pubblica con `GEMINI_CORS_MODE=public`. Solo se vuoi restringere gli accessi devi usare una allowlist con `GEMINI_CORS_MODE=restricted` e `GEMINI_ALLOWED_ORIGINS`.
 
 ## 3. Pubblicazione su Netlify
 
@@ -67,9 +69,12 @@ Per il frontend pubblicato su `https://gianlani-code.github.io/nutri-me-webapp/`
 4. Attendi l'URL finale.
 
 5. In `Site configuration > Environment variables`, imposta `GEMINI_API_KEY`.
-6. Facoltativo ma consigliato: imposta `GEMINI_ALLOWED_ORIGINS` con gli URL consentiti separati da virgola, ad esempio `https://tuo-sito.netlify.app,https://tuo-frontend.pages.dev`.
-7. Facoltativo: regola `GEMINI_TIMEOUT_MS` e `GEMINI_MAX_RETRIES` se vuoi aumentare tolleranza ai timeout o ai 429.
-8. Questo e il setup gratuito consigliato: non richiede servizi a pagamento ne configurazioni per singolo dispositivo.
+6. Per accesso pubblico da qualunque dispositivo, imposta `GEMINI_CORS_MODE=public` oppure non impostarlo affatto.
+7. Usa `GEMINI_ALLOWED_ORIGINS` solo se vuoi una allowlist volontaria con `GEMINI_CORS_MODE=restricted`.
+8. Facoltativo: regola `GEMINI_TIMEOUT_MS` e `GEMINI_MAX_RETRIES` se vuoi aumentare tolleranza ai timeout o ai 429.
+9. Per ridurre i 429 sul free tier, imposta `GEMINI_MODEL=gemini-2.0-flash` e `GEMINI_FALLBACK_MODELS=gemini-2.0-flash-lite,gemini-flash-lite-latest`.
+10. Se vuoi un backup reale su un secondo progetto Gemini, aggiungi anche `GEMINI_BACKUP_API_KEY`, `GEMINI_BACKUP_MODEL` e `GEMINI_BACKUP_FALLBACK_MODELS`.
+11. Questo e il setup gratuito consigliato: non richiede servizi a pagamento ne configurazioni per singolo dispositivo.
 
 ### Da repository Git
 
@@ -79,7 +84,10 @@ Per il frontend pubblicato su `https://gianlani-code.github.io/nutri-me-webapp/`
 4. Publish directory: `.`
 5. Deploy.
 6. In `Site configuration > Environment variables`, imposta `GEMINI_API_KEY`.
-7. Facoltativo ma consigliato: imposta `GEMINI_ALLOWED_ORIGINS` con la lista degli origin autorizzati.
+7. Se vuoi l'endpoint pubblico per tutti i dispositivi, imposta `GEMINI_CORS_MODE=public` oppure non impostarlo.
+8. Usa `GEMINI_ALLOWED_ORIGINS` solo se scegli esplicitamente `GEMINI_CORS_MODE=restricted`.
+9. Per ridurre i 429 sul free tier, imposta `GEMINI_MODEL=gemini-2.0-flash` e `GEMINI_FALLBACK_MODELS=gemini-2.0-flash-lite,gemini-flash-lite-latest`.
+10. Se vuoi un backup reale su un secondo progetto Gemini, aggiungi anche `GEMINI_BACKUP_API_KEY`, `GEMINI_BACKUP_MODEL` e `GEMINI_BACKUP_FALLBACK_MODELS`.
 
 Se pubblichi frontend e function sullo stesso sito Netlify, la generazione Gemini diventa disponibile da qualunque dispositivo tramite l'URL pubblico del sito.
 
@@ -137,10 +145,46 @@ Questa resta la soluzione corretta se non vuoi rendere visibile la chiave nel cl
 
 Se il provider attuale chiede un upgrade per le environment variables, puoi pubblicare solo la function Gemini su Vercel free e lasciare il frontend su GitHub Pages.
 
-1. Pubblica questo progetto o una copia minima su Vercel.
-2. Imposta su Vercel le environment variables: `GEMINI_API_KEY`, opzionalmente `GEMINI_ALLOWED_ORIGINS=https://gianlani-code.github.io`.
-3. Usa l'endpoint pubblico Vercel, ad esempio `https://tuo-progetto.vercel.app/api/gemini`.
-4. Nel frontend crea `app-config.js` e imposta `geminiFunctionUrl` verso quell'endpoint.
-5. Per il tuo frontend GitHub Pages `https://gianlani-code.github.io/nutri-me-webapp/`, l'origin da mettere in allowlist resta `https://gianlani-code.github.io`.
+1. Vai su Vercel e scegli `Add New > Project`.
+2. Importa il repository GitHub che contiene questo progetto.
+3. Alla schermata `Configure Project`, lascia framework auto-detected oppure `Other` se non viene rilevato nulla.
+4. Apri la sezione `Environment Variables` prima del primo deploy.
+5. Inserisci queste variabili:
+   - `GEMINI_API_KEY` = la tua chiave Gemini ruotata e valida;
+   - `GEMINI_BACKUP_API_KEY` = opzionale, seconda chiave Gemini su un progetto separato solo per backup;
+   - `GEMINI_MODEL` = `gemini-2.0-flash`;
+   - `GEMINI_FALLBACK_MODELS` = `gemini-2.0-flash-lite,gemini-flash-lite-latest`;
+   - `GEMINI_BACKUP_MODEL` = `gemini-2.0-flash`;
+   - `GEMINI_BACKUP_FALLBACK_MODELS` = `gemini-2.0-flash-lite,gemini-flash-lite-latest`;
+   - `GEMINI_CORS_MODE` = `public`;
+   - `GEMINI_TIMEOUT_MS` = `40000`;
+   - `GEMINI_MAX_RETRIES` = `4`;
+   - `GEMINI_RATE_LIMIT_ENABLED` = `true`;
+   - `GEMINI_RATE_LIMIT_WINDOW_MS` = `60000`;
+   - `GEMINI_RATE_LIMIT_MAX_REQUESTS` = `100`.
+6. Lascia vuota `GEMINI_ALLOWED_ORIGINS` se vuoi accesso pubblico da qualsiasi device. Compilala solo se in futuro torni a `GEMINI_CORS_MODE=restricted`.
+7. Completa il deploy con `Deploy`.
+8. Quando il progetto e online, apri `Settings > Domains` e copia il dominio Vercel finale, ad esempio `https://tuo-progetto.vercel.app`.
+9. Verifica l'endpoint pubblico finale: `https://tuo-progetto.vercel.app/api/gemini`.
+10. Nel frontend crea o aggiorna `app-config.js` impostando `geminiFunctionUrl` verso quell'endpoint.
+11. Pubblica o aggiorna il frontend statico.
+12. Apri il frontend da telefono, desktop e tablet: con `GEMINI_CORS_MODE=public` non serve aggiungere origin manualmente.
 
 In questo schema il frontend resta gratuito su GitHub Pages e la chiave continua a restare solo lato server.
+
+## 9. Strategia gratuita anti-abuso
+
+La function ora include un rate limiting gratuito e leggero, senza servizi esterni.
+
+- Il limite e best-effort per client e finestra temporale, utile per frenare spam o tap ripetuti.
+- Su serverless non e una protezione assoluta contro abuso distribuito su molte IP o molte istanze, ma resta la difesa gratuita piu semplice da mantenere.
+- Se vuoi piu margine per utenti reali, aumenta `GEMINI_RATE_LIMIT_MAX_REQUESTS`.
+- Se vuoi piu protezione, abbassa `GEMINI_RATE_LIMIT_MAX_REQUESTS` o alza `GEMINI_RATE_LIMIT_WINDOW_MS`.
+
+Valori consigliati per partire gratis:
+
+- `GEMINI_RATE_LIMIT_ENABLED=true`
+- `GEMINI_RATE_LIMIT_WINDOW_MS=60000`
+- `GEMINI_RATE_LIMIT_MAX_REQUESTS=100`
+
+Se vedi ancora 429 in uso normale, controlla prima la quota Gemini e solo dopo valuta un limite ancora piu alto del throttling locale.
