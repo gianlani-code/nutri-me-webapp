@@ -1036,6 +1036,80 @@ h1, h2, h3, h4, h5 { margin: 0; font-family: 'Poppins', sans-serif; }
     line-height: 1.45;
 }
 
+.ai-source-banner {
+    margin-bottom: 14px;
+    padding: 12px 13px;
+    border-radius: 16px;
+    border: 1px solid #d7e4f2;
+    background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+    box-shadow: 0 8px 18px rgba(23, 57, 97, 0.06);
+}
+
+.ai-source-banner-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+    color: #19395d;
+}
+
+.ai-source-banner-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    background: rgba(31, 95, 165, 0.12);
+    color: #1f5fa5;
+}
+
+.ai-source-banner-copy,
+.ai-source-banner-detail {
+    margin: 0;
+    color: #425a76;
+    font-size: 0.88rem;
+    line-height: 1.45;
+}
+
+.ai-source-banner-detail {
+    margin-top: 6px;
+}
+
+.ai-source-banner-live {
+    border-color: #cfe8da;
+    background: linear-gradient(180deg, #f6fcf8 0%, #edf8f2 100%);
+}
+
+.ai-source-banner-live .ai-source-banner-badge {
+    background: rgba(28, 123, 82, 0.12);
+    color: #1c7b52;
+}
+
+.ai-source-banner-fallback {
+    border-color: #f1dfc5;
+    background: linear-gradient(180deg, #fffaf2 0%, #fff5e8 100%);
+}
+
+.ai-source-banner-fallback .ai-source-banner-badge {
+    background: rgba(180, 83, 9, 0.12);
+    color: #b45309;
+}
+
+.ai-source-banner-example {
+    border-color: #d7dff8;
+    background: linear-gradient(180deg, #f7f8ff 0%, #eef2ff 100%);
+}
+
+.ai-source-banner-example .ai-source-banner-badge {
+    background: rgba(79, 70, 229, 0.12);
+    color: #4f46e5;
+}
+
 .ai-recipe-grid {
     display: flex;
     flex-direction: column;
@@ -1300,6 +1374,80 @@ h1, h2, h3, h4, h5 { margin: 0; font-family: 'Poppins', sans-serif; }
 .ai-recipe-section li {
     margin-bottom: 6px;
     line-height: 1.4;
+}
+
+.ai-nutrition-details {
+    margin: 12px 0 10px;
+    border: 1px solid #d9e6ef;
+    border-radius: 16px;
+    background: linear-gradient(180deg, #fbfdff 0%, #f4f8fc 100%);
+    overflow: hidden;
+}
+
+.ai-nutrition-details summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 14px 16px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #1f4f88;
+}
+
+.ai-nutrition-details summary::-webkit-details-marker {
+    display: none;
+}
+
+.ai-nutrition-details .ai-nutrition-table-wrap {
+    margin: 0 16px 16px;
+}
+
+#ai-ingredient-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+    padding: 0;
+    list-style: none;
+}
+
+.ai-ingredient-chip-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px 6px 12px;
+    border-radius: 999px;
+    border: 1px solid #d4e4f4;
+    background: linear-gradient(135deg, #f7fbff 0%, #edf6ff 100%);
+    box-shadow: 0 8px 18px rgba(31, 95, 165, 0.08);
+}
+
+.ai-ingredient-chip {
+    color: #1f4f88;
+    font-size: 0.86rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.ai-ingredient-chip-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 999px;
+    background: #d9eafe;
+    color: #1f5fa5;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.18s ease, background-color 0.18s ease;
+}
+
+.ai-ingredient-chip-remove:hover {
+    transform: scale(1.06);
+    background: #c7defa;
 }
 
 .ai-recipe-save-btn {
@@ -2799,9 +2947,104 @@ hr.spacer {
     background: rgba(129, 140, 248, 0.11);
 }
 
+[data-theme="dark"] .ai-nutrition-details {
+    background: #1a2233;
+    border-color: rgba(255,255,255,0.08);
+}
+
+[data-theme="dark"] .ai-nutrition-details summary {
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .ai-nutrition-table-wrap {
+    background: #111827;
+    border-color: rgba(255,255,255,0.08);
+}
+
+[data-theme="dark"] .ai-nutrition-table {
+    color: #cbd5e1;
+}
+
+[data-theme="dark"] .ai-nutrition-table th,
+[data-theme="dark"] .ai-nutrition-table td {
+    border-bottom-color: rgba(255,255,255,0.07);
+}
+
+[data-theme="dark"] .ai-nutrition-table th {
+    background: rgba(148, 163, 184, 0.08);
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .ai-nutrition-cell-main {
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .ai-ingredient-chip-item {
+    border-color: rgba(147, 197, 253, 0.18);
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.28);
+}
+
+[data-theme="dark"] .ai-ingredient-chip {
+    color: #dbeafe;
+}
+
+[data-theme="dark"] .ai-ingredient-chip-remove {
+    background: rgba(59, 130, 246, 0.18);
+    color: #bfdbfe;
+}
+
+[data-theme="dark"] .ai-ingredient-chip-remove:hover {
+    background: rgba(59, 130, 246, 0.28);
+}
+
 [data-theme="dark"] .ai-recipe-insight strong,
 [data-theme="dark"] .ai-plan-theme {
     color: #e2e8f0;
+}
+
+[data-theme="dark"] .ai-source-banner {
+    background: linear-gradient(180deg, #1e2638 0%, #1a1f2c 100%);
+    border-color: rgba(255,255,255,0.07);
+}
+
+[data-theme="dark"] .ai-source-banner-top {
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .ai-source-banner-copy,
+[data-theme="dark"] .ai-source-banner-detail {
+    color: #94a3b8;
+}
+
+[data-theme="dark"] .ai-source-banner-live {
+    background: rgba(62, 207, 142, 0.08);
+    border-color: rgba(62, 207, 142, 0.2);
+}
+
+[data-theme="dark"] .ai-source-banner-live .ai-source-banner-badge {
+    background: rgba(62, 207, 142, 0.14);
+    color: #86efac;
+}
+
+[data-theme="dark"] .ai-source-banner-fallback {
+    background: rgba(251, 146, 60, 0.08);
+    border-color: rgba(251, 146, 60, 0.2);
+}
+
+[data-theme="dark"] .ai-source-banner-fallback .ai-source-banner-badge {
+    background: rgba(251, 146, 60, 0.14);
+    color: #fdba74;
+}
+
+[data-theme="dark"] .ai-source-banner-example {
+    background: rgba(129, 140, 248, 0.1);
+    border-color: rgba(129, 140, 248, 0.18);
+}
+
+[data-theme="dark"] .ai-source-banner-example .ai-source-banner-badge {
+    background: rgba(129, 140, 248, 0.16);
+    color: #c7d2fe;
 }
 
 [data-theme="dark"] .ai-recipe-insight p {

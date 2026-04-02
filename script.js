@@ -214,6 +214,7 @@ Regole obbligatorie:
 - restituisci solo JSON valido, senza markdown, senza prefazioni, senza commenti;
 - la ricetta deve essere realistica, cucinabile e coerente con il tipo di pasto richiesto;
 - gli ingredienti devono avere grammature o quantita leggibili;
+- inserisci sempre una sezione valori_nutrizionali completa con kcal, proteine, carboidrati, zuccheri, fibre, grassi, grassi_saturi e sale riferiti all'intera ricetta, non alla singola porzione;
 - il procedimento deve essere un array di step reali, concreti e operativi, non generici, scritto nello stile della guida esempi sotto;
 - il procedimento deve contenere almeno 5 step e al massimo 8 step per Pranzo o Cena; almeno 4 step per Colazione o Spuntino;
 - il procedimento deve coprire l intero flusso del piatto: preparazione ingredienti, cottura principale, eventuale mantecatura o assemblaggio finale, servizio o rifinitura finale;
@@ -242,6 +243,16 @@ Output JSON obbligatorio, con queste sole chiavi:
         "carbo": number,
         "grassi": number
     },
+    "valori_nutrizionali": {
+                "kcal": number,
+                "proteine": number,
+                "carboidrati": number,
+                "zuccheri": number,
+                "fibre": number,
+                "grassi": number,
+                "grassi_saturi": number,
+                "sale": number
+        },
   "ingredienti": ["string", "string"],
   "procedimento": ["step 1", "step 2"],
     "cottura_consigliata": "string",
@@ -265,6 +276,7 @@ Regole obbligatorie:
 - l array pasti deve essere in ordine logico: Colazione, Spuntino, Pranzo, Cena; se serve un secondo spuntino, integralo nel piano ma mantieni ordine chiaro;
 - ogni elemento di pasti deve rispettare esattamente il formato JSON della singola ricetta;
 - ogni ricetta deve usare la chiave macro con proteine, carbo e grassi;
+- ogni ricetta deve includere valori_nutrizionali con kcal, proteine, carboidrati, zuccheri, fibre, grassi, grassi_saturi e sale;
 - i procedimenti devono essere reali e collegati tra loro: se riusi una base o un ingrediente tra pranzo e cena, rendilo evidente nei passaggi;
 - ogni procedimento deve seguire la guida di stile sotto e usare step concreti con verbi guida, tempi, utensili e segnali di cottura;
 - daily_theme deve essere una stringa sintetica ma significativa;
@@ -288,6 +300,16 @@ Output JSON obbligatorio:
                 "carbo": number,
                 "grassi": number
             },
+    "valori_nutrizionali": {
+            "kcal": number,
+            "proteine": number,
+            "carboidrati": number,
+            "zuccheri": number,
+            "fibre": number,
+            "grassi": number,
+            "grassi_saturi": number,
+            "sale": number
+        },
       "ingredienti": ["string"],
       "procedimento": ["string"],
             "cottura_consigliata": "string",
@@ -315,6 +337,7 @@ Regole obbligatorie:
 - ogni giorno deve avere almeno: giorno, daily_theme, pasti;
 - ogni elemento di pasti deve rispettare esattamente il formato JSON della singola ricetta;
 - ogni ricetta deve usare la chiave macro con proteine, carbo e grassi;
+- ogni ricetta deve includere valori_nutrizionali con kcal, proteine, carboidrati, zuccheri, fibre, grassi, grassi_saturi e sale;
 - i procedimenti devono sembrare quelli di un vero piano cucinabile in casa, non titoli astratti travestiti da ricette;
 - ogni procedimento deve seguire la guida di stile sotto e usare step concreti con verbi guida, tempi, utensili e segnali di cottura;
 - la settimana deve sembrare progettata da un vero professionista, non da un generatore casuale.
@@ -340,6 +363,16 @@ Output JSON obbligatorio:
                         "proteine": number,
                         "carbo": number,
                         "grassi": number
+                    },
+          "valori_nutrizionali": {
+                        "kcal": number,
+                        "proteine": number,
+                        "carboidrati": number,
+                        "zuccheri": number,
+                        "fibre": number,
+                        "grassi": number,
+                        "grassi_saturi": number,
+                        "sale": number
                     },
           "ingredienti": ["string"],
           "procedimento": ["string"],
@@ -794,6 +827,49 @@ function normalizeGeminiMacroShape(macro, recipe = {}) {
     };
 }
 
+function normalizeGeminiNutritionDetails(nutrition, recipe = {}) {
+    const source = nutrition && typeof nutrition === 'object' && !Array.isArray(nutrition) ? nutrition : {};
+    const macro = normalizeGeminiMacroShape(recipe.macro, recipe);
+
+    return {
+        kcal: coerceFiniteNumber(
+            getObjectValueCaseInsensitive(source, ['kcal', 'calorie', 'energia'])
+            ?? recipe.calorie ?? recipe.kcal,
+            0
+        ),
+        proteine: coerceFiniteNumber(
+            getObjectValueCaseInsensitive(source, ['proteine', 'protein'])
+            ?? macro.proteine,
+            0
+        ),
+        carboidrati: coerceFiniteNumber(
+            getObjectValueCaseInsensitive(source, ['carboidrati', 'carbo', 'carbs'])
+            ?? macro.carbo,
+            0
+        ),
+        zuccheri: coerceFiniteNumber(
+            getObjectValueCaseInsensitive(source, ['zuccheri', 'sugars']),
+            0
+        ),
+        fibre: coerceFiniteNumber(
+            getObjectValueCaseInsensitive(source, ['fibre', 'fibra', 'fiber']),
+            0
+        ),
+        grassi: coerceFiniteNumber(
+            getObjectValueCaseInsensitive(source, ['grassi', 'fat']),
+            macro.grassi
+        ),
+        grassi_saturi: coerceFiniteNumber(
+            getObjectValueCaseInsensitive(source, ['grassi_saturi', 'saturi', 'saturated_fat']),
+            0
+        ),
+        sale: coerceFiniteNumber(
+            getObjectValueCaseInsensitive(source, ['sale', 'salt']),
+            0
+        )
+    };
+}
+
 function getGeminiRecipeDifficultyLabel(value) {
     const normalized = String(value || '').trim().toLowerCase();
     if (normalized.includes('chef') || normalized.includes('diffic')) return 'Difficile';
@@ -1110,6 +1186,13 @@ async function fetchGeminiJsonPayload(prompt, mode = 'generic') {
                     continue;
                 }
 
+                if (res.status === 429) {
+                    const quotaMessage = details
+                        ? `Gemini temporaneamente non disponibile per limite richieste o quota: ${details}`
+                        : 'Gemini temporaneamente non disponibile per limite richieste o quota. Riprova tra poco.';
+                    throw new Error(quotaMessage);
+                }
+
                 throw new Error(details ? `Errore Gemini ${res.status}: ${details}` : `Errore Gemini ${res.status}`);
             }
 
@@ -1190,7 +1273,7 @@ async function generaRicettaGemini(promptConfig) {
         : buildGeminiChefPrompt(promptConfig.mode, promptConfig.payload);
 
     try {
-        const firstAttempt = await fetchGeminiJsonPayload(prompt, mode);
+        const firstAttempt = await fetchGeminiJsonPayloadWithRetry(prompt, mode, 2);
         assertGeminiPayloadProcedureQuality(firstAttempt);
         return firstAttempt;
     } catch (firstError) {
@@ -1210,7 +1293,7 @@ async function generaRicettaGemini(promptConfig) {
             '- mantieni identico il formato JSON richiesto.'
         ].join('\n');
 
-        const secondAttempt = await fetchGeminiJsonPayload(retryPrompt, mode);
+        const secondAttempt = await fetchGeminiJsonPayloadWithRetry(retryPrompt, mode, 2);
         assertGeminiPayloadProcedureQuality(secondAttempt);
         return secondAttempt;
     }
@@ -1290,6 +1373,7 @@ function normalizeGeminiRecipeShape(recipe) {
         difficolta: String(mergedRecipe.difficolta || 'Facile').trim(),
         calorie: coerceFiniteNumber(mergedRecipe.calorie ?? mergedRecipe.kcal, 0),
         macro: normalizeGeminiMacroShape(mergedRecipe.macro, mergedRecipe),
+        valori_nutrizionali: normalizeGeminiNutritionDetails(mergedRecipe.valori_nutrizionali || mergedRecipe.nutrition || mergedRecipe.nutritional_values, mergedRecipe),
         ingredienti: normalizeGeminiIngredientList(mergedRecipe.ingredienti),
         procedimento: normalizeGeminiSteps(mergedRecipe.procedimento),
         cottura_consigliata: String(mergedRecipe.cottura_consigliata || mergedRecipe.tecnica_cottura || mergedRecipe.chef_note || '').trim(),
@@ -1302,6 +1386,7 @@ function adaptGeminiRecipeToCard(recipe, metadata = {}) {
     const normalizedRecipe = normalizeGeminiRecipeShape(recipe);
     const requestedMode = normalizeAIRecipeRequestedMode(metadata.difficulty);
     const slot = AI_RECIPE_MODE_SLOTS.find((item) => item.key === requestedMode) || AI_RECIPE_MODE_SLOTS[0];
+    const nutritionDetails = normalizedRecipe.valori_nutrizionali;
 
     return {
         id: metadata.id || 'GEM-1',
@@ -1322,19 +1407,70 @@ function adaptGeminiRecipeToCard(recipe, metadata = {}) {
         nutrition: {
             ingredients: [{
                 name: 'Totale ricetta',
-                kcal: Math.round(normalizedRecipe.calorie || 0),
-                protein: Number(normalizedRecipe.macro?.proteine || 0).toFixed(1),
-                carbs: Number(normalizedRecipe.macro?.carbo || 0).toFixed(1),
-                fat: Number(normalizedRecipe.macro?.grassi || 0).toFixed(1)
+                kcal: Math.round(nutritionDetails.kcal || 0),
+                protein: Number(nutritionDetails.proteine || 0).toFixed(1),
+                carbs: Number(nutritionDetails.carboidrati || 0).toFixed(1),
+                fat: Number(nutritionDetails.grassi || 0).toFixed(1)
             }],
             total: {
-                kcal: Math.round(normalizedRecipe.calorie || 0),
-                protein: Number(normalizedRecipe.macro?.proteine || 0).toFixed(1),
-                carbs: Number(normalizedRecipe.macro?.carbo || 0).toFixed(1),
-                fat: Number(normalizedRecipe.macro?.grassi || 0).toFixed(1)
+                kcal: Math.round(nutritionDetails.kcal || 0),
+                protein: Number(nutritionDetails.proteine || 0).toFixed(1),
+                carbs: Number(nutritionDetails.carboidrati || 0).toFixed(1),
+                fat: Number(nutritionDetails.grassi || 0).toFixed(1)
+            },
+            details: {
+                kcal: Math.round(nutritionDetails.kcal || 0),
+                proteine: Number(nutritionDetails.proteine || 0).toFixed(1),
+                carboidrati: Number(nutritionDetails.carboidrati || 0).toFixed(1),
+                zuccheri: Number(nutritionDetails.zuccheri || 0).toFixed(1),
+                fibre: Number(nutritionDetails.fibre || 0).toFixed(1),
+                grassi: Number(nutritionDetails.grassi || 0).toFixed(1),
+                grassi_saturi: Number(nutritionDetails.grassi_saturi || 0).toFixed(1),
+                sale: Number(nutritionDetails.sale || 0).toFixed(1)
             }
         }
     };
+}
+
+function renderAIRecipeNutritionDetails(recipe) {
+    const details = recipe?.nutrition?.details;
+    if (!details) return '';
+
+    const rows = [
+        ['Kcal intera ricetta', `${escapeHtml(details.kcal)} kcal`],
+        ['Proteine', `${escapeHtml(details.proteine)} g`],
+        ['Carboidrati', `${escapeHtml(details.carboidrati)} g`],
+        ['Zuccheri', `${escapeHtml(details.zuccheri)} g`],
+        ['Fibre', `${escapeHtml(details.fibre)} g`],
+        ['Grassi', `${escapeHtml(details.grassi)} g`],
+        ['Grassi saturi', `${escapeHtml(details.grassi_saturi)} g`],
+        ['Sale', `${escapeHtml(details.sale)} g`]
+    ];
+
+    return `
+        <details class="ai-nutrition-details">
+            <summary>Valori nutrizionali</summary>
+            <p class="ai-nutrition-footnote">Tutti i valori mostrati qui sotto, incluse le kcal, sono riferiti all'intera ricetta.</p>
+            <div class="ai-nutrition-table-wrap">
+                <table class="ai-nutrition-table">
+                    <thead>
+                        <tr>
+                            <th>Voce</th>
+                            <th>Valore</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rows.map(([label, value]) => `
+                            <tr>
+                                <td class="ai-nutrition-cell-main">${escapeHtml(label)}</td>
+                                <td>${value}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </details>
+    `;
 }
 
 const GEMINI_DAILY_SLOTS = ['Colazione', 'Spuntino', 'Pranzo', 'Cena'];
@@ -4282,6 +4418,39 @@ let barcodeScanLocked = false;
 let latestSmartScanFood = null;
 let smartScanFallbackTimer = null;
 
+function syncAISelectedIngredientsInput() {
+    const discoverInput = document.getElementById('discover-ingredients');
+    if (discoverInput) {
+        discoverInput.value = aiSelectedIngredients.join(', ');
+    }
+}
+
+function renderAISelectedIngredients() {
+    const list = document.getElementById('ai-ingredient-list');
+    if (!list) return;
+
+    if (aiSelectedIngredients.length === 0) {
+        list.innerHTML = '';
+        syncAISelectedIngredientsInput();
+        return;
+    }
+
+    list.innerHTML = aiSelectedIngredients.map((item) => `
+        <li class="ai-ingredient-chip-item">
+            <span class="ai-ingredient-chip">${escapeHtml(item)}</span>
+            <button type="button" class="ai-ingredient-chip-remove" onclick="removeAISelectedIngredient(decodeURIComponent('${encodeURIComponent(item)}'))" aria-label="Rimuovi ${escapeHtml(item)}">×</button>
+        </li>
+    `).join('');
+
+    syncAISelectedIngredientsInput();
+}
+
+function removeAISelectedIngredient(ingredientName) {
+    const normalizedName = String(ingredientName || '').trim();
+    aiSelectedIngredients = aiSelectedIngredients.filter((item) => item !== normalizedName);
+    renderAISelectedIngredients();
+}
+
 function formatLocalIsoDate(date) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -5409,10 +5578,7 @@ function renderFoodSearchResults(results, resDiv, context, inputElement) {
                 if (!aiSelectedIngredients.includes(nomeCibo)) {
                     aiSelectedIngredients.push(nomeCibo);
                 }
-                const list = document.getElementById('ai-ingredient-list');
-                list.innerHTML = aiSelectedIngredients.map((item) => `<li style="padding:4px 0;">• ${item}</li>`).join('');
-                const discoverInput = document.getElementById('discover-ingredients');
-                discoverInput.value = aiSelectedIngredients.join(', ');
+                renderAISelectedIngredients();
             }
             closeFoodSearchDropdown(context);
             inputElement.value = '';
@@ -6489,6 +6655,8 @@ const AI_RECIPE_MODE_SLOTS = [
 
 const AI_DAILY_RECIPE_GUARANTEE_LIMIT = 5;
 const AI_DAILY_RECIPE_USAGE_STORAGE_KEY = 'nv_ai_recipe_daily_usage_v1';
+const GEMINI_CACHE_STORAGE_KEY = 'nv_gemini_response_cache_v1';
+const GEMINI_CACHE_MAX_ENTRIES_PER_MODE = 8;
 
 function getLocalIsoDateKey(date = new Date()) {
     const year = date.getFullYear();
@@ -6549,6 +6717,204 @@ function consumeAiDailyRecipeGuarantee(profile = {}) {
     return getAiDailyRecipeGuaranteeInfo(profile);
 }
 
+function delayMs(ms) {
+    return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
+function normalizeGeminiCacheMode(mode) {
+    const normalized = String(mode || '').trim().toLowerCase();
+    if (normalized === 'ricetta-su-misura') return 'recipe';
+    if (normalized === 'piano-giornaliero') return 'daily';
+    if (normalized === 'piano-settimanale') return 'weekly';
+    return normalized || 'generic';
+}
+
+function readGeminiCacheState() {
+    try {
+        const raw = window.localStorage?.getItem(GEMINI_CACHE_STORAGE_KEY) || '{}';
+        const parsed = JSON.parse(raw);
+        return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+    } catch (error) {
+        return {};
+    }
+}
+
+function writeGeminiCacheState(state) {
+    try {
+        window.localStorage?.setItem(GEMINI_CACHE_STORAGE_KEY, JSON.stringify(state));
+    } catch (error) {
+        // no-op
+    }
+}
+
+function buildGeminiCacheKey(mode, payload = {}) {
+    return JSON.stringify({
+        mode: normalizeGeminiCacheMode(mode),
+        payload
+    });
+}
+
+function persistGeminiCacheEntry(mode, payload, responsePayload, metadata = {}) {
+    const normalizedMode = normalizeGeminiCacheMode(mode);
+    const state = readGeminiCacheState();
+    const key = buildGeminiCacheKey(normalizedMode, payload);
+    const existingEntries = Array.isArray(state[normalizedMode]) ? state[normalizedMode] : [];
+    const nextEntry = {
+        key,
+        savedAt: Date.now(),
+        payload,
+        responsePayload,
+        metadata
+    };
+
+    state[normalizedMode] = [nextEntry, ...existingEntries.filter((entry) => entry?.key !== key)].slice(0, GEMINI_CACHE_MAX_ENTRIES_PER_MODE);
+    writeGeminiCacheState(state);
+}
+
+function loadGeminiCacheEntry(mode, payload, matcher = null) {
+    const normalizedMode = normalizeGeminiCacheMode(mode);
+    const state = readGeminiCacheState();
+    const entries = Array.isArray(state[normalizedMode]) ? state[normalizedMode] : [];
+    const exactKey = buildGeminiCacheKey(normalizedMode, payload);
+    const exactEntry = entries.find((entry) => entry?.key === exactKey);
+
+    if (exactEntry) {
+        return exactEntry;
+    }
+
+    if (typeof matcher === 'function') {
+        return entries.find((entry) => matcher(entry)) || null;
+    }
+
+    return entries[0] || null;
+}
+
+function normalizeGeminiCacheText(value) {
+    return String(value || '').trim().toLowerCase();
+}
+
+function extractGeminiRecipeCacheContext(payload = {}) {
+    const profile = payload?.profilo_utente || {};
+    const request = payload?.richiesta_ricetta || {};
+    const rawIngredients = normalizeGeminiCacheText(request.ingrediente_o_base || '');
+    const ingredientTokens = rawIngredients
+        .split(/[;,]/)
+        .map((item) => normalizeGeminiCacheText(item))
+        .filter(Boolean);
+
+    return {
+        mealType: normalizeGeminiCacheText(request.tipo_pasto || ''),
+        requestedMode: normalizeAIRecipeRequestedMode(request.modalita_ui || request.difficolta || ''),
+        goal: normalizeGeminiCacheText(profile.obiettivo || ''),
+        diet: normalizeGeminiCacheText(profile.dieta || ''),
+        people: Number(request.persone || 0),
+        ingredientTokens
+    };
+}
+
+function countGeminiIngredientOverlap(leftTokens = [], rightTokens = []) {
+    if (!Array.isArray(leftTokens) || !Array.isArray(rightTokens) || leftTokens.length === 0 || rightTokens.length === 0) {
+        return 0;
+    }
+
+    const rightSet = new Set(rightTokens);
+    return leftTokens.filter((token) => rightSet.has(token)).length;
+}
+
+function scoreGeminiRecipeCacheEntry(entry, payload, mealType, requestedMode) {
+    const currentContext = extractGeminiRecipeCacheContext(payload);
+    const normalizedMealType = String(mealType || '').trim().toLowerCase();
+    const normalizedMode = normalizeAIRecipeRequestedMode(requestedMode);
+    const entryMealType = String(entry?.metadata?.mealType || '').trim().toLowerCase();
+    const entryMode = normalizeAIRecipeRequestedMode(entry?.metadata?.requestedMode || '');
+    const entryContext = extractGeminiRecipeCacheContext(entry?.payload || {});
+    let score = 0;
+
+    if (entryMealType && normalizedMealType && entryMealType === normalizedMealType) {
+        score += 6;
+    }
+
+    if (entryMode && normalizedMode && entryMode === normalizedMode) {
+        score += 4;
+    }
+
+    if (entryMealType && normalizedMealType && entryMealType.includes(normalizedMealType)) {
+        score += 1;
+    }
+
+    if (entryMode && normalizedMode && entryMode.includes(normalizedMode)) {
+        score += 1;
+    }
+
+    if (entryContext.goal && currentContext.goal && entryContext.goal === currentContext.goal) {
+        score += 2;
+    }
+
+    if (entryContext.diet && currentContext.diet && entryContext.diet === currentContext.diet) {
+        score += 2;
+    }
+
+    if (entryContext.people > 0 && currentContext.people > 0 && entryContext.people === currentContext.people) {
+        score += 1;
+    }
+
+    score += Math.min(4, countGeminiIngredientOverlap(entryContext.ingredientTokens, currentContext.ingredientTokens));
+
+    return score;
+}
+
+function loadBestGeminiRecipeCacheEntry(payload, mealType, requestedMode) {
+    const exactEntry = loadGeminiCacheEntry('recipe', payload);
+    if (exactEntry) {
+        return exactEntry;
+    }
+
+    const state = readGeminiCacheState();
+    const entries = Array.isArray(state.recipe) ? state.recipe : [];
+    if (entries.length === 0) {
+        return null;
+    }
+
+    return [...entries]
+        .map((entry) => ({ entry, score: scoreGeminiRecipeCacheEntry(entry, payload, mealType, requestedMode) }))
+        .filter((candidate) => candidate.score > 0)
+        .sort((left, right) => right.score - left.score || Number(right.entry?.savedAt || 0) - Number(left.entry?.savedAt || 0))[0]?.entry || null;
+}
+
+function shouldRetryGeminiClientError(error) {
+    const message = String(error?.message || error || '').toLowerCase();
+    return message.includes('429')
+        || message.includes('quota')
+        || message.includes('temporaneamente')
+        || message.includes('timeout')
+        || message.includes('networkerror')
+        || message.includes('non raggiungibile')
+        || message.includes('errore gemini 500')
+        || message.includes('errore gemini 502')
+        || message.includes('errore gemini 503')
+        || message.includes('errore gemini 504');
+}
+
+async function fetchGeminiJsonPayloadWithRetry(prompt, mode = 'generic', maxRetries = 2) {
+    let lastError = null;
+
+    for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
+        try {
+            return await fetchGeminiJsonPayload(prompt, mode);
+        } catch (error) {
+            lastError = error;
+
+            if (attempt === maxRetries || !shouldRetryGeminiClientError(error)) {
+                throw error;
+            }
+
+            await delayMs(900 * (attempt + 1));
+        }
+    }
+
+    throw lastError || new Error('Richiesta Gemini non completata.');
+}
+
 function buildAiRecipeDiagnosticText(metadata = {}) {
     const guaranteeInfo = metadata.guaranteeInfo || null;
     const guaranteeSuffix = guaranteeInfo
@@ -6563,11 +6929,58 @@ function buildAiRecipeDiagnosticText(metadata = {}) {
         return `Ricetta generata da Gemini.${guaranteeSuffix}`;
     }
 
+    if (metadata.source === 'gemini-cache') {
+        return `Ricetta recuperata dalla cache Gemini.${guaranteeSuffix}`;
+    }
+
     if (metadata.sourceReason) {
         return `Ricetta fallback locale. Motivo fallback: ${metadata.sourceReason}${guaranteeSuffix}`;
     }
 
     return `Ricetta fallback locale.${guaranteeSuffix}`;
+}
+
+function buildAiSourceBannerHtml(metadata = {}) {
+    const source = String(metadata?.source || 'fallback').trim().toLowerCase();
+    const reason = String(metadata?.sourceReason || metadata?.reason || '').trim();
+    const descriptionOverride = String(metadata?.description || '').trim();
+    let className = 'ai-source-banner-fallback';
+    let badge = 'Fallback locale';
+    let title = 'Risposta non generata live da Gemini';
+    let description = descriptionOverride || 'Il contenuto mostrato usa il motore locale di backup per mantenere l app disponibile anche quando Gemini o la function non rispondono.';
+
+    if (source === 'gemini') {
+        className = 'ai-source-banner-live';
+        badge = 'Gemini live';
+        title = 'Risposta generata in tempo reale da Gemini';
+        description = descriptionOverride || 'La chiamata live a Gemini e andata a buon fine e questo contenuto arriva dal modello remoto.';
+    } else if (source === 'gemini-cache') {
+        className = 'ai-source-banner-example';
+        badge = 'Gemini cache';
+        title = 'Risposta Gemini recuperata dalla cache';
+        description = descriptionOverride || 'Gemini non era disponibile in questo momento, quindi l app sta mostrando una risposta valida generata in precedenza da Gemini.';
+    } else if (source === 'guaranteed-fallback') {
+        className = 'ai-source-banner-fallback';
+        badge = 'Fallback garantito';
+        title = 'Risposta servita dal motore locale garantito';
+        description = descriptionOverride || 'Per garantire continuita operativa l app ha usato il motore locale invece della risposta live di Gemini.';
+    } else if (source === 'example') {
+        className = 'ai-source-banner-example';
+        badge = 'Schema statico';
+        title = 'Stai vedendo un esempio precaricato';
+        description = descriptionOverride || 'Questo contenuto non arriva da Gemini: e uno schema statico usato come riferimento o demo.';
+    }
+
+    return `
+        <div class="ai-source-banner ${escapeHtml(className)}" role="status" aria-live="polite">
+            <div class="ai-source-banner-top">
+                <span class="ai-source-banner-badge">${escapeHtml(badge)}</span>
+                <strong>${escapeHtml(title)}</strong>
+            </div>
+            <p class="ai-source-banner-copy">${escapeHtml(description)}</p>
+            ${reason ? `<p class="ai-source-banner-detail"><strong>Dettaglio tecnico:</strong> ${escapeHtml(reason)}</p>` : ''}
+        </div>
+    `;
 }
 
 function normalizeAIRecipeRequestedMode(value) {
@@ -7224,7 +7637,10 @@ function renderAIRecipeResults(recipes, metadata = {}) {
 
     resultBox.style.display = 'block';
     resultBox.innerHTML = `
-        <p class="ai-mode-subtitle">${escapeHtml(diagnosticText)}</p>
+        ${buildAiSourceBannerHtml({
+            ...metadata,
+            description: diagnosticText
+        })}
         <div class="ai-recipe-grid">
             ${aiGeneratedRecipes.map((recipe, index) => `
                 <article class="ai-recipe-card">
@@ -7252,6 +7668,7 @@ function renderAIRecipeResults(recipes, metadata = {}) {
                         <p class="ai-recipe-fit"><strong>Cottura consigliata:</strong> ${escapeHtml(recipe.tecnica_cottura || recipe.healthyCooking)}</p>
                     ` : ''}
                     <p class="ai-recipe-waste"><strong>Tip anti-spreco:</strong> ${escapeHtml(recipe.anti_spreco || recipe.wasteTip || '')}</p>
+                    ${renderAIRecipeNutritionDetails(recipe)}
                     ${recipe.bioavailability_tip ? `
                         <div class="ai-recipe-insight ai-recipe-insight-bio">
                             <strong>Bioavailability tip</strong>
@@ -7328,21 +7745,23 @@ async function generaRicettaAI() {
         return;
     }
 
+    const recipeRequestPayload = buildGeminiRecipeRequestPayload(profilePayload, {
+        tipo_pasto: mealType,
+        difficolta: getGeminiRecipeDifficultyLabel(difficulty),
+        modalita_ui: difficulty,
+        kcal_target: Math.round(profilePayload.targetCalories || 0),
+        allergie: profilePayload.allergies || 'nessuna indicata',
+        ingrediente_o_base: ingredienti.join(', '),
+        persone,
+        richiesta_base: `Voglio un ${mealType} con ${ingredienti.join(', ')}`
+    });
+
     renderAIRecipeLoading(ingredienti, persone);
 
     try {
         const geminiPayload = await generaRicettaGemini({
             mode: 'ricetta-su-misura',
-            payload: buildGeminiRecipeRequestPayload(profilePayload, {
-                tipo_pasto: mealType,
-                difficolta: getGeminiRecipeDifficultyLabel(difficulty),
-                modalita_ui: difficulty,
-                kcal_target: Math.round(profilePayload.targetCalories || 0),
-                allergie: profilePayload.allergies || 'nessuna indicata',
-                ingrediente_o_base: ingredienti.join(', '),
-                persone,
-                richiesta_base: `Voglio un ${mealType} con ${ingredienti.join(', ')}`
-            })
+            payload: recipeRequestPayload
         });
 
         if (!geminiPayload || typeof geminiPayload !== 'object' || !Array.isArray(geminiPayload.ingredienti) || geminiPayload.ingredienti.length === 0) {
@@ -7367,22 +7786,31 @@ async function generaRicettaAI() {
             requestedMode: difficulty,
             lunchContext: profilePayload.lunchContextPreference
         });
-    } catch (error) {
-        console.error('AI Mode error:', error);
-        const guaranteeInfoBeforeFallback = getAiDailyRecipeGuaranteeInfo(profilePayload);
-        const guaranteeInfo = consumeAiDailyRecipeGuarantee(profilePayload);
-        const isGuaranteedFallback = guaranteeInfoBeforeFallback.guaranteeActive;
-        const fallbackRecipes = getAIFallbackRecipes(ingredienti, persone, profilePayload, mealType)
-            .filter((recipe) => recipe.mode_key === normalizeAIRecipeRequestedMode(difficulty));
-        renderAIRecipeResults(fallbackRecipes, {
-            source: isGuaranteedFallback ? 'guaranteed-fallback' : 'fallback',
-            sourceReason: isGuaranteedFallback ? '' : (error?.message || 'Errore non specificato nella pipeline Gemini'),
-            guaranteeInfo,
-            people: persone,
+        persistGeminiCacheEntry('recipe', recipeRequestPayload, {
+            recipes: [normalizedRecipe]
+        }, {
             mealType,
             requestedMode: difficulty,
-            lunchContext: profilePayload.lunchContextPreference
+            people: persone
         });
+    } catch (error) {
+        console.error('AI Mode error:', error);
+        const cachedRecipeEntry = loadBestGeminiRecipeCacheEntry(recipeRequestPayload, mealType, difficulty);
+
+        if (cachedRecipeEntry?.responsePayload?.recipes?.length) {
+            renderAIRecipeResults(cachedRecipeEntry.responsePayload.recipes, {
+                source: 'gemini-cache',
+                sourceReason: error?.message || 'Gemini non disponibile in questo tentativo.',
+                people: persone,
+                mealType,
+                requestedMode: difficulty,
+                lunchContext: profilePayload.lunchContextPreference,
+                description: 'Gemini non era disponibile adesso: sto mostrando una ricetta compatibile gia generata in precedenza da Gemini.'
+            });
+            return;
+        }
+
+        renderAIRecipeError(error?.message || 'Gemini non disponibile. Nessuna ricetta locale verra mostrata: riprova tra poco.');
     }
 }
 
@@ -7725,9 +8153,12 @@ function renderAIBreakfastSnackResults(payload) {
     const snackBadge = getSnackContextBadge(lunchContext);
     const breakfastMealTypeMeta = getAIRecipeMealTypeMeta('colazione');
     const snackMealTypeMeta = getAIRecipeMealTypeMeta('spuntino');
-    const sourceNote = payload?.meta?.source === 'fallback'
-        ? `<p class="ai-mode-subtitle"><strong>Nota:</strong> stai vedendo il motore di backup.${payload?.meta?.reason ? ` ${escapeHtml(payload.meta.reason)}` : ''}</p>`
-        : '<p class="ai-mode-subtitle">AI live attiva: le opzioni sono equivalenti come logica nutrizionale, non rigide.</p>';
+    const sourceNote = buildAiSourceBannerHtml({
+        ...(payload?.meta || {}),
+        description: payload?.meta?.source === 'fallback'
+            ? 'Le opzioni mostrate arrivano dal motore di backup locale, non da Gemini live.'
+            : 'AI live attiva: le opzioni mostrate arrivano dal motore remoto disponibile in questo momento.'
+    });
     const lunchContextNote = `<p class="ai-mode-subtitle"><strong>Contesto profilo:</strong> ${escapeHtml(getLunchContextRecipeNote(lunchContext))}</p>`;
 
     resultBox.style.display = 'block';
@@ -7824,9 +8255,14 @@ function renderAIDailyPlanResults(payload) {
         notes.push(dinnerPreferenceNote);
     }
     const rationale = [plan.rationale, dinnerPreferenceNote].filter(Boolean).join(' ');
-    const sourceNote = payload?.meta?.source === 'fallback'
-        ? `<p class="ai-mode-subtitle"><strong>Nota:</strong> stai vedendo il motore di backup.${payload?.meta?.reason ? ` ${escapeHtml(payload.meta.reason)}` : ''}</p>`
-        : '<p class="ai-mode-subtitle">AI live attiva: il piano e organizzato come esempio di giornata completa.</p>';
+    const sourceNote = buildAiSourceBannerHtml({
+        ...(payload?.meta || {}),
+        description: payload?.meta?.source === 'fallback'
+            ? 'Il piano mostrato non arriva da Gemini live: l app sta usando il fallback locale per non interrompere l esperienza.'
+            : payload?.meta?.source === 'gemini-cache'
+                ? 'Gemini non era disponibile in questo momento: sto mostrando un piano giornaliero valido gia generato in precedenza da Gemini.'
+            : 'AI live attiva: il piano mostrato arriva da Gemini ed e organizzato come una giornata completa.'
+    });
     const dailyTheme = String(plan.daily_theme || plan.dailyTheme || '').trim();
 
     resultBox.style.display = 'block';
@@ -8003,11 +8439,16 @@ function renderAIWeeklyPlanResults(payload) {
     const pantryRaw = document.getElementById('weekly-plan-pantry')?.value || '';
     const shoppingInsights = buildWeeklyShoppingInsights(week, pantryRaw);
     const shoppingGroups = groupShoppingItemsByCategory(shoppingInsights.toBuy);
-    const sourceNote = payload?.meta?.source === 'fallback'
-        ? `<p class="ai-mode-subtitle"><strong>Nota:</strong> stai vedendo il motore di backup.${payload?.meta?.reason ? ` ${escapeHtml(payload.meta.reason)}` : ''}</p>`
-        : payload?.meta?.source === 'example'
-            ? '<p class="ai-mode-subtitle"><strong>Esempio:</strong> stai vedendo uno schema settimanale statico caricato manualmente.</p>'
-        : '<p class="ai-mode-subtitle">AI live attiva: il piano e organizzato come schema settimanale coerente con il profilo.</p>';
+    const sourceNote = buildAiSourceBannerHtml({
+        ...(payload?.meta || {}),
+        description: payload?.meta?.source === 'fallback'
+            ? 'Il piano settimanale mostrato usa il fallback locale: Gemini live non ha restituito una risposta valida in questo tentativo.'
+            : payload?.meta?.source === 'gemini-cache'
+                ? 'Gemini non era disponibile in questo momento: sto mostrando un piano settimanale valido gia generato in precedenza da Gemini.'
+            : payload?.meta?.source === 'example'
+                ? 'Stai vedendo uno schema settimanale statico caricato manualmente e non una risposta live di Gemini.'
+                : 'AI live attiva: il piano settimanale mostrato arriva da Gemini ed e coerente con il profilo.'
+    });
     const proteinStat = targets.proteinLabel
         ? escapeHtml(targets.proteinLabel)
         : (targets.proteinGrams || targets.proteinPerKg)
@@ -8128,45 +8569,25 @@ async function generaColazioniSpuntiniAI() {
         'Uso il tuo profilo per costruire opzioni equivalenti e sostenibili.'
     );
 
-    try {
-        const response = await fetch('/.netlify/functions/ai-meal-plan', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                mode: 'breakfast-snacks',
-                preferences,
-                profile: profilePayload
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error('Endpoint AI non raggiungibile in questo deploy.');
-        }
-
-        const payload = await response.json();
-        if (!payload || !Array.isArray(payload.breakfastOptions) || !Array.isArray(payload.snackOptions)) {
-            throw new Error('La risposta AI non contiene opzioni valide.');
-        }
-
-        renderAIBreakfastSnackResults(payload);
-    } catch (error) {
-        console.error('AI breakfast mode error:', error);
-        renderAIBreakfastSnackResults({
-            ...getAIBreakfastSnackFallback(profilePayload, preferences),
-            meta: {
-                source: 'fallback',
-                reason: 'AI live temporaneamente non disponibile'
-            }
-        });
-    }
+    console.error('AI breakfast mode disabled: this deploy only allows Gemini-backed generation.');
+    renderAIBoxError(
+        'ai-breakfast-result',
+        'Colazioni e spuntini non disponibili',
+        'Questa modalita non e attiva in questo deploy perche qui sono consentite solo generazioni collegate a Gemini.'
+    );
 }
 
 async function generaPianoGiornalieroAI() {
     const profilePayload = getAIProfilePayload();
     const preferences = (document.getElementById('day-plan-ai-notes')?.value || '').trim();
     const lunchContext = persistLunchContextPreference(document.getElementById('day-plan-lunch-context')?.value || 'workday');
+    const dailyPlanRequestPayload = buildGeminiDailyPlanRequestPayload(profilePayload, {
+        preferenze: preferences,
+        contesto_pranzo: lunchContext,
+        crononutrizione: 'Colazione densa, pranzo per energia, cena leggera e digeribile',
+        logica_zero_sprechi: 'Riutilizza ingredienti compatibili tra pranzo e cena quando sensato',
+        ordine_atteso_pasti: GEMINI_DAILY_SLOTS
+    });
 
     renderAIBoxLoading(
         'ai-day-plan-result',
@@ -8177,32 +8598,41 @@ async function generaPianoGiornalieroAI() {
     try {
         const geminiPayload = await generaRicettaGemini({
             mode: 'piano-giornaliero',
-            payload: buildGeminiDailyPlanRequestPayload(profilePayload, {
-                preferenze: preferences,
-                contesto_pranzo: lunchContext,
-                crononutrizione: 'Colazione densa, pranzo per energia, cena leggera e digeribile',
-                logica_zero_sprechi: 'Riutilizza ingredienti compatibili tra pranzo e cena quando sensato',
-                ordine_atteso_pasti: GEMINI_DAILY_SLOTS
-            })
+            payload: dailyPlanRequestPayload
         });
 
         if (!geminiPayload || !Array.isArray(geminiPayload.pasti) || geminiPayload.pasti.length === 0) {
             throw new Error('Gemini ha restituito un piano giornaliero senza pasti validi.');
         }
 
-        renderAIDailyPlanResults(adaptGeminiDailyPlan(geminiPayload, profilePayload, {
+        const adaptedDailyPlan = adaptGeminiDailyPlan(geminiPayload, profilePayload, {
             preferences,
             lunchContext
-        }));
+        });
+        renderAIDailyPlanResults(adaptedDailyPlan);
+        persistGeminiCacheEntry('daily', dailyPlanRequestPayload, adaptedDailyPlan, {
+            lunchContext,
+            preferences
+        });
     } catch (error) {
         console.error('AI daily plan error:', error);
-        renderAIDailyPlanResults({
-            plan: getAIDailyPlanFallback(profilePayload, preferences, lunchContext),
-            meta: {
-                source: 'fallback',
-                reason: 'AI live temporaneamente non disponibile'
-            }
-        });
+        const cachedDailyPlan = loadGeminiCacheEntry('daily', dailyPlanRequestPayload, (entry) => String(entry?.metadata?.lunchContext || '') === String(lunchContext || ''));
+        if (cachedDailyPlan?.responsePayload) {
+            renderAIDailyPlanResults({
+                ...cachedDailyPlan.responsePayload,
+                meta: {
+                    ...(cachedDailyPlan.responsePayload.meta || {}),
+                    source: 'gemini-cache',
+                    reason: error?.message || 'Gemini non disponibile in questo tentativo.'
+                }
+            });
+            return;
+        }
+        renderAIBoxError(
+            'ai-day-plan-result',
+            'Piano giornaliero non disponibile',
+            error?.message || 'Gemini non ha risposto. Nessun piano locale verra mostrato.'
+        );
     }
 }
 
@@ -8210,6 +8640,15 @@ async function generaPianoSettimanaleAI() {
     const profilePayload = getAIProfilePayload();
     const preferences = (document.getElementById('weekly-plan-ai-notes')?.value || '').trim();
     const lunchContext = document.getElementById('weekly-plan-lunch-context')?.value === 'free-day' ? 'free-day' : 'workday';
+    const weeklyPlanRequestPayload = buildGeminiWeeklyPlanRequestPayload(profilePayload, {
+        preferenze: preferences,
+        contesto_pranzo: lunchContext,
+        pasti_al_giorno: profilePayload.mealsPerDay,
+        obiettivo_settimanale: profilePayload.goal || 'mantenere',
+        rotazione_proteica: 'Distribuisci fonti proteiche in modo sensato senza ripetizioni monotone',
+        giorni_attesi: GEMINI_WEEK_DAYS,
+        ordine_atteso_pasti: GEMINI_DAILY_SLOTS
+    });
 
     renderAIBoxLoading(
         'ai-day-plan-result',
@@ -8220,34 +8659,41 @@ async function generaPianoSettimanaleAI() {
     try {
         const geminiPayload = await generaRicettaGemini({
             mode: 'piano-settimanale',
-            payload: buildGeminiWeeklyPlanRequestPayload(profilePayload, {
-                preferenze: preferences,
-                contesto_pranzo: lunchContext,
-                pasti_al_giorno: profilePayload.mealsPerDay,
-                obiettivo_settimanale: profilePayload.goal || 'mantenere',
-                rotazione_proteica: 'Distribuisci fonti proteiche in modo sensato senza ripetizioni monotone',
-                giorni_attesi: GEMINI_WEEK_DAYS,
-                ordine_atteso_pasti: GEMINI_DAILY_SLOTS
-            })
+            payload: weeklyPlanRequestPayload
         });
 
         if (!geminiPayload || !Array.isArray(geminiPayload.giorni) || geminiPayload.giorni.length === 0) {
             throw new Error('Gemini ha restituito un piano settimanale senza giorni validi.');
         }
 
-        renderAIWeeklyPlanResults(adaptGeminiWeeklyPlan(geminiPayload, profilePayload, {
+        const adaptedWeeklyPlan = adaptGeminiWeeklyPlan(geminiPayload, profilePayload, {
             preferences,
             lunchContext
-        }));
+        });
+        renderAIWeeklyPlanResults(adaptedWeeklyPlan);
+        persistGeminiCacheEntry('weekly', weeklyPlanRequestPayload, adaptedWeeklyPlan, {
+            lunchContext,
+            preferences
+        });
     } catch (error) {
         console.error('AI weekly plan error:', error);
-        renderAIWeeklyPlanResults({
-            week: getAIWeeklyPlanFallback(profilePayload, preferences, lunchContext),
-            meta: {
-                source: 'fallback',
-                reason: 'AI live temporaneamente non disponibile'
-            }
-        });
+        const cachedWeeklyPlan = loadGeminiCacheEntry('weekly', weeklyPlanRequestPayload, (entry) => String(entry?.metadata?.lunchContext || '') === String(lunchContext || ''));
+        if (cachedWeeklyPlan?.responsePayload) {
+            renderAIWeeklyPlanResults({
+                ...cachedWeeklyPlan.responsePayload,
+                meta: {
+                    ...(cachedWeeklyPlan.responsePayload.meta || {}),
+                    source: 'gemini-cache',
+                    reason: error?.message || 'Gemini non disponibile in questo tentativo.'
+                }
+            });
+            return;
+        }
+        renderAIBoxError(
+            'ai-day-plan-result',
+            'Piano settimanale non disponibile',
+            error?.message || 'Gemini non ha risposto. Nessun piano locale verra mostrato.'
+        );
     }
 }
 
