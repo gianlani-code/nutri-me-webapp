@@ -1001,6 +1001,203 @@ function assertGeminiProcedureQuality(steps, contextLabel = 'ricetta') {
     return true;
 }
 
+function stripGeminiProcedureActionLabel(step) {
+    return String(step || '').trim().replace(/^[A-Za-zÀ-ÿ][^:]{1,24}:\s*/, '').trim();
+}
+
+function inferGeminiProcedureActionLabel(stepText, index, totalSteps) {
+    const text = String(stepText || '').toLowerCase();
+
+    if (/(impiatta|servi|guarnisci|rifinisci|completa con|spolvera)/i.test(text) || index === totalSteps - 1) {
+        return 'Servi';
+    }
+    if (/(inforna|forno|teglia)/i.test(text)) {
+        return 'Inforna';
+    }
+    if (/(cuoci|rosola|salta|lessa|scalda|manteca|sobbollire|bollore|padella|pentola)/i.test(text)) {
+        return 'Cuoci';
+    }
+    if (/(mescola|amalgama|versa|unisci|sbatti|frulla)/i.test(text)) {
+        return 'Mescola';
+    }
+    if (/(taglia|trita|lava|sbuccia|sciacqua|pela|monda|prepara)/i.test(text) || index === 0) {
+        return 'Prepara';
+    }
+
+    return index === totalSteps - 1 ? 'Servi' : 'Prepara';
+}
+
+function inferGeminiProcedureToolHint(stepText, recipe = {}, index = 0, totalSteps = 0) {
+    const text = String(stepText || '').toLowerCase();
+    const cookingHint = String(recipe?.cottura_consigliata || recipe?.tecnica_cottura || '').toLowerCase();
+
+    if (/(taglia|trita|sbuccia|pela|monda|lava|sciacqua)/i.test(text) || index === 0) {
+        return 'su un tagliere';
+    }
+    if (/(frulla|mixer|frullatore)/i.test(text)) {
+        return 'nel mixer';
+    }
+    if (/(sbatti|mescola|versa|unisci|amalgama)/i.test(text)) {
+        return 'in una ciotola';
+    }
+    if (/(inforna|forno|teglia)/i.test(text) || /forno|teglia/.test(cookingHint)) {
+        return 'in una teglia';
+    }
+    if (/(lessa|bollore|pentola|sobbollire)/i.test(text) || /vapore|lessatura|pentola/.test(cookingHint)) {
+        return 'in una pentola';
+    }
+    if (/(salta|rosola|manteca|padella|scalda|cuoci)/i.test(text) || /padella|piastra/.test(cookingHint)) {
+        return 'in una padella';
+    }
+    if (index === totalSteps - 1) {
+        return 'nel piatto';
+    }
+
+    return 'in una ciotola';
+}
+
+function inferGeminiProcedureTimeHint(stepText, recipe = {}, index = 0, totalSteps = 0) {
+    const text = String(stepText || '').toLowerCase();
+    const cookingHint = String(recipe?.cottura_consigliata || recipe?.tecnica_cottura || '').toLowerCase();
+    const totalMinutes = Math.max(8, normalizeGeminiMinutes(recipe?.tempo_prep || recipe?.tempo_prep_min || 20));
+
+    if (/(inforna|forno|teglia)/i.test(text) || /forno/.test(cookingHint)) {
+        return `per ${Math.max(10, Math.round(totalMinutes * 0.55))} minuti a 180°C`;
+    }
+    if (/(lessa|bollore|sobbollire|pentola)/i.test(text) || /vapore|lessatura|pentola/.test(cookingHint)) {
+        return `per ${Math.max(6, Math.round(totalMinutes * 0.4))} minuti a leggero bollore`;
+    }
+    if (/(rosola|salta|padella|manteca|scalda|cuoci)/i.test(text) || /padella|piastra/.test(cookingHint)) {
+        return `per ${Math.max(4, Math.round(totalMinutes * 0.3))} minuti a fuoco medio`;
+    }
+    if (/(taglia|trita|lava|sbuccia|sciacqua|pela|monda|prepara)/i.test(text) || index === 0) {
+        return `per ${Math.max(2, Math.round(totalMinutes * 0.15))} minuti`;
+    }
+    if (index === totalSteps - 1) {
+        return 'e servi subito';
+    }
+
+    return `per ${Math.max(3, Math.round(totalMinutes * 0.2))} minuti`;
+}
+
+function appendGeminiProcedureDetail(stepText, detail) {
+    const baseText = String(stepText || '').trim().replace(/[.;:,\s]+$/, '');
+    const suffix = String(detail || '').trim();
+    if (!baseText || !suffix) {
+        return baseText || suffix;
+    }
+
+    if (new RegExp(suffix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i').test(baseText)) {
+        return baseText;
+    }
+
+    return `${baseText}, ${suffix}`;
+}
+
+function enrichGeminiProcedureStep(step, recipe = {}, index = 0, totalSteps = 0) {
+    const originalText = String(step || '').trim();
+    if (!originalText) {
+        return '';
+    }
+
+    const evaluation = scoreGeminiProcedureStep(originalText);
+    const plainText = stripGeminiProcedureActionLabel(originalText);
+    const actionLabel = evaluation.hasActionLabel
+        ? String(originalText).split(':')[0].trim()
+        : inferGeminiProcedureActionLabel(plainText, index, totalSteps);
+
+    let enrichedText = plainText;
+
+    if (!evaluation.hasToolOrContainer) {
+        enrichedText = appendGeminiProcedureDetail(enrichedText, inferGeminiProcedureToolHint(enrichedText, recipe, index, totalSteps));
+    }
+
+    if (!evaluation.hasTimeOrTemperature) {
+        enrichedText = appendGeminiProcedureDetail(enrichedText, inferGeminiProcedureTimeHint(enrichedText, recipe, index, totalSteps));
+    }
+
+    if (!evaluation.hasFinishingCue && index === totalSteps - 1) {
+        enrichedText = appendGeminiProcedureDetail(enrichedText, 'completa con il condimento finale e servi');
+    }
+
+    return `${actionLabel}: ${enrichedText}`.trim();
+}
+
+function repairGeminiProcedureSteps(steps, recipe = {}, contextLabel = 'ricetta') {
+    const normalizedSteps = (Array.isArray(steps) ? steps : []).map((step) => String(step || '').trim()).filter(Boolean);
+    if (normalizedSteps.length === 0) {
+        return normalizedSteps;
+    }
+
+    let repairedSteps = normalizedSteps.map((step, index) => enrichGeminiProcedureStep(step, recipe, index, normalizedSteps.length));
+    let evaluations = repairedSteps.map(scoreGeminiProcedureStep);
+    const requiredTimedSteps = /^ricetta\b/i.test(String(contextLabel || '').trim()) ? 3 : 1;
+    const requiredToolSteps = /^ricetta\b/i.test(String(contextLabel || '').trim()) ? 2 : 1;
+
+    let missingTimedSteps = Math.max(0, requiredTimedSteps - evaluations.filter((entry) => entry.hasTimeOrTemperature).length);
+    if (missingTimedSteps > 0) {
+        repairedSteps = repairedSteps.map((step, index) => {
+            if (missingTimedSteps <= 0) return step;
+            const entry = scoreGeminiProcedureStep(step);
+            if (entry.hasTimeOrTemperature) return step;
+            missingTimedSteps -= 1;
+            return appendGeminiProcedureDetail(step, inferGeminiProcedureTimeHint(step, recipe, index, repairedSteps.length));
+        });
+        evaluations = repairedSteps.map(scoreGeminiProcedureStep);
+    }
+
+    let missingToolSteps = Math.max(0, requiredToolSteps - evaluations.filter((entry) => entry.hasToolOrContainer).length);
+    if (missingToolSteps > 0) {
+        repairedSteps = repairedSteps.map((step, index) => {
+            if (missingToolSteps <= 0) return step;
+            const entry = scoreGeminiProcedureStep(step);
+            if (entry.hasToolOrContainer) return step;
+            missingToolSteps -= 1;
+            return appendGeminiProcedureDetail(step, inferGeminiProcedureToolHint(step, recipe, index, repairedSteps.length));
+        });
+    }
+
+    return repairedSteps;
+}
+
+function repairGeminiPayloadProcedure(payload) {
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+        return payload;
+    }
+
+    if (Array.isArray(payload.procedimento) && Array.isArray(payload.ingredienti)) {
+        return {
+            ...payload,
+            procedimento: repairGeminiProcedureSteps(payload.procedimento, payload, 'ricetta')
+        };
+    }
+
+    if (Array.isArray(payload.pasti)) {
+        return {
+            ...payload,
+            pasti: payload.pasti.map((meal, index) => ({
+                ...meal,
+                procedimento: repairGeminiProcedureSteps(meal?.procedimento, meal, `pasto ${index + 1}`)
+            }))
+        };
+    }
+
+    if (Array.isArray(payload.giorni)) {
+        return {
+            ...payload,
+            giorni: payload.giorni.map((day, dayIndex) => ({
+                ...day,
+                pasti: (Array.isArray(day?.pasti) ? day.pasti : []).map((meal, mealIndex) => ({
+                    ...meal,
+                    procedimento: repairGeminiProcedureSteps(meal?.procedimento, meal, `${day?.giorno || `giorno ${dayIndex + 1}`} pasto ${mealIndex + 1}`)
+                }))
+            }))
+        };
+    }
+
+    return payload;
+}
+
 function collectGeminiRecipesForQualityCheck(payload) {
     if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
         return [];
@@ -1400,7 +1597,7 @@ async function generaRicettaGemini(promptConfig) {
         : buildGeminiChefPrompt(promptConfig.mode, promptConfig.payload);
 
     try {
-        const firstAttempt = await fetchGeminiJsonPayloadWithRetry(prompt, mode, 2);
+        const firstAttempt = repairGeminiPayloadProcedure(await fetchGeminiJsonPayloadWithRetry(prompt, mode, 2));
         assertGeminiPayloadProcedureQuality(firstAttempt);
         return firstAttempt;
     } catch (firstError) {
@@ -1420,7 +1617,7 @@ async function generaRicettaGemini(promptConfig) {
             '- mantieni identico il formato JSON richiesto.'
         ].join('\n');
 
-        const secondAttempt = await fetchGeminiJsonPayloadWithRetry(retryPrompt, mode, 2);
+        const secondAttempt = repairGeminiPayloadProcedure(await fetchGeminiJsonPayloadWithRetry(retryPrompt, mode, 2));
         assertGeminiPayloadProcedureQuality(secondAttempt);
         return secondAttempt;
     }
