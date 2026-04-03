@@ -1812,6 +1812,20 @@ function renderAIRecipeNutritionDetails(recipe) {
     `;
 }
 
+function renderAIRecipeBioavailabilityDetails(recipe) {
+    const tip = String(recipe?.bioavailability_tip || '').trim();
+    if (!tip) return '';
+
+    return `
+        <details class="ai-nutrition-details ai-bioavailability-details">
+            <summary>Bioavailability tip</summary>
+            <div class="ai-bioavailability-content">
+                <p>${escapeHtml(tip)}</p>
+            </div>
+        </details>
+    `;
+}
+
 const GEMINI_DAILY_SLOTS = ['Colazione', 'Spuntino', 'Pranzo', 'Cena'];
 const GEMINI_WEEK_DAYS = ['Lunedi', 'Martedi', 'Mercoledi', 'Giovedi', 'Venerdi', 'Sabato', 'Domenica'];
 
@@ -6053,6 +6067,21 @@ function aggiungiIngredienteRicetta() {
     document.getElementById('recipe-results').innerHTML = '';
 }
 
+function updateManualRecipesTitle() {
+    const title = document.getElementById('manual-recipes-title');
+    if (!title) return;
+
+    title.textContent = tempRecipe.items.length > 0 ? 'Le mie ricette' : 'Modalita Manuale';
+}
+
+function formatManualRecipeChipLabel(item) {
+    if (!item || typeof item !== 'object') {
+        return '';
+    }
+
+    return String(item.n || item.name || item.ingredient || '').trim();
+}
+
 function confermaAggiunta() {
     const qty = parseFloat(document.getElementById('food-qty').value);
     const entry = {
@@ -6074,20 +6103,26 @@ function renderTempRecipe() {
     if (!list) return;
 
     list.innerHTML = tempRecipe.items.map((item, idx) => `
-        <li style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:#f8f9fd;border-radius:12px;margin: 6px 0;">
-            <span style="font-family:'Inter',sans-serif;">${formatIngredientDisplay(item)}</span>
-            <span style="font-weight:700;">${Math.round(item.k)} kcal</span>
-            <button onclick="rimuoviIngredienteRicetta(${idx})" style="background:#ff9800;border:none;color:white;border-radius:8px;padding:4px 10px;cursor:pointer;">×</button>
+        <li class="ai-ingredient-chip-item">
+            <span class="ai-ingredient-chip">${escapeHtml(formatManualRecipeChipLabel(item))}</span>
+            <button type="button" class="ai-ingredient-chip-remove" onclick="rimuoviIngredienteRicetta(${idx})" aria-label="Rimuovi ${escapeHtml(formatManualRecipeChipLabel(item))}">×</button>
         </li>
     `).join('');
 
+    updateManualRecipesTitle();
+
     const summary = document.getElementById('recipe-summary');
     if (summary) {
-        summary.style.display = 'block';
-        summary.innerHTML = `
-            <strong>Analisi per porzione:</strong><br>
-            Kcal: ${Math.round(tempRecipe.k)} | P: ${tempRecipe.p.toFixed(1)}g | C: ${tempRecipe.c.toFixed(1)}g | G: ${tempRecipe.g.toFixed(1)}g
-        `;
+        if (tempRecipe.items.length === 0) {
+            summary.style.display = 'none';
+            summary.innerHTML = '';
+        } else {
+            summary.style.display = 'block';
+            summary.innerHTML = `
+                <strong>Analisi per porzione:</strong><br>
+                Kcal: ${Math.round(tempRecipe.k)} | P: ${tempRecipe.p.toFixed(1)}g | C: ${tempRecipe.c.toFixed(1)}g | G: ${tempRecipe.g.toFixed(1)}g
+            `;
+        }
     }
 }
 
@@ -6153,6 +6188,7 @@ function salvaRicettaDefinitiva() {
     document.getElementById('recipe-results').innerHTML = '';
     document.getElementById('recipe-summary').style.display = 'none';
     document.getElementById('current-recipe-items').innerHTML = '';
+    updateManualRecipesTitle();
 
     aggiornaListaRicetteSalvate();
     alert('Ricetta salvata con successo!');
@@ -7280,48 +7316,7 @@ function buildAiRecipeDiagnosticText(metadata = {}) {
 }
 
 function buildAiSourceBannerHtml(metadata = {}) {
-    const source = String(metadata?.source || 'fallback').trim().toLowerCase();
-    const reason = String(metadata?.sourceReason || metadata?.reason || '').trim();
-    const descriptionOverride = String(metadata?.description || '').trim();
-    const retryCountdownHtml = buildAIRetryCountdownHtml(reason, 'ai-source-banner-retry');
-    let className = 'ai-source-banner-fallback';
-    let badge = 'Fallback locale';
-    let title = 'Risposta non generata live da Gemini';
-    let description = descriptionOverride || 'Il contenuto mostrato usa il motore locale di backup per mantenere l app disponibile anche quando Gemini o la function non rispondono.';
-
-    if (source === 'gemini') {
-        className = 'ai-source-banner-live';
-        badge = 'Gemini live';
-        title = 'Risposta generata in tempo reale da Gemini';
-        description = descriptionOverride || 'La chiamata live a Gemini e andata a buon fine e questo contenuto arriva dal modello remoto.';
-    } else if (source === 'gemini-cache') {
-        className = 'ai-source-banner-example';
-        badge = 'Gemini cache';
-        title = 'Risposta Gemini recuperata dalla cache';
-        description = descriptionOverride || 'Gemini non era disponibile in questo momento, quindi l app sta mostrando una risposta valida generata in precedenza da Gemini.';
-    } else if (source === 'guaranteed-fallback') {
-        className = 'ai-source-banner-fallback';
-        badge = 'Fallback garantito';
-        title = 'Risposta servita dal motore locale garantito';
-        description = descriptionOverride || 'Per garantire continuita operativa l app ha usato il motore locale invece della risposta live di Gemini.';
-    } else if (source === 'example') {
-        className = 'ai-source-banner-example';
-        badge = 'Schema statico';
-        title = 'Stai vedendo un esempio precaricato';
-        description = descriptionOverride || 'Questo contenuto non arriva da Gemini: e uno schema statico usato come riferimento o demo.';
-    }
-
-    return `
-        <div class="ai-source-banner ${escapeHtml(className)}" role="status" aria-live="polite">
-            <div class="ai-source-banner-top">
-                <span class="ai-source-banner-badge">${escapeHtml(badge)}</span>
-                <strong>${escapeHtml(title)}</strong>
-            </div>
-            <p class="ai-source-banner-copy">${escapeHtml(description)}</p>
-            ${reason ? `<p class="ai-source-banner-detail"><strong>Dettaglio tecnico:</strong> ${escapeHtml(reason)}</p>` : ''}
-            ${retryCountdownHtml}
-        </div>
-    `;
+    return '';
 }
 
 function normalizeAIRecipeRequestedMode(value) {
@@ -8010,12 +8005,7 @@ function renderAIRecipeResults(recipes, metadata = {}) {
                     ` : ''}
                     <p class="ai-recipe-waste"><strong>Tip anti-spreco:</strong> ${escapeHtml(recipe.anti_spreco || recipe.wasteTip || '')}</p>
                     ${renderAIRecipeNutritionDetails(recipe)}
-                    ${recipe.bioavailability_tip ? `
-                        <div class="ai-recipe-insight ai-recipe-insight-bio">
-                            <strong>Bioavailability tip</strong>
-                            <p>${escapeHtml(recipe.bioavailability_tip)}</p>
-                        </div>
-                    ` : ''}
+                    ${renderAIRecipeBioavailabilityDetails(recipe)}
                 </article>
             `).join('')}
         </div>

@@ -1416,7 +1416,8 @@ h1, h2, h3, h4, h5 { margin: 0; font-family: 'Poppins', sans-serif; }
     margin: 0 16px 16px;
 }
 
-#ai-ingredient-list {
+#ai-ingredient-list,
+#current-recipe-items {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
@@ -1555,6 +1556,17 @@ h1, h2, h3, h4, h5 { margin: 0; font-family: 'Poppins', sans-serif; }
 
 .ai-nutrition-methodology-content {
     padding: 0 16px 16px;
+}
+
+.ai-bioavailability-details .ai-bioavailability-content {
+    padding: 0 16px 16px;
+}
+
+.ai-bioavailability-details .ai-bioavailability-content p {
+    margin: 0;
+    color: #425a76;
+    font-size: 0.84rem;
+    line-height: 1.55;
 }
 
 .ai-nutrition-methodology-list {
@@ -2982,6 +2994,10 @@ hr.spacer {
 [data-theme="dark"] .ai-nutrition-table th,
 [data-theme="dark"] .ai-nutrition-table td {
     border-bottom-color: rgba(255,255,255,0.07);
+
+[data-theme="dark"] .ai-bioavailability-details .ai-bioavailability-content p {
+    color: #c7d5e4;
+}
 }
 
 [data-theme="dark"] .ai-nutrition-table th {
