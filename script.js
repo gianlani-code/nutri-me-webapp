@@ -1237,6 +1237,8 @@ function assertGeminiPayloadProcedureQuality(payload) {
     return true;
 }
 
+const NUTRIME_DEFAULT_PUBLIC_GEMINI_ENDPOINT = 'https://nutri-me-webapp-api.vercel.app/api/gemini';
+
 function getConfiguredGeminiEndpointOverride() {
     try {
         if (typeof window !== 'undefined') {
@@ -1417,6 +1419,15 @@ function buildGeminiEndpointCandidates() {
     }
 
     if (typeof window !== 'undefined') {
+        const hostname = String(window.location?.hostname || '').trim();
+        if (!isLocalNetworkHostname(hostname) && !/^localhost$|^127\.0\.0\.1$/i.test(hostname)) {
+            pushCandidate(NUTRIME_DEFAULT_PUBLIC_GEMINI_ENDPOINT);
+        }
+    } else {
+        pushCandidate(NUTRIME_DEFAULT_PUBLIC_GEMINI_ENDPOINT);
+    }
+
+    if (typeof window !== 'undefined') {
         const protocol = String(window.location?.protocol || '').toLowerCase();
         const origin = String(window.location?.origin || '').trim();
         const hostname = String(window.location?.hostname || '').trim();
@@ -1433,6 +1444,10 @@ function buildGeminiEndpointCandidates() {
         if (protocol === 'file:' || /localhost|127\.0\.0\.1/i.test(origin)) {
             pushCandidate('http://localhost:8888/.netlify/functions/gemini');
             pushCandidate('http://127.0.0.1:8888/.netlify/functions/gemini');
+        }
+
+        if (isLocalNetworkHostname(hostname) || /^localhost$|^127\.0\.0\.1$/i.test(hostname)) {
+            pushCandidate(NUTRIME_DEFAULT_PUBLIC_GEMINI_ENDPOINT);
         }
     }
 

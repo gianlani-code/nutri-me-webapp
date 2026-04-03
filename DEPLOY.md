@@ -7,6 +7,7 @@
 - `netlify.toml`: configurazione pronta per Netlify.
 - `.nojekyll`: utile per GitHub Pages statico.
 - `app-config.example.js`: esempio di configurazione frontend condivisa per puntare tutti i dispositivi alla stessa function pubblica.
+- `app-config.js`: puo essere pubblicato nel repository o insieme ai file statici, perche contiene solo l'URL pubblico del backend e non segreti.
 
 ## Nota costi
 
@@ -51,11 +52,13 @@ Nota: se usi `avatar-assets.js` aggiornato, anche se la cartella `avatars` avess
 
 GitHub Pages non esegue Netlify Functions. Se il frontend viene pubblicato li, devi puntare la UI a una function pubblica gia deployata altrove.
 
-1. Crea un file `app-config.js` nella root del progetto partendo da `app-config.example.js`.
+1. Crea o aggiorna `app-config.js` nella root del progetto partendo da `app-config.example.js`.
 2. Imposta `geminiFunctionUrl` con l'URL assoluto della function pubblica, ad esempio `https://tuo-sito.netlify.app/.netlify/functions/gemini`.
-3. Pubblica anche `app-config.js` insieme agli altri file statici.
+3. Pubblica anche `app-config.js` insieme agli altri file statici oppure versionalo nel repository, dato che non contiene segreti.
 
 In questo modo ogni dispositivo che apre il sito usa lo stesso backend Gemini, senza configurazioni manuali nel browser.
+
+Come rete di sicurezza, il client include anche un endpoint pubblico di fallback integrato: se `app-config.js` non viene caricato, continua comunque a tentare il backend pubblico condiviso.
 
 Per rendere Gemini disponibile a qualunque dispositivo o utente, lascia la function in modalita pubblica con `GEMINI_CORS_MODE=public`. Solo se vuoi restringere gli accessi devi usare una allowlist con `GEMINI_CORS_MODE=restricted` e `GEMINI_ALLOWED_ORIGINS`.
 
@@ -72,9 +75,11 @@ Per rendere Gemini disponibile a qualunque dispositivo o utente, lascia la funct
 6. Per accesso pubblico da qualunque dispositivo, imposta `GEMINI_CORS_MODE=public` oppure non impostarlo affatto.
 7. Usa `GEMINI_ALLOWED_ORIGINS` solo se vuoi una allowlist volontaria con `GEMINI_CORS_MODE=restricted`.
 8. Facoltativo: regola `GEMINI_TIMEOUT_MS` e `GEMINI_MAX_RETRIES` se vuoi aumentare tolleranza ai timeout o ai 429.
-9. Per ridurre i 429 sul free tier, imposta `GEMINI_MODEL=gemini-2.0-flash` e `GEMINI_FALLBACK_MODELS=gemini-2.0-flash-lite,gemini-flash-lite-latest`.
-10. Se vuoi un backup reale su un secondo progetto Gemini, aggiungi anche `GEMINI_BACKUP_API_KEY`, `GEMINI_BACKUP_MODEL` e `GEMINI_BACKUP_FALLBACK_MODELS`.
-11. Questo e il setup gratuito consigliato: non richiede servizi a pagamento ne configurazioni per singolo dispositivo.
+9. Se noti che alcuni modelli vanno spesso in quota o degradano la latenza, puoi anche usare `GEMINI_MODEL_FAILURE_COOLDOWN_MS` e `GEMINI_MODEL_QUOTA_COOLDOWN_MS` per saltarli temporaneamente nelle richieste successive.
+10. Per evitare che la function serverless esaurisca il tempo massimo di esecuzione, puoi regolare anche `GEMINI_TOTAL_BUDGET_MS`: il backend interrompe in modo controllato i tentativi prima che Vercel tronchi la richiesta.
+11. Per ridurre i 429 sul free tier, imposta `GEMINI_MODEL=gemini-2.0-flash` e `GEMINI_FALLBACK_MODELS=gemini-2.0-flash-lite,gemini-flash-lite-latest`.
+12. Se vuoi un backup reale su un secondo progetto Gemini, aggiungi anche `GEMINI_BACKUP_API_KEY`, `GEMINI_BACKUP_MODEL` e `GEMINI_BACKUP_FALLBACK_MODELS`.
+13. Questo e il setup gratuito consigliato: non richiede servizi a pagamento ne configurazioni per singolo dispositivo.
 
 ### Da repository Git
 
@@ -87,7 +92,8 @@ Per rendere Gemini disponibile a qualunque dispositivo o utente, lascia la funct
 7. Se vuoi l'endpoint pubblico per tutti i dispositivi, imposta `GEMINI_CORS_MODE=public` oppure non impostarlo.
 8. Usa `GEMINI_ALLOWED_ORIGINS` solo se scegli esplicitamente `GEMINI_CORS_MODE=restricted`.
 9. Per ridurre i 429 sul free tier, imposta `GEMINI_MODEL=gemini-2.0-flash` e `GEMINI_FALLBACK_MODELS=gemini-2.0-flash-lite,gemini-flash-lite-latest`.
-10. Se vuoi un backup reale su un secondo progetto Gemini, aggiungi anche `GEMINI_BACKUP_API_KEY`, `GEMINI_BACKUP_MODEL` e `GEMINI_BACKUP_FALLBACK_MODELS`.
+10. Se noti che alcuni modelli iniziali rallentano spesso la catena di fallback, puoi impostare anche `GEMINI_MODEL_FAILURE_COOLDOWN_MS` e `GEMINI_MODEL_QUOTA_COOLDOWN_MS` per metterli temporaneamente in cooldown.
+11. Se vuoi un backup reale su un secondo progetto Gemini, aggiungi anche `GEMINI_BACKUP_API_KEY`, `GEMINI_BACKUP_MODEL` e `GEMINI_BACKUP_FALLBACK_MODELS`.
 
 Se pubblichi frontend e function sullo stesso sito Netlify, la generazione Gemini diventa disponibile da qualunque dispositivo tramite l'URL pubblico del sito.
 
@@ -159,9 +165,12 @@ Se il provider attuale chiede un upgrade per le environment variables, puoi pubb
    - `GEMINI_CORS_MODE` = `public`;
    - `GEMINI_TIMEOUT_MS` = `40000`;
    - `GEMINI_MAX_RETRIES` = `4`;
+   - `GEMINI_TOTAL_BUDGET_MS` = `25000`;
    - `GEMINI_RATE_LIMIT_ENABLED` = `true`;
    - `GEMINI_RATE_LIMIT_WINDOW_MS` = `60000`;
    - `GEMINI_RATE_LIMIT_MAX_REQUESTS` = `100`.
+   - `GEMINI_MODEL_FAILURE_COOLDOWN_MS` = `20000` opzionale;
+   - `GEMINI_MODEL_QUOTA_COOLDOWN_MS` = `90000` opzionale.
 6. Lascia vuota `GEMINI_ALLOWED_ORIGINS` se vuoi accesso pubblico da qualsiasi device. Compilala solo se in futuro torni a `GEMINI_CORS_MODE=restricted`.
 7. Completa il deploy con `Deploy`.
 8. Quando il progetto e online, apri `Settings > Domains` e copia il dominio Vercel finale, ad esempio `https://tuo-progetto.vercel.app`.

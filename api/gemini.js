@@ -100,6 +100,9 @@ const GEMINI_BACKUP_MODEL = String(process.env.GEMINI_BACKUP_MODEL || readLocalE
 const GEMINI_BACKUP_FALLBACK_MODELS = parseListEnv('GEMINI_BACKUP_FALLBACK_MODELS', GEMINI_FALLBACK_MODELS);
 const GEMINI_TIMEOUT_MS = parseIntegerEnv('GEMINI_TIMEOUT_MS', 40000);
 const GEMINI_MAX_RETRIES = parseIntegerEnv('GEMINI_MAX_RETRIES', 4);
+const GEMINI_MODEL_FAILURE_COOLDOWN_MS = parseIntegerEnv('GEMINI_MODEL_FAILURE_COOLDOWN_MS', 20000);
+const GEMINI_MODEL_QUOTA_COOLDOWN_MS = parseIntegerEnv('GEMINI_MODEL_QUOTA_COOLDOWN_MS', 90000);
+const GEMINI_TOTAL_BUDGET_MS = parseIntegerEnv('GEMINI_TOTAL_BUDGET_MS', 25000);
 const GEMINI_MAX_PROMPT_CHARS = parseIntegerEnv('GEMINI_MAX_PROMPT_CHARS', 120000);
 const GEMINI_MAX_SYSTEM_PROMPT_CHARS = parseIntegerEnv('GEMINI_MAX_SYSTEM_PROMPT_CHARS', 20000);
 const GEMINI_MAX_BODY_BYTES = parseIntegerEnv('GEMINI_MAX_BODY_BYTES', 250000);
@@ -125,10 +128,16 @@ const GEMINI_KEY_PLANS = [
     : [])
 ].filter((plan) => Boolean(plan.apiKey) && Array.isArray(plan.models) && plan.models.length > 0);
 const RATE_LIMIT_STORE_KEY = '__nutrimeGeminiRateLimitStore';
+const MODEL_COOLDOWN_STORE_KEY = '__nutrimeGeminiModelCooldownStore';
 const rateLimitStore = globalThis[RATE_LIMIT_STORE_KEY] || new Map();
+const modelCooldownStore = globalThis[MODEL_COOLDOWN_STORE_KEY] || new Map();
 
 if (!globalThis[RATE_LIMIT_STORE_KEY]) {
   globalThis[RATE_LIMIT_STORE_KEY] = rateLimitStore;
+}
+
+if (!globalThis[MODEL_COOLDOWN_STORE_KEY]) {
+  globalThis[MODEL_COOLDOWN_STORE_KEY] = modelCooldownStore;
 }
 
 function sleep(ms) {
@@ -264,6 +273,124 @@ function pruneRateLimitStore(now) {
   }
 }
 
+function buildModelCooldownKey(keySlot, modelName) {
+  return `${String(keySlot || '').trim()}:${String(modelName || '').trim()}`;
+}
+
+function pruneModelCooldownStore(now = Date.now()) {
+  for (const [key, record] of modelCooldownStore.entries()) {
+    const expiresAt = Number(record?.expiresAt || 0);
+    if (!Number.isFinite(expiresAt) || expiresAt <= now) {
+      modelCooldownStore.delete(key);
+    }
+  }
+}
+
+function getModelCooldownInfo(keySlot, modelName, now = Date.now()) {
+  pruneModelCooldownStore(now);
+
+  const key = buildModelCooldownKey(keySlot, modelName);
+  const record = modelCooldownStore.get(key);
+  const expiresAt = Number(record?.expiresAt || 0);
+
+  if (!Number.isFinite(expiresAt) || expiresAt <= now) {
+    if (record) {
+      modelCooldownStore.delete(key);
+    }
+
+    return {
+      active: false,
+      retryAfterSeconds: 0,
+      reason: ''
+    };
+  }
+
+  return {
+    active: true,
+    retryAfterSeconds: Math.max(1, Math.ceil((expiresAt - now) / 1000)),
+    reason: String(record?.reason || '').trim()
+  };
+}
+
+function setModelCooldown(keySlot, modelName, cooldownMs, reason = '') {
+  const normalizedCooldownMs = Number.parseInt(String(cooldownMs || 0), 10);
+  if (!Number.isFinite(normalizedCooldownMs) || normalizedCooldownMs <= 0) {
+    return;
+  }
+
+  modelCooldownStore.set(buildModelCooldownKey(keySlot, modelName), {
+    expiresAt: Date.now() + normalizedCooldownMs,
+    reason: String(reason || '').trim()
+  });
+}
+
+function clearModelCooldown(keySlot, modelName) {
+  modelCooldownStore.delete(buildModelCooldownKey(keySlot, modelName));
+}
+
+function getOrderedModelAttempts() {
+  const now = Date.now();
+  const available = [];
+  const coolingDown = [];
+
+  for (const keyPlan of GEMINI_KEY_PLANS) {
+    const scopedModels = Array.isArray(keyPlan.models) ? keyPlan.models : [];
+
+    for (const modelName of scopedModels) {
+      const cooldownInfo = getModelCooldownInfo(keyPlan.slot, modelName, now);
+      const candidate = {
+        slot: keyPlan.slot,
+        apiKey: keyPlan.apiKey,
+        modelName,
+        cooldownInfo
+      };
+
+      if (cooldownInfo.active) {
+        coolingDown.push(candidate);
+      } else {
+        available.push(candidate);
+      }
+    }
+  }
+
+  if (available.length > 0) {
+    return available;
+  }
+
+  return coolingDown.sort((left, right) => left.cooldownInfo.retryAfterSeconds - right.cooldownInfo.retryAfterSeconds);
+}
+
+function getQuotaCooldownMs(retryAfterSeconds) {
+  const reportedRetryMs = Math.max(0, Number.parseInt(String(retryAfterSeconds || 0), 10) || 0) * 1000;
+  return Math.max(reportedRetryMs, GEMINI_MODEL_QUOTA_COOLDOWN_MS);
+}
+
+function shouldCooldownModelForStatus(status) {
+  return status === 404 || status === 429 || shouldRetryStatus(status);
+}
+
+function getRemainingBudgetMs(startedAt) {
+  return Math.max(0, GEMINI_TOTAL_BUDGET_MS - (Date.now() - startedAt));
+}
+
+function getAttemptTimeoutMs(startedAt) {
+  const remainingBudgetMs = getRemainingBudgetMs(startedAt);
+  if (remainingBudgetMs <= 750) {
+    return 0;
+  }
+
+  return Math.max(500, Math.min(GEMINI_TIMEOUT_MS, remainingBudgetMs - 250));
+}
+
+function getRetryDelayMs(startedAt, suggestedDelayMs) {
+  const remainingBudgetMs = getRemainingBudgetMs(startedAt);
+  if (remainingBudgetMs <= 500) {
+    return 0;
+  }
+
+  return Math.min(Math.max(0, suggestedDelayMs), Math.max(0, remainingBudgetMs - 250));
+}
+
 function buildRateLimitHeaders(rateLimitInfo) {
   return {
     'X-RateLimit-Limit': String(rateLimitInfo.limit),
@@ -314,6 +441,7 @@ function checkRateLimit(req) {
 }
 
 async function callGeminiWithRetry(payload) {
+  const startedAt = Date.now();
   let lastResponsePayload = null;
   let lastStatusCode = 500;
   let lastNetworkError = null;
@@ -321,78 +449,100 @@ async function callGeminiWithRetry(payload) {
   let lastKeySlot = 'primary';
   let lastRetryAfterSeconds = 0;
   const attemptedModels = [];
+  const orderedAttempts = getOrderedModelAttempts();
 
-  for (const keyPlan of GEMINI_KEY_PLANS) {
-    const scopedModels = Array.isArray(keyPlan.models) ? keyPlan.models : [];
+  for (const candidate of orderedAttempts) {
+    const modelName = candidate.modelName;
+    attemptedModels.push(`${candidate.slot}:${modelName}`);
 
-    for (const modelName of scopedModels) {
-      attemptedModels.push(`${keyPlan.slot}:${modelName}`);
+    for (let attempt = 0; attempt <= GEMINI_MAX_RETRIES; attempt += 1) {
+      const attemptTimeoutMs = getAttemptTimeoutMs(startedAt);
+      if (attemptTimeoutMs <= 0) {
+        return {
+          ok: false,
+          status: 504,
+          model: lastModelName,
+          keySlot: lastKeySlot,
+          attemptedModels,
+          retryAfterSeconds: 0,
+          error: `Budget totale Gemini esaurito dopo ${GEMINI_TOTAL_BUDGET_MS} ms`
+        };
+      }
 
-      for (let attempt = 0; attempt <= GEMINI_MAX_RETRIES; attempt += 1) {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), GEMINI_TIMEOUT_MS);
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), attemptTimeoutMs);
+
+      try {
+        const response = await fetch(buildGeminiEndpoint(modelName), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': candidate.apiKey
+          },
+          body: JSON.stringify(payload),
+          signal: controller.signal
+        });
+
+        const responseText = await response.text();
+        let responseJson = null;
 
         try {
-          const response = await fetch(buildGeminiEndpoint(modelName), {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-goog-api-key': keyPlan.apiKey
-            },
-            body: JSON.stringify(payload),
-            signal: controller.signal
-          });
-
-          const responseText = await response.text();
-          let responseJson = null;
-
-          try {
-            responseJson = JSON.parse(responseText);
-          } catch (error) {
-            responseJson = null;
-          }
-
-          clearTimeout(timeout);
-
-          if (response.ok) {
-            return {
-              ok: true,
-              status: response.status,
-              data: responseJson,
-              model: modelName,
-              keySlot: keyPlan.slot,
-              attemptedModels
-            };
-          }
-
-          lastModelName = modelName;
-          lastKeySlot = keyPlan.slot;
-          lastStatusCode = response.status;
-          lastResponsePayload = responseJson || responseText;
-          lastRetryAfterSeconds = extractRetryAfterSeconds(sanitizeGeminiErrorDetails(lastResponsePayload));
-
-          if (response.status === 429) {
-            break;
-          }
-
-          if (!shouldRetryStatus(response.status) || attempt === GEMINI_MAX_RETRIES) {
-            break;
-          }
-
-          await sleep(350 * (attempt + 1));
+          responseJson = JSON.parse(responseText);
         } catch (error) {
-          clearTimeout(timeout);
-          lastModelName = modelName;
-          lastKeySlot = keyPlan.slot;
-          lastNetworkError = error;
+          responseJson = null;
+        }
 
-          if (attempt === GEMINI_MAX_RETRIES) {
-            break;
+        clearTimeout(timeout);
+
+        if (response.ok) {
+          clearModelCooldown(candidate.slot, modelName);
+          return {
+            ok: true,
+            status: response.status,
+            data: responseJson,
+            model: modelName,
+            keySlot: candidate.slot,
+            attemptedModels
+          };
+        }
+
+        lastModelName = modelName;
+        lastKeySlot = candidate.slot;
+        lastStatusCode = response.status;
+        lastResponsePayload = responseJson || responseText;
+        lastRetryAfterSeconds = extractRetryAfterSeconds(sanitizeGeminiErrorDetails(lastResponsePayload));
+
+        if (response.status === 429) {
+          setModelCooldown(candidate.slot, modelName, getQuotaCooldownMs(lastRetryAfterSeconds), 'quota');
+          break;
+        }
+
+        if (!shouldRetryStatus(response.status) || attempt === GEMINI_MAX_RETRIES) {
+          if (shouldCooldownModelForStatus(response.status)) {
+            setModelCooldown(candidate.slot, modelName, GEMINI_MODEL_FAILURE_COOLDOWN_MS, `status:${response.status}`);
           }
+          break;
+        }
 
-          await sleep(350 * (attempt + 1));
+        await sleep(350 * (attempt + 1));
+      } catch (error) {
+        clearTimeout(timeout);
+        lastModelName = modelName;
+        lastKeySlot = candidate.slot;
+        lastNetworkError = error;
+
+        if (attempt === GEMINI_MAX_RETRIES) {
+          setModelCooldown(candidate.slot, modelName, GEMINI_MODEL_FAILURE_COOLDOWN_MS, error?.name === 'AbortError' ? 'timeout' : 'network-error');
+          break;
         }
       }
+
+      const interAttemptDelayMs = getRetryDelayMs(startedAt, 350 * (attempt + 1));
+      if (interAttemptDelayMs <= 0) {
+        break;
+      }
+
+      await sleep(interAttemptDelayMs);
     }
   }
 
@@ -405,7 +555,7 @@ async function callGeminiWithRetry(payload) {
       attemptedModels,
       retryAfterSeconds: 0,
       error: lastNetworkError.name === 'AbortError'
-        ? `Timeout Gemini dopo ${GEMINI_TIMEOUT_MS} ms`
+        ? `Timeout Gemini dopo ${Math.min(GEMINI_TIMEOUT_MS, GEMINI_TOTAL_BUDGET_MS)} ms`
         : String(lastNetworkError.message || lastNetworkError || 'Errore di rete verso Gemini')
     };
   }
