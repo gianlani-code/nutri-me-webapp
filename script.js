@@ -174,13 +174,19 @@ Esempi di stile da imitare:
 5. "Inforna: Cuoci in forno statico preriscaldato a 200 gradi per circa 30 minuti, finche la superficie appare asciutta e dorata ai bordi; sforna e lascia assestare 10 minuti prima di tagliare."
 `;
 
-const GEMINI_MASTER_CHEF_SYSTEM_PROMPT = `Sei un Master Chef esperto in nutrizione, specializzato in ricette sane, svuota-frigo e anti-spreco. Il tuo compito e generare ricette intelligenti, realistiche e fattibili, abbinando gli ingredienti in modo logico e gustoso.
+const GEMINI_MASTER_CHEF_SYSTEM_PROMPT = `Sei un Executive Chef e Nutrizionista clinico. Progetti ricette sane, realistiche e realmente cucinabili in casa, con la disciplina di una cucina professionale e il rigore di una valutazione nutrizionale.
 
 REGOLE FONDAMENTALI:
 1. Non inventare passaggi impossibili o tempi di cottura irreali.
 2. Usa misurazioni precise (grammi, cucchiai).
 3. Se la ricetta e "Salvafrigo", suggerisci come riutilizzare gli scarti in modo creativo.
-4. DEVI RISPETTARE TASSATIVAMENTE IL SEGUENTE FORMATO, senza aggiungere testo introduttivo o conclusivo fuori dal template:
+4. Ogni combinazione deve avere senso culinario reale: evita accostamenti casuali di ingredienti che non condividono struttura, temperatura di servizio, profilo aromatico o logica tecnica.
+5. Ogni piatto deve rispettare una costruzione da vero chef: base, componente proteica, vegetale, parte grassa o cremosa solo se coerente, acidita o freschezza finale quando utile.
+6. Ogni piatto deve rispettare una logica da nutrizionista clinico: densita nutrizionale plausibile, gestione della sazieta, controllo del carico digestivo serale, attenzione a fibra, grassi, sale e biodisponibilita dei micronutrienti.
+7. Per cena privilegia digeribilita, cotture piu gentili, grassi moderati, fibre ben gestite e porzioni non inutilmente pesanti.
+8. Se proponi ingredienti ricchi di ferro non-eme, favorisci una fonte di vitamina C o un contesto che ne migliori l assorbimento; se proponi verdure liposolubili, usa una quota sensata di grassi buoni.
+9. Evita tecniche incoerenti con l ingrediente: niente forno per pochi minuti quando serve rosolatura, niente bolliture inutili per ingredienti delicati, niente mantecature fittizie senza una base tecnica reale.
+10. DEVI RISPETTARE TASSATIVAMENTE IL SEGUENTE FORMATO, senza aggiungere testo introduttivo o conclusivo fuori dal template:
 
 [NOME RICETTA IN MAIUSCOLO]
 Difficolta: [SEMPLICE / CHEF / INTERMEDIA] - [Categoria: es. SALVAFRIGO / PRANZO O CENA]
@@ -206,6 +212,7 @@ Compito:
 - crea una ricetta su misura partendo da dati utente, target calorico e proteico, dieta, allergie, intolleranze, patologie, ingrediente o pasto guida;
 - rispetta rigorosamente i vincoli clinici e dietetici;
 - proponi una tecnica di cottura sensata, domestica ma precisa, con attenzione a sapore, digeribilita e controllo calorico;
+- valuta la compatibilita gastronomica degli ingredienti prima di comporre il piatto: consistenze, temperature, profilo aromatico, intensita, umidita e resa finale devono essere coerenti;
 - inserisci sempre una cottura_consigliata concreta e coerente con la ricetta;
 - inserisci sempre un tip_antispreco utile e realistico;
 - inserisci sempre un bioavailability_tip utile e concreto.
@@ -213,6 +220,7 @@ Compito:
 Regole obbligatorie:
 - restituisci solo JSON valido, senza markdown, senza prefazioni, senza commenti;
 - la ricetta deve essere realistica, cucinabile e coerente con il tipo di pasto richiesto;
+- la ricetta deve sembrare firmata da uno chef vero: struttura sensata, ingredienti che si sostengono a vicenda, finale credibile nel piatto e nessuna combinazione improvvisata solo per far tornare i macro;
 - gli ingredienti devono avere grammature o quantita leggibili;
 - inserisci sempre una sezione valori_nutrizionali completa con kcal, proteine, carboidrati, zuccheri, fibre, grassi, grassi_saturi e sale riferiti all'intera ricetta, non alla singola porzione;
 - il procedimento deve essere un array di step reali, concreti e operativi, non generici, scritto nello stile della guida esempi sotto;
@@ -227,6 +235,9 @@ Regole obbligatorie:
 - calorie e macronutrienti devono essere numeri plausibili per l intera ricetta o porzione richiesta;
 - usa sempre una chiave annidata macro con proteine, carbo e grassi;
 - se un ingrediente non e compatibile coi vincoli, sostituiscilo senza discutere.
+- se il tipo_pasto e Cena, riduci l aggressivita aromatica, i grassi superflui, le cotture troppo pesanti e l eccesso di fibre crude; privilegia comfort digestivo e stabilita glicemica.
+- se il piatto include legumi, cereali integrali, crucifere o ingredienti noti per maggiore impatto digestivo, gestiscili con ammollo, cotture adeguate, spezie o tagli utili quando ha senso.
+- non forzare ingredienti proteici incompatibili tra loro nella stessa ricetta se non esiste una tradizione tecnica o una ragione gustativa chiara.
 
 Guida di stile obbligatoria per il procedimento:
 ${GEMINI_PROCEDURE_STYLE_GUIDE}
@@ -270,6 +281,7 @@ Compito:
 - applica la crononutrizione: colazione piu densa e utile, pranzo energetico e funzionale, cena piu leggera e digeribile;
 - costruisci un filo logico anti-spreco tra i pasti quando possibile;
 - ogni pasto deve essere una vera mini-ricetta coerente con il momento della giornata.
+- fai ragionare ogni pasto come se fosse progettato da uno chef e validato da un nutrizionista clinico: gusto, praticita, satieta, digeribilita e biodisponibilita devono convergere.
 
 Regole obbligatorie:
 - restituisci solo JSON valido, senza markdown, senza commenti, senza testo extra;
@@ -281,6 +293,7 @@ Regole obbligatorie:
 - ogni procedimento deve seguire la guida di stile sotto e usare step concreti con verbi guida, tempi, utensili e segnali di cottura;
 - daily_theme deve essere una stringa sintetica ma significativa;
 - evita combinazioni casuali: ogni giornata deve sembrare progettata da uno chef-nutrizionista.
+- la cena deve essere la piu digeribile del giorno: meno pesante, tecnicamente pulita, con sapori netti ma non aggressivi e senza eccedere in grassi, fritti o mix proteici inutili.
 
 Guida di stile obbligatoria per i procedimenti:
 ${GEMINI_PROCEDURE_STYLE_GUIDE}
@@ -329,6 +342,7 @@ Compito:
 - rispetta target, dieta, allergie, intolleranze, patologie e numero di pasti al giorno;
 - applica rotazione proteica sensata e distribuzione coerente dei macro su base settimanale;
 - mantieni logica anti-spreco, continuita di dispensa e realismo domestico.
+- ogni giornata deve mostrare logica gastronomica vera: ingredienti che ruotano con criterio, cotture non ripetitive in modo sterile e cene progressivamente piu gestibili sul piano digestivo.
 
 Regole obbligatorie:
 - restituisci solo JSON valido, senza markdown, senza commenti, senza testo extra;
@@ -341,6 +355,7 @@ Regole obbligatorie:
 - i procedimenti devono sembrare quelli di un vero piano cucinabile in casa, non titoli astratti travestiti da ricette;
 - ogni procedimento deve seguire la guida di stile sotto e usare step concreti con verbi guida, tempi, utensili e segnali di cottura;
 - la settimana deve sembrare progettata da un vero professionista, non da un generatore casuale.
+- inserisci quando utile strategie di biodisponibilita e leggerezza serale senza ripetere sempre la stessa soluzione.
 
 Guida di stile obbligatoria per i procedimenti:
 ${GEMINI_PROCEDURE_STYLE_GUIDE}
@@ -408,6 +423,14 @@ function buildGeminiRecipeRequestPayload(profile, request) {
         },
         richiesta_ricetta: {
             ...request,
+            vincoli_qualitativi: [
+                'ragiona come chef reale e nutrizionista clinico nello stesso momento',
+                'combina gli ingredienti solo se condividono logica gustativa, tecnica e strutturale',
+                'scegli cotture coerenti con consistenza, resa e digeribilita del piatto',
+                'evita accostamenti casuali usati solo per soddisfare macro o target calorici',
+                'per la cena privilegia leggerezza digestiva, grassi moderati, fibre ben gestite e sapori netti ma non aggressivi',
+                'ottimizza biodisponibilita dei micronutrienti quando il piatto contiene ferro vegetale, carotenoidi o proteine vegetali'
+            ],
             requisiti_output: [
                 'procedimento dettagliato passo per passo come una ricetta reale italiana',
                 'il procedimento deve avere minimo 5 e massimo 8 step per pranzo o cena; minimo 4 step per colazione o spuntino',
@@ -417,6 +440,8 @@ function buildGeminiRecipeRequestPayload(profile, request) {
                 'il procedimento deve chiudere davvero il piatto con finitura finale, regolazione del condimento o servizio',
                 'ogni step deve iniziare con un verbo guida tipo Prepara:, Cuoci:, Manteca:, Inforna:',
                 'ogni step deve contenere utensile o recipiente, tempo o temperatura, e un segnale pratico di corretta esecuzione',
+                'gli abbinamenti devono avere reale senso culinario e non sembrare casuali o forzati',
+                'la cottura_consigliata deve spiegare una tecnica plausibile e utile per quel piatto',
                 'cottura_consigliata sempre valorizzata',
                 'tip_antispreco sempre valorizzato',
                 'bioavailability_tip in chiusura'
@@ -451,10 +476,17 @@ function buildGeminiDailyPlanRequestPayload(profile, request) {
         },
         richiesta_piano_giornaliero: {
             ...request,
+            vincoli_qualitativi: [
+                'ogni pasto deve essere credibile sia sul piano gastronomico sia su quello nutrizionale',
+                'la giornata deve avere progressione energetica coerente e cena piu digeribile',
+                'riuso ingredienti solo se migliora organizzazione e non peggiora gusto o texture',
+                'ogni ricetta deve sembrare cucinata da uno chef domestico competente, non da un assemblatore casuale'
+            ],
             requisiti_output: [
                 'ogni pasto deve avere procedimento reale e concreto',
                 'ogni step deve iniziare con un verbo guida e includere dettagli pratici di esecuzione',
                 'evidenziare riuso intelligente degli ingredienti tra pranzo e cena',
+                'garantire digeribilita serale e biodisponibilita quando il contesto nutrizionale lo richiede',
                 'cottura_consigliata e tip_antispreco sempre presenti per ogni ricetta'
             ],
             esempi_stile_procedimento: [
@@ -485,10 +517,17 @@ function buildGeminiWeeklyPlanRequestPayload(profile, request) {
         },
         richiesta_piano_settimanale: {
             ...request,
+            vincoli_qualitativi: [
+                'rotazione proteica coerente e non ripetitiva in modo meccanico',
+                'continuita di dispensa con piatti che restano appetibili e non monotoni',
+                'cene progressivamente piu leggere e digeribili senza perdere qualita culinaria',
+                'ogni ricetta deve dimostrare logica tecnica, equilibrio dei sapori e plausibilita domestica'
+            ],
             requisiti_output: [
                 'rotazione proteica sensata sui 7 giorni',
                 'procedimenti realmente cucinabili in casa',
                 'ogni step deve iniziare con un verbo guida e includere dettagli pratici di esecuzione',
+                'integrare quando utile indicazioni per digeribilita e biodisponibilita',
                 'cottura_consigliata e tip_antispreco sempre presenti per ogni ricetta'
             ],
             esempi_stile_procedimento: [
@@ -2057,34 +2096,22 @@ function buildLifestyleGuidanceContent(draftProfile) {
 
     return {
         summary: {
-            hydration: `Per il tuo profilo il riferimento idrico realistico e vicino a <strong>${escapeHtml(waterTarget)}</strong> al giorno, una quota coerente con il tuo peso corporeo e utile anche per una migliore funzionalita intestinale. ${waterFocus} Durante i pasti conviene bere poco: 2 bicchieri 15-20 minuti prima e di nuovo dopo circa 30 minuti.`,
-            meals: `A tavola puoi usare liberamente erbe aromatiche e spezie, con ottime rotazioni come cannella, curcuma e zenzero. ${sodiumFocus} Evita succhi di frutta, te confezionati, bibite e alcolici. ${caffeineFocus}`,
-            supplements: `${goalFocus} Sul piano integrativo, la vitamina B12 puo restare su 1 compressa al giorno oppure B12 50 mcg LongLife 1 al giorno. ${creatineFocus} ${fatigueFocus}`
+            hydration: `Per il tuo profilo il riferimento idrico realistico e vicino a <strong>${escapeHtml(waterTarget)}</strong> al giorno. ${waterFocus}`,
+            meals: `A tavola punta su spezie, erbe aromatiche e bevande semplici. ${caffeineFocus}`,
+            supplements: 'Mantieni il piano essenziale e sostenibile, evitando informazioni ridondanti nel riepilogo iniziale.'
         },
         cards: [
             {
-                title: 'Apporto idrico e salino',
-                text: `${sodiumFocus} Le spezie restano una leva libera e intelligente per dare gusto senza appesantire la giornata: cannella, curcuma e zenzero sono ottime rotazioni.`
-            },
-            {
                 title: 'Acqua durante la giornata',
-                text: `Per il tuo profilo il riferimento pratico e circa ${waterTarget} al giorno. ${waterFocus} Durante i pasti mantieni una quota piu contenuta: 2 bicchieri 15-20 minuti prima e poi di nuovo dopo circa 30 minuti.`
+                text: `Per il tuo profilo il riferimento pratico e circa ${waterTarget} al giorno. ${waterFocus}`
             },
             {
                 title: 'Bevande da limitare',
-                text: `Evita succhi di frutta, te confezionati, bibite e alcolici, perche le calorie liquide peggiorano facilmente fame e controllo. ${caffeineFocus}`
+                text: `Evita succhi di frutta, te confezionati, bibite e alcolici. ${caffeineFocus}`
             },
             {
-                title: 'Pasti liberi gestiti bene',
-                text: goalFocus
-            },
-            {
-                title: 'Vitamina B12',
-                text: `${b12Focus} Se gia prevista, puoi mantenere 1 compressa al giorno oppure B12 50 mcg LongLife 1 al giorno.`
-            },
-            {
-                title: 'Creatina',
-                text: `${creatineFocus} ${fatigueFocus}`
+                title: 'Cucina semplice e aderente',
+                text: `Usa erbe aromatiche e spezie per dare gusto ai pasti. ${sodiumFocus}`
             }
         ]
     };
@@ -2101,7 +2128,7 @@ function renderLifestyleGuidancePanel(profileData) {
         return;
     }
 
-    const sourceProfile = profileData || JSON.parse(localStorage.getItem('nv_profilo')) || userProfile || {};
+    const sourceProfile = profileData || profilo || userProfile || {};
     const guidanceCards = buildLifestyleGuidanceContent(sourceProfile).cards;
 
     guidanceGrid.innerHTML = guidanceCards.map((card) => `
@@ -2473,7 +2500,7 @@ function renderWeeklyGuidancePanel(profileData) {
         return;
     }
 
-    const sourceProfile = profileData || JSON.parse(localStorage.getItem('nv_profilo')) || userProfile || {};
+    const sourceProfile = profileData || profilo || userProfile || {};
     const weeklyCards = buildWeeklyGuidanceContent(sourceProfile).cards;
 
     weeklyGuidanceGrid.innerHTML = weeklyCards.map((card) => `
@@ -2582,7 +2609,7 @@ function renderSmartRecipeGuidancePanel(profileData) {
         return;
     }
 
-    const sourceProfile = profileData || JSON.parse(localStorage.getItem('nv_profilo')) || userProfile || {};
+    const sourceProfile = profileData || profilo || userProfile || {};
     const recipeCards = buildSmartRecipeGuidanceContent(sourceProfile).cards;
 
     smartRecipesGrid.innerHTML = recipeCards.map((card) => `
@@ -2820,9 +2847,10 @@ function buildWizardProfileDraft() {
     const weight = parseFloat(document.getElementById('wizard-weight').value);
     const height = parseFloat(document.getElementById('wizard-height').value);
     const age = parseInt(document.getElementById('wizard-age').value, 10);
+    const authenticatedUsername = activeSession?.username || profilo?.username || userProfile?.username || pendingWizardProfileDraft?.username || '';
 
     const profile = {
-        username: document.getElementById('username').value,
+        username: authenticatedUsername,
         sex: document.getElementById('user-sex').value,
         age: age,
         weight: weight,
@@ -3094,19 +3122,20 @@ function selectAvatar(element) {
     element.classList.add('selected');
     selectedAvatarPath = getAvatarChoicePath(element);
     aggiornaAvatarProfilo(selectedAvatarPath);
-    // Salva nel profilo locale
-    const profilo = JSON.parse(localStorage.getItem('nv_profilo')) || {};
-    profilo.avatarUrl = selectedAvatarPath;
-    localStorage.setItem('nv_profilo', JSON.stringify(profilo));
+
+    if (profilo || userProfile) {
+        profilo = { ...(profilo || userProfile || {}), avatarUrl: selectedAvatarPath };
+        userProfile = { ...profilo };
+        queueUserDataPersist(profilo);
+    }
 }
 
 // Chiama questa funzione quando carichi l'app per impostare la foto salvata
 function loadSavedAvatar() {
-    const profilo = JSON.parse(localStorage.getItem('nv_profilo'));
-    if (profilo && profilo.avatarUrl) {
-        selectedAvatarPath = normalizeAvatarPath(profilo.avatarUrl);
-        profilo.avatarUrl = selectedAvatarPath;
-        localStorage.setItem('nv_profilo', JSON.stringify(profilo));
+    const activeProfile = profilo || userProfile || null;
+    if (activeProfile && activeProfile.avatarUrl) {
+        selectedAvatarPath = normalizeAvatarPath(activeProfile.avatarUrl);
+        activeProfile.avatarUrl = selectedAvatarPath;
         aggiornaAvatarProfilo(selectedAvatarPath);
 
     } else {
@@ -4743,73 +4772,424 @@ function normalizeSavedRecipesCollection(recipes) {
 
     return { recipes: normalizedRecipes, changed };
 }
+    let profilo = null;
+    let diario = [];
+    let acqua = 0;
+    let ciboSelezionato = null;
+    let tempRecipe = { items: [], k: 0, p: 0, c: 0, g: 0, fe: 0, ca: 0, b12: 0 };
 
+    // 2. STATO DEL DIARIO/CALENDARIO
+    let log = {};
+    const normalizedSavedRecipesState = normalizeSavedRecipesCollection([]);
+    let ricetteSalvate = normalizedSavedRecipesState.recipes;
+    let activeDate = formatLocalIsoDate(new Date());
+    let currentMonth = new Date();
+    let currentMealType = null;
+    let selectedFood = null;
+    let aiSelectedIngredients = [];
+    let aiGeneratedRecipes = [];
+    let barcodeScanner = null;
+    let barcodeScannerActive = false;
+    let barcodeScanLocked = false;
+    let latestSmartScanFood = null;
+    let smartScanFallbackTimer = null;
 
+    const AUTH_USERS_STORAGE_KEY = 'nutrime_auth_users_v1';
+    const AUTH_SESSION_STORAGE_KEY = 'nutrime_active_session_v1';
+    const USER_DATA_STORAGE_PREFIX = 'nutrime_user_data_v1';
 
-let profilo = JSON.parse(localStorage.getItem('nv_profilo')) || null;
-let diario = JSON.parse(localStorage.getItem('nv_diario')) || [];
-let acqua = parseInt(localStorage.getItem('nv_acqua')) || 0;
-let ciboSelezionato = null;
-let tempRecipe = { items: [], k: 0, p: 0, c: 0, g: 0, fe: 0, ca: 0, b12: 0 };
+    let activeSession = null;
+    let persistStatePromise = Promise.resolve();
 
-// 2. STATO DEL DIARIO/CALENDARIO
-let log = JSON.parse(localStorage.getItem('nv_log')) || {};
-const normalizedSavedRecipesState = normalizeSavedRecipesCollection(JSON.parse(localStorage.getItem('nv_ricette')) || []);
-let ricetteSalvate = normalizedSavedRecipesState.recipes;
-if (normalizedSavedRecipesState.changed) {
-    localStorage.setItem('nv_ricette', JSON.stringify(ricetteSalvate));
-}
-let activeDate = formatLocalIsoDate(new Date());
-let currentMonth = new Date();
-let currentMealType = null;
-let selectedFood = null;
-let aiSelectedIngredients = [];
-let aiGeneratedRecipes = [];
-let barcodeScanner = null;
-let barcodeScannerActive = false;
-let barcodeScanLocked = false;
-let latestSmartScanFood = null;
-let smartScanFallbackTimer = null;
-
-function syncAISelectedIngredientsInput() {
-    const discoverInput = document.getElementById('discover-ingredients');
-    if (discoverInput) {
-        discoverInput.value = aiSelectedIngredients.join(', ');
+    function safeJsonParse(value, fallback = null) {
+        try {
+            return JSON.parse(value);
+        } catch (error) {
+            return fallback;
+        }
     }
-}
 
-function renderAISelectedIngredients() {
-    const list = document.getElementById('ai-ingredient-list');
-    if (!list) return;
+    function getUserDataStorageKey(userId) {
+        return `${USER_DATA_STORAGE_PREFIX}:${userId}`;
+    }
 
-    if (aiSelectedIngredients.length === 0) {
-        list.innerHTML = '';
+    function normalizeUsernameKey(username) {
+        return String(username || '').trim().toLowerCase();
+    }
+
+    function buildUserId(username) {
+        const usernameKey = normalizeUsernameKey(username).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+        return `user_${usernameKey || 'guest'}`;
+    }
+
+    function simplePasswordHash(password) {
+        return Array.from(String(password || '')).reduce((hash, char) => (((hash << 5) - hash) + char.charCodeAt(0)), 0).toString(16);
+    }
+
+    function normalizeUserData(data = {}, username = '') {
+        const rawProfile = data.profile || data.profilo || null;
+        const normalizedProfile = rawProfile ? {
+            ...rawProfile,
+            username: rawProfile.username || username || activeSession?.username || ''
+        } : null;
+        const normalizedRecipes = normalizeSavedRecipesCollection(data.recipes || data.ricette || []).recipes;
+
+        return {
+            profile: normalizedProfile,
+            diary: Array.isArray(data.diary || data.diario) ? (data.diary || data.diario) : [],
+            water: Number(data.water ?? data.acqua ?? 0) || 0,
+            log: data.log && typeof data.log === 'object' ? data.log : {},
+            recipes: normalizedRecipes,
+            userDiaryProfile: data.userDiaryProfile || {
+                dataCreazione: new Date().toLocaleDateString(),
+                profilo: normalizedProfile ? { ...normalizedProfile } : null
+            },
+            meta: {
+                updatedAt: new Date().toISOString()
+            }
+        };
+    }
+
+    function syncLegacyStorageMirror(data) {
+        const normalized = normalizeUserData(data, activeSession?.username || '');
+        localStorage.setItem('nv_profilo', JSON.stringify(normalized.profile));
+        localStorage.setItem('nv_diario', JSON.stringify(normalized.diary));
+        localStorage.setItem('nv_acqua', String(normalized.water));
+        localStorage.setItem('nv_log', JSON.stringify(normalized.log));
+        localStorage.setItem('nv_ricette', JSON.stringify(normalized.recipes));
+        localStorage.setItem('userDiaryProfile', JSON.stringify(normalized.userDiaryProfile));
+        return normalized;
+    }
+
+    function clearLegacyStorageMirror() {
+        ['nv_profilo', 'nv_diario', 'nv_acqua', 'nv_log', 'nv_ricette', 'userDiaryProfile', 'isFirstAccess'].forEach((key) => {
+            localStorage.removeItem(key);
+        });
+    }
+
+    async function saveUserData(data, userId = activeSession?.userId) {
+        if (!userId) {
+            throw new Error('Nessun utente attivo per il salvataggio dati.');
+        }
+
+        const normalized = normalizeUserData(data, activeSession?.username || '');
+        localStorage.setItem(getUserDataStorageKey(userId), JSON.stringify(normalized));
+
+        if (activeSession?.userId === userId) {
+            syncLegacyStorageMirror(normalized);
+        }
+
+        return normalized;
+    }
+
+    async function loadUserData(userId) {
+        if (!userId) {
+            return normalizeUserData();
+        }
+
+        const stored = safeJsonParse(localStorage.getItem(getUserDataStorageKey(userId)), null);
+        const normalized = normalizeUserData(stored || {}, activeSession?.username || '');
+
+        if (activeSession?.userId === userId) {
+            syncLegacyStorageMirror(normalized);
+        }
+
+        return normalized;
+    }
+
+    async function saveActiveSession(session) {
+        activeSession = session ? { ...session } : null;
+
+        if (!session) {
+            localStorage.removeItem(AUTH_SESSION_STORAGE_KEY);
+            clearLegacyStorageMirror();
+            return null;
+        }
+
+        localStorage.setItem(AUTH_SESSION_STORAGE_KEY, JSON.stringify(activeSession));
+        return activeSession;
+    }
+
+    async function loadActiveSession() {
+        const session = safeJsonParse(localStorage.getItem(AUTH_SESSION_STORAGE_KEY), null);
+        activeSession = session;
+        return session;
+    }
+
+    function getRegisteredUsers() {
+        const users = safeJsonParse(localStorage.getItem(AUTH_USERS_STORAGE_KEY), []);
+        return Array.isArray(users) ? users : [];
+    }
+
+    function saveRegisteredUsers(users) {
+        localStorage.setItem(AUTH_USERS_STORAGE_KEY, JSON.stringify(users));
+    }
+
+    async function registerUser(username, password) {
+        const trimmedUsername = String(username || '').trim();
+        const usernameKey = normalizeUsernameKey(trimmedUsername);
+        const trimmedPassword = String(password || '');
+
+        if (!trimmedUsername || !trimmedPassword) {
+            throw new Error('Username e password sono obbligatori.');
+        }
+
+        const users = getRegisteredUsers();
+        if (users.some((user) => user.usernameKey === usernameKey)) {
+            throw new Error('Questo username e gia registrato.');
+        }
+
+        const userRecord = {
+            userId: buildUserId(trimmedUsername),
+            username: trimmedUsername,
+            usernameKey,
+            passwordHash: simplePasswordHash(trimmedPassword),
+            createdAt: new Date().toISOString()
+        };
+
+        users.push(userRecord);
+        saveRegisteredUsers(users);
+        await saveActiveSession({ userId: userRecord.userId, username: userRecord.username, createdAt: new Date().toISOString() });
+        await saveUserData(normalizeUserData({}, userRecord.username), userRecord.userId);
+        return userRecord;
+    }
+
+    async function loginUser(username, password) {
+        const usernameKey = normalizeUsernameKey(username);
+        const passwordHash = simplePasswordHash(password);
+        const userRecord = getRegisteredUsers().find((user) => user.usernameKey === usernameKey);
+
+        if (!userRecord || userRecord.passwordHash !== passwordHash) {
+            throw new Error('Credenziali non valide.');
+        }
+
+        await saveActiveSession({ userId: userRecord.userId, username: userRecord.username, createdAt: new Date().toISOString() });
+        return userRecord;
+    }
+
+    function hydrateRuntimeState(data) {
+        const normalized = normalizeUserData(data, activeSession?.username || '');
+        profilo = normalized.profile;
+        userProfile = normalized.profile || {};
+        diario = Array.isArray(normalized.diary) ? normalized.diary : [];
+        acqua = Number(normalized.water || 0);
+        log = normalized.log && typeof normalized.log === 'object' ? normalized.log : {};
+        ricetteSalvate = normalizeSavedRecipesCollection(normalized.recipes).recipes;
+    }
+
+    function getCurrentUserPayload(profileOverride = null) {
+        const effectiveProfile = profileOverride || userProfile || profilo || null;
+
+        return normalizeUserData({
+            profile: effectiveProfile,
+            diary: diario,
+            water: acqua,
+            log,
+            recipes: ricetteSalvate,
+            userDiaryProfile: {
+                dataCreazione: new Date().toLocaleDateString(),
+                profilo: effectiveProfile ? { ...effectiveProfile } : null
+            }
+        }, activeSession?.username || effectiveProfile?.username || '');
+    }
+
+    function queueUserDataPersist(profileOverride = null) {
+        if (!activeSession?.userId) {
+            return Promise.resolve(null);
+        }
+
+        const payload = getCurrentUserPayload(profileOverride);
+        persistStatePromise = persistStatePromise
+            .catch(() => null)
+            .then(() => saveUserData(payload, activeSession.userId))
+            .catch((error) => {
+                console.error('Errore durante il salvataggio utente:', error);
+                return null;
+            });
+
+        return persistStatePromise;
+    }
+
+    function showAuthScreen() {
+        const authScreen = document.getElementById('auth-screen');
+        const setupScreen = document.getElementById('setup-screen');
+        const mainApp = document.getElementById('main-app');
+
+        if (authScreen) authScreen.style.display = 'flex';
+        if (setupScreen) setupScreen.style.display = 'none';
+        if (mainApp) mainApp.style.display = 'none';
+    }
+
+    function showSetupScreen() {
+        const authScreen = document.getElementById('auth-screen');
+        const setupScreen = document.getElementById('setup-screen');
+        const mainApp = document.getElementById('main-app');
+
+        if (authScreen) authScreen.style.display = 'none';
+        if (setupScreen) setupScreen.style.display = 'flex';
+        if (mainApp) mainApp.style.display = 'none';
+    }
+
+    function showMainAppScreen() {
+        const authScreen = document.getElementById('auth-screen');
+        const setupScreen = document.getElementById('setup-screen');
+        const mainApp = document.getElementById('main-app');
+
+        if (authScreen) authScreen.style.display = 'none';
+        if (setupScreen) setupScreen.style.display = 'none';
+        if (mainApp) mainApp.style.display = 'block';
+    }
+
+    function setAuthFeedback(message = '', type = 'error') {
+        const feedback = document.getElementById('auth-feedback');
+        if (!feedback) return;
+
+        feedback.textContent = message;
+        feedback.classList.toggle('success', type === 'success' && Boolean(message));
+    }
+
+    function switchAuthMode(mode = 'login') {
+        const isRegisterMode = mode === 'register';
+
+        document.querySelectorAll('[data-auth-mode]').forEach((element) => {
+            if (element.classList.contains('auth-tab')) {
+                element.classList.toggle('active', element.dataset.authMode === mode);
+            }
+        });
+
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        if (loginForm) loginForm.classList.toggle('active', !isRegisterMode);
+        if (registerForm) registerForm.classList.toggle('active', isRegisterMode);
+
+        setAuthFeedback('');
+    }
+
+    async function handleAuthenticatedUser(session) {
+        activeSession = session;
+        const userData = await loadUserData(session.userId);
+        hydrateRuntimeState(userData);
+
+        if (userData.profile) {
+            initApp(userData.profile);
+            return;
+        }
+
+        initWizard();
+    }
+
+    function resetAnonymousWizardState() {
+        activeSession = null;
+        pendingWizardProfileDraft = null;
+        profilo = null;
+        userProfile = {};
+        diario = [];
+        acqua = 0;
+        log = {};
+        ricetteSalvate = [];
+        selectedAvatarPath = '';
+    }
+
+    function closeProfileCreatedModal() {
+        const modal = document.getElementById('profile-created-modal');
+        if (modal) modal.style.display = 'none';
+    }
+
+    function openProfileCreatedModal(username) {
+        const modal = document.getElementById('profile-created-modal');
+        const message = document.getElementById('profile-created-message');
+        if (message) {
+            message.textContent = `Ciao ${username}, il tuo profilo è stato creato! Nella sezione Home troverai il riepilogo dei micro e macronutrienti assunti nel corso di questa giornata.`;
+        }
+        if (modal) modal.style.display = 'flex';
+    }
+
+    window.closeProfileCreatedModal = closeProfileCreatedModal;
+
+    function setupAuthScreen() {
+        document.querySelectorAll('[data-auth-mode]').forEach((element) => {
+            element.addEventListener('click', () => switchAuthMode(element.dataset.authMode || 'login'));
+        });
+
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+
+        loginForm?.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const username = document.getElementById('login-username')?.value || '';
+            const password = document.getElementById('login-password')?.value || '';
+
+            try {
+                const userRecord = await loginUser(username, password);
+                setAuthFeedback(`Bentornato ${userRecord.username}.`, 'success');
+                await handleAuthenticatedUser(activeSession);
+            } catch (error) {
+                setAuthFeedback(error.message || 'Accesso non riuscito.');
+            }
+        });
+
+        registerForm?.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const username = document.getElementById('register-username')?.value || '';
+            const password = document.getElementById('register-password')?.value || '';
+            const confirmPassword = document.getElementById('register-confirm-password')?.value || '';
+
+            if (password !== confirmPassword) {
+                setAuthFeedback('Le password non coincidono.');
+                return;
+            }
+
+            try {
+                resetAnonymousWizardState();
+                const userRecord = await registerUser(username, password);
+                wizardShowProfileCreatedPopup = true;
+                setAuthFeedback(`Account creato per ${userRecord.username}. Completa il questionario per attivare il profilo.`, 'success');
+                await handleAuthenticatedUser(activeSession);
+            } catch (error) {
+                setAuthFeedback(error.message || 'Creazione profilo non riuscita.');
+            }
+        });
+    }
+
+    function syncAISelectedIngredientsInput() {
+        const discoverInput = document.getElementById('discover-ingredients');
+        if (discoverInput) {
+            discoverInput.value = aiSelectedIngredients.join(', ');
+        }
+    }
+
+    function renderAISelectedIngredients() {
+        const list = document.getElementById('ai-ingredient-list');
+        if (!list) return;
+
+        if (aiSelectedIngredients.length === 0) {
+            list.innerHTML = '';
+            syncAISelectedIngredientsInput();
+            return;
+        }
+
+        list.innerHTML = aiSelectedIngredients.map((item) => `
+            <li class="ai-ingredient-chip-item">
+                <span class="ai-ingredient-chip">${escapeHtml(item)}</span>
+                <button type="button" class="ai-ingredient-chip-remove" onclick="removeAISelectedIngredient(decodeURIComponent('${encodeURIComponent(item)}'))" aria-label="Rimuovi ${escapeHtml(item)}">×</button>
+            </li>
+        `).join('');
+
         syncAISelectedIngredientsInput();
-        return;
     }
 
-    list.innerHTML = aiSelectedIngredients.map((item) => `
-        <li class="ai-ingredient-chip-item">
-            <span class="ai-ingredient-chip">${escapeHtml(item)}</span>
-            <button type="button" class="ai-ingredient-chip-remove" onclick="removeAISelectedIngredient(decodeURIComponent('${encodeURIComponent(item)}'))" aria-label="Rimuovi ${escapeHtml(item)}">×</button>
-        </li>
-    `).join('');
+    function removeAISelectedIngredient(ingredientName) {
+        const normalizedName = String(ingredientName || '').trim();
+        aiSelectedIngredients = aiSelectedIngredients.filter((item) => item !== normalizedName);
+        renderAISelectedIngredients();
+    }
 
-    syncAISelectedIngredientsInput();
-}
-
-function removeAISelectedIngredient(ingredientName) {
-    const normalizedName = String(ingredientName || '').trim();
-    aiSelectedIngredients = aiSelectedIngredients.filter((item) => item !== normalizedName);
-    renderAISelectedIngredients();
-}
-
-function formatLocalIsoDate(date) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-}
+    function formatLocalIsoDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
 
 function parseIsoDate(dateString) {
     const [year, month, day] = dateString.split('-').map(Number);
@@ -5032,7 +5412,7 @@ function modificaPasto(index) {
     log[activeDate].items[index] = updatedEntry;
     aggiornaTotaliGiorno(log[activeDate], updatedEntry, 1);
 
-    localStorage.setItem('nv_log', JSON.stringify(log));
+    queueUserDataPersist();
     renderCalendar();
     aggiornaUI();
 }
@@ -5040,14 +5420,16 @@ function modificaPasto(index) {
 let wizardCurrentStep = 1;
 const wizardTotalSteps = 6;
 let userProfile = {};
+let pendingWizardProfileDraft = null;
+let wizardShowProfileCreatedPopup = false;
 
 const isFirstAccess = () => localStorage.getItem('isFirstAccess') !== 'false';
 const setFirstAccess = (val) => localStorage.setItem('isFirstAccess', val ? 'true' : 'false');
 
-function initApp(profile) {
+function initApp(profile, options = {}) {
     profilo = profile;
-    document.getElementById('setup-screen').style.display = 'none';
-    document.getElementById('main-app').style.display = 'block';
+    userProfile = profile;
+    showMainAppScreen();
     setupAvatarFallbacks();
     loadSavedAvatar();
     applyLunchContextPreference(profile);
@@ -5059,9 +5441,13 @@ function initApp(profile) {
     aggiornaUI();
     aggiornaListaRicetteSalvate();
     toggleAiMode();
+
+    if (options.showProfileCreated) {
+        openProfileCreatedModal(profile?.username || activeSession?.username || 'utente');
+    }
 }
 
-window.onload = () => {
+window.onload = async () => {
     // Restore saved theme (dark/light)
     const savedTheme = localStorage.getItem('nv_theme') || 'light';
     document.documentElement.setAttribute('data-theme', savedTheme);
@@ -5075,16 +5461,16 @@ window.onload = () => {
     setupAvatarFallbacks();
     setupWizardNumericFieldFeedback();
     setupWizardStepThreeLogic();
-    const storedProfile = JSON.parse(localStorage.getItem('nv_profilo'));
-    if (!storedProfile || isFirstAccess()) {
-        document.getElementById('setup-screen').style.display = 'block';
-        document.getElementById('main-app').style.display = 'none';
-        showWizardStep(wizardCurrentStep);
-        setFirstAccess(false);
+    setupAuthScreen();
+
+    const session = await loadActiveSession();
+    if (!session?.userId) {
+        showAuthScreen();
+        switchAuthMode('login');
         return;
     }
 
-    initApp(storedProfile);
+    await handleAuthenticatedUser(session);
     toggleAiMode();
 };
 
@@ -5095,8 +5481,7 @@ function salvaProfilo() {
 function initWizard() {
     wizardCurrentStep = 1;
     showWizardStep(wizardCurrentStep);
-    document.getElementById('setup-screen').style.display = 'block';
-    document.getElementById('main-app').style.display = 'none';
+    showSetupScreen();
 }
 
 function updateWizardNumericFieldState(input) {
@@ -5239,7 +5624,10 @@ function showWizardStep(step) {
     const nextBtn = document.getElementById('next-btn');
     const skipBtn = document.getElementById('skip-btn');
 
-    if (prevBtn) prevBtn.disabled = step === 1;
+    if (prevBtn) {
+        prevBtn.disabled = step === 1;
+        prevBtn.style.display = step === 1 ? 'none' : 'inline-block';
+    }
     if (nextBtn) nextBtn.textContent = step === wizardTotalSteps ? 'VAI!' : 'Avanti';
 
     // Step opzionali: 2 e 4
@@ -5397,25 +5785,28 @@ function prevStep() {
     }
 }
 
-function finalizzaProfilo() {
+async function finalizzaProfilo() {
     const newProfile = buildWizardProfileDraft();
 
-    userProfile = newProfile;
-    localStorage.setItem('nv_profilo', JSON.stringify(newProfile));
+    if (!activeSession?.userId) {
+        showAuthScreen();
+        switchAuthMode('register');
+        setAuthFeedback('Per continuare devi prima creare username e password nella schermata Nuovo profilo.');
+        return;
+    }
 
-    const infoUtente = {
-        dataCreazione: new Date().toLocaleDateString(),
-        profilo: {...newProfile}
-    };
-    localStorage.setItem('userDiaryProfile', JSON.stringify(infoUtente));
+    userProfile = newProfile;
+    profilo = newProfile;
+    await saveUserData(getCurrentUserPayload(newProfile));
 
     setFirstAccess(false);
-    initApp(newProfile);
+    initApp(newProfile, { showProfileCreated: wizardShowProfileCreatedPopup });
+    wizardShowProfileCreatedPopup = false;
     updateHomeStats();
 }
 
 function caricaDatiProfilo() {
-    const datiProfilo = JSON.parse(localStorage.getItem('nv_profilo'));
+    const datiProfilo = profilo || userProfile || null;
     if (!datiProfilo) return;
 
     const setValue = (id, value) => {
@@ -5446,25 +5837,55 @@ function caricaDatiProfilo() {
 
     const summary = document.getElementById('profilo-summary-content');
     if (summary) {
+        const statCards = [
+            { label: 'Piano calorico', value: `${escapeHtml(datiProfilo.target || '-')} kcal`, tone: 'kcal' },
+            { label: 'Proteine', value: `${escapeHtml(datiProfilo.proteinTarget || '-')} g`, tone: 'protein' },
+            { label: 'Acqua', value: `${escapeHtml(datiProfilo.waterIntake || '-')} L`, tone: 'water' },
+            { label: 'Allenamenti', value: `${escapeHtml(datiProfilo.workoutsPerWeek ?? '-')} / sett.`, tone: 'activity' }
+        ];
+
+        const detailRows = [
+            ['Nome', escapeHtml(datiProfilo.username || '-')],
+            ['Obiettivo', escapeHtml(getWizardGoalLabel(datiProfilo.goal))],
+            ['Attivita', escapeHtml(getWizardJobLabel(datiProfilo.jobType))],
+            ['Sport', escapeHtml(formatSportLabel(datiProfilo.sportName))],
+            ['Eta', `${escapeHtml(datiProfilo.age || '-')} anni`],
+            ['Peso', `${escapeHtml(datiProfilo.weight || '-')} kg`],
+            ['Altezza', `${escapeHtml(datiProfilo.height || '-')} cm`],
+            ['IMC', `${escapeHtml(datiProfilo.imc || '-')} ${datiProfilo.imcCategory ? `(${escapeHtml(datiProfilo.imcCategory)})` : ''}`.trim()],
+            ['Fabbisogno', `${escapeHtml(datiProfilo.maintenanceCalories || '-')} kcal`],
+            ['Proteine per kg', `${escapeHtml(datiProfilo.proteinTargetPerKg || '-')} g/kg`],
+            ['Pranzo preferito', escapeHtml(getLunchContextLabel(datiProfilo.lunchContextPreference || 'workday'))],
+            ['Rotazione proteica cena', escapeHtml(getDinnerProteinPreferenceLabel(datiProfilo.dinnerProteinPreference || 'variata'))],
+            ['Frequenza cena suggerita', escapeHtml(getDinnerProteinFrequencyLabel(datiProfilo.dinnerProteinFrequency || 'libera'))],
+            ['Altre patologie', escapeHtml(datiProfilo.otherPathologies || '-')],
+            ['Motivazione', escapeHtml(datiProfilo.motivation || '-')]
+        ];
+
         summary.innerHTML = `
-            <div><strong>Nome:</strong> ${escapeHtml(datiProfilo.username || '-')}</div>
-            <div><strong>Età:</strong> ${escapeHtml(datiProfilo.age || '-')} anni</div>
-            <div><strong>Peso:</strong> ${escapeHtml(datiProfilo.weight || '-')} kg</div>
-            <div><strong>Altezza:</strong> ${escapeHtml(datiProfilo.height || '-')} cm</div>
-            <div><strong>IMC:</strong> ${escapeHtml(datiProfilo.imc || '-')} ${datiProfilo.imcCategory ? `(${escapeHtml(datiProfilo.imcCategory)})` : ''}</div>
-            <div><strong>Fabbisogno:</strong> ${escapeHtml(datiProfilo.maintenanceCalories || '-')} kcal</div>
-            <div><strong>Piano calorico:</strong> ${escapeHtml(datiProfilo.target || '-')} kcal</div>
-            <div><strong>Proteine:</strong> ${escapeHtml(datiProfilo.proteinTargetPerKg || '-')} g/kg (${escapeHtml(datiProfilo.proteinTarget || '-')} g)</div>
-            <div><strong>Obiettivo:</strong> ${escapeHtml(getWizardGoalLabel(datiProfilo.goal))}</div>
-            <div><strong>Attività:</strong> ${escapeHtml(getWizardJobLabel(datiProfilo.jobType))}</div>
-            <div><strong>Allenamenti:</strong> ${escapeHtml(datiProfilo.workoutsPerWeek ?? '-')} / settimana</div>
-            <div><strong>Sport:</strong> ${escapeHtml(formatSportLabel(datiProfilo.sportName))}</div>
-            <div><strong>Altre patologie:</strong> ${escapeHtml(datiProfilo.otherPathologies || '-')}</div>
-            <div><strong>Motivazione:</strong> ${escapeHtml(datiProfilo.motivation || '-')}</div>
-            <div><strong>Acqua:</strong> ${escapeHtml(datiProfilo.waterIntake || '-')} L</div>
-            <div><strong>Pranzo preferito:</strong> ${escapeHtml(getLunchContextLabel(datiProfilo.lunchContextPreference || 'workday'))}</div>
-            <div><strong>Rotazione proteica cena:</strong> ${escapeHtml(getDinnerProteinPreferenceLabel(datiProfilo.dinnerProteinPreference || 'variata'))}</div>
-            <div><strong>Frequenza cena suggerita:</strong> ${escapeHtml(getDinnerProteinFrequencyLabel(datiProfilo.dinnerProteinFrequency || 'libera'))}</div>
+            <div class="profile-summary-hero">
+                <div>
+                    <div class="profile-summary-name">${escapeHtml(datiProfilo.username || '-')}</div>
+                    <div class="profile-summary-meta">${escapeHtml(datiProfilo.age || '-')} anni · ${escapeHtml(datiProfilo.weight || '-')} kg · ${escapeHtml(datiProfilo.height || '-')} cm</div>
+                </div>
+                <span class="profile-summary-goal-pill">${escapeHtml(getWizardGoalLabel(datiProfilo.goal))}</span>
+            </div>
+            <div class="profile-summary-stats">
+                ${statCards.map((item) => `
+                    <div class="profile-summary-stat profile-summary-stat-${item.tone}">
+                        <span>${item.label}</span>
+                        <strong>${item.value}</strong>
+                    </div>
+                `).join('')}
+            </div>
+            <div class="profile-summary-list">
+                ${detailRows.map(([label, value]) => `
+                    <div class="profile-summary-row">
+                        <span>${label}</span>
+                        <strong>${value}</strong>
+                    </div>
+                `).join('')}
+            </div>
         `;
     }
 
@@ -5479,7 +5900,7 @@ function salvaModificheProfilo() {
     const weight = parseFloat(document.getElementById('profilo-weight').value);
     const height = parseFloat(document.getElementById('profilo-height').value);
     const age = parseInt(document.getElementById('profilo-age').value, 10);
-    const currentProfile = JSON.parse(localStorage.getItem('nv_profilo')) || userProfile || {};
+    const currentProfile = profilo || userProfile || {};
 
     const profile = {
         ...currentProfile,
@@ -5523,12 +5944,7 @@ function salvaModificheProfilo() {
 
     profilo = profiloAggiornato;
     userProfile = profiloAggiornato;
-
-    localStorage.setItem('nv_profilo', JSON.stringify(profiloAggiornato));
-    localStorage.setItem('userDiaryProfile', JSON.stringify({
-        dataCreazione: new Date().toLocaleDateString(),
-        profilo: { ...profiloAggiornato }
-    }));
+    queueUserDataPersist(profiloAggiornato);
 
     updateHomeStats();
     caricaDatiProfilo();
@@ -5567,8 +5983,8 @@ function mostraSezione(tabId) {
     }
     if (tabId === 'pasti-rapidi') {
         aggiornaListaRicetteSalvate();
-        renderWeeklyGuidancePanel(JSON.parse(localStorage.getItem('nv_profilo')) || userProfile || {});
-        renderSmartRecipeGuidancePanel(JSON.parse(localStorage.getItem('nv_profilo')) || userProfile || {});
+        renderWeeklyGuidancePanel(profilo || userProfile || {});
+        renderSmartRecipeGuidancePanel(profilo || userProfile || {});
         toggleAiMode();
     }
     if (tabId === 'profilo') {
@@ -5646,8 +6062,7 @@ function cambiaMese(offset) {
 
 function renderUserProfileSummary() {
     const homeProfileSummary = document.getElementById('home-profile-summary');
-    const diaryData = JSON.parse(localStorage.getItem('userDiaryProfile'));
-    const activeProfile = diaryData?.profilo || profilo || userProfile || {};
+    const activeProfile = profilo || userProfile || {};
 
     if (!homeProfileSummary) return;
 
@@ -5786,7 +6201,7 @@ function rimuoviPasto(index) {
         delete log[activeDate];
     }
 
-    localStorage.setItem('nv_log', JSON.stringify(log));
+    queueUserDataPersist();
     renderCalendar();
     aggiornaUI();
 }
@@ -6019,7 +6434,7 @@ function salvaPasto() {
     log[activeDate].items.push(entry);
     aggiornaTotaliGiorno(log[activeDate], entry, 1);
 
-    localStorage.setItem('nv_log', JSON.stringify(log));
+    queueUserDataPersist();
     closeAddPanel();
     renderCalendar();
     aggiornaUI();
@@ -6061,6 +6476,11 @@ function aggiungiIngredienteRicetta() {
     tempRecipe.b12 += item.b12;
 
     renderTempRecipe();
+    const recipeAddPanel = document.getElementById('recipe-add-panel');
+    if (recipeAddPanel) recipeAddPanel.style.display = 'none';
+    const recipeSelectedName = document.getElementById('recipe-selected-name');
+    if (recipeSelectedName) recipeSelectedName.innerText = '';
+    selectedFood = null;
     document.getElementById('recipe-search').focus();
     document.getElementById('recipe-qty').value = 100;
     document.getElementById('recipe-search').value = '';
@@ -6072,6 +6492,72 @@ function updateManualRecipesTitle() {
     if (!title) return;
 
     title.textContent = tempRecipe.items.length > 0 ? 'Le mie ricette' : 'Modalita Manuale';
+}
+
+function getManualRecipePerServingStats() {
+    const servings = 1;
+
+    return {
+        servings,
+        kcal: tempRecipe.k / servings,
+        p: tempRecipe.p / servings,
+        c: tempRecipe.c / servings,
+        g: tempRecipe.g / servings,
+        fe: tempRecipe.fe / servings,
+        ca: tempRecipe.ca / servings,
+        b12: tempRecipe.b12 / servings
+    };
+}
+
+function getManualRecipeMacroDistribution(stats) {
+    const proteinEnergy = Math.max(0, stats.p) * 4;
+    const carbEnergy = Math.max(0, stats.c) * 4;
+    const fatEnergy = Math.max(0, stats.g) * 9;
+    const totalEnergy = proteinEnergy + carbEnergy + fatEnergy;
+
+    if (totalEnergy <= 0) {
+        return { protein: 0, carbs: 0, fats: 0 };
+    }
+
+    return {
+        protein: Math.round((proteinEnergy / totalEnergy) * 100),
+        carbs: Math.round((carbEnergy / totalEnergy) * 100),
+        fats: Math.round((fatEnergy / totalEnergy) * 100)
+    };
+}
+
+function getManualRecipeAssessmentTags(stats, macroDistribution) {
+    const tags = [];
+
+    if (stats.p >= 25 || macroDistribution.protein >= 30) {
+        tags.push('Piu proteica');
+    }
+
+    if (
+        macroDistribution.protein >= 18 && macroDistribution.protein <= 30
+        && macroDistribution.carbs >= 35 && macroDistribution.carbs <= 50
+        && macroDistribution.fats >= 20 && macroDistribution.fats <= 35
+    ) {
+        tags.push('Bilanciata');
+    }
+
+    if (stats.kcal >= 650) {
+        tags.push('Piu energetica');
+    } else if (stats.kcal <= 350) {
+        tags.push('Piu leggera');
+    }
+
+    if (tags.length === 0) {
+        if (macroDistribution.carbs >= macroDistribution.protein && macroDistribution.carbs >= macroDistribution.fats) {
+            tags.push('Piu glucidica');
+        } else if (macroDistribution.fats >= macroDistribution.protein && macroDistribution.fats >= macroDistribution.carbs) {
+            tags.push('Piu ricca di grassi');
+        } else {
+            tags.push('Profilo misto');
+        }
+    }
+
+    return tags.slice(0, 3);
 }
 
 function formatManualRecipeChipLabel(item) {
@@ -6093,7 +6579,7 @@ function confermaAggiunta() {
         qty: qty
     };
     diario.push(entry);
-    localStorage.setItem('nv_diario', JSON.stringify(diario));
+    queueUserDataPersist();
     document.getElementById('add-panel').style.display = 'none';
     aggiornaUI();
 }
@@ -6117,10 +6603,45 @@ function renderTempRecipe() {
             summary.style.display = 'none';
             summary.innerHTML = '';
         } else {
+            const ingredientCount = tempRecipe.items.length;
+            const perServing = getManualRecipePerServingStats();
+            const macroDistribution = getManualRecipeMacroDistribution(perServing);
+            const assessmentTags = getManualRecipeAssessmentTags(perServing, macroDistribution);
             summary.style.display = 'block';
             summary.innerHTML = `
-                <strong>Analisi per porzione:</strong><br>
-                Kcal: ${Math.round(tempRecipe.k)} | P: ${tempRecipe.p.toFixed(1)}g | C: ${tempRecipe.c.toFixed(1)}g | G: ${tempRecipe.g.toFixed(1)}g
+                <div class="manual-recipe-summary">
+                    <div class="manual-recipe-summary-top">
+                        <div>
+                            <strong class="manual-recipe-summary-title">Analisi per porzione</strong>
+                            <p class="manual-recipe-summary-note">Stima aggiornata della ricetta che stai costruendo, con ${ingredientCount} ${ingredientCount === 1 ? 'ingrediente' : 'ingredienti'} inseriti.</p>
+                        </div>
+                        <span class="manual-recipe-summary-badge">${Math.round(perServing.kcal)} kcal</span>
+                    </div>
+                    <div class="manual-recipe-assessment-row">
+                        ${assessmentTags.map((tag) => `<span class="manual-recipe-assessment-tag">${escapeHtml(tag)}</span>`).join('')}
+                    </div>
+                    <div class="manual-recipe-macro-grid">
+                        <div class="manual-recipe-macro-card protein">
+                            <span>Proteine</span>
+                            <strong>${perServing.p.toFixed(1)} g</strong>
+                            <div class="manual-recipe-macro-bar"><span style="width:${macroDistribution.protein}%;"></span></div>
+                            <small>${macroDistribution.protein}%</small>
+                        </div>
+                        <div class="manual-recipe-macro-card carbs">
+                            <span>Carboidrati</span>
+                            <strong>${perServing.c.toFixed(1)} g</strong>
+                            <div class="manual-recipe-macro-bar"><span style="width:${macroDistribution.carbs}%;"></span></div>
+                            <small>${macroDistribution.carbs}%</small>
+                        </div>
+                        <div class="manual-recipe-macro-card fats">
+                            <span>Grassi</span>
+                            <strong>${perServing.g.toFixed(1)} g</strong>
+                            <div class="manual-recipe-macro-bar"><span style="width:${macroDistribution.fats}%;"></span></div>
+                            <small>${macroDistribution.fats}%</small>
+                        </div>
+                    </div>
+                    <p class="manual-recipe-summary-total">Totale ricetta: ${Math.round(tempRecipe.k)} kcal complessive.</p>
+                </div>
             `;
         }
     }
@@ -6180,7 +6701,7 @@ function salvaRicettaDefinitiva() {
     };
 
     ricetteSalvate.push(nuovaRicetta);
-    localStorage.setItem('nv_ricette', JSON.stringify(ricetteSalvate));
+    queueUserDataPersist();
 
     tempRecipe = { items: [], k: 0, p: 0, c: 0, g: 0, fe: 0, ca: 0, b12: 0 };
     document.getElementById('recipe-name').value = '';
@@ -6209,9 +6730,8 @@ function modificaRicetta(idx) {
         ca: r.ca || 0,
         b12: r.b12 || 0
     };
-
     ricetteSalvate.splice(idx, 1);
-    localStorage.setItem('nv_ricette', JSON.stringify(ricetteSalvate));
+    queueUserDataPersist();
     renderTempRecipe();
     aggiornaListaRicetteSalvate();
     document.getElementById('recipe-search').focus();
@@ -6220,7 +6740,7 @@ function modificaRicetta(idx) {
 function eliminaRicetta(idx) {
     if (!confirm('Vuoi davvero eliminare questa ricetta?')) return;
     ricetteSalvate.splice(idx, 1);
-    localStorage.setItem('nv_ricette', JSON.stringify(ricetteSalvate));
+    queueUserDataPersist();
     aggiornaListaRicetteSalvate();
 }
 
@@ -6366,7 +6886,7 @@ function aggiornaListaRicetteSalvate() {
             <div style="display:flex;justify-content:space-between;align-items:center;">
                 <div>
                     <strong style="font-family:'Poppins',sans-serif;">${r.n}</strong><br>
-                    <small style="color:#7f8c8d;">${r.aiGenerated ? 'AI Mode salvata come ispirazione' : `${Math.round(r.k)} kcal / porzione`}</small>
+                    <small style="color:#7f8c8d;">${r.aiGenerated ? 'AI Mode salvata come ispirazione' : `${Math.round(r.k || 0)} kcal / porzione`}</small>
                     ${Array.isArray(r.items) && r.items.length > 0 ? `<br><small style="color:#51606f;display:block;margin-top:4px;">${escapeHtml(r.items.slice(0, 4).map((item) => formatIngredientDisplay(item)).filter(Boolean).join(', '))}${r.items.length > 4 ? '...' : ''}</small>` : ''}
                 </div>
                 <div style="display:flex;gap:6px;">
@@ -6467,13 +6987,13 @@ function aggiornaRaccomandazioneAcqua(pesoUtenteKg) {
 
 function aggiornaAcqua(v) {
     acqua = Math.max(0, acqua + v);
-    localStorage.setItem('nv_acqua', acqua);
+    queueUserDataPersist();
     aggiornaUI();
 }
 
 function rimuovi(index) {
     diario.splice(index, 1);
-    localStorage.setItem('nv_diario', JSON.stringify(diario));
+    queueUserDataPersist();
     aggiornaUI();
 }
 
@@ -6487,7 +7007,7 @@ function escapeHtml(value) {
 }
 
 function getAIProfilePayload() {
-    const storedProfile = JSON.parse(localStorage.getItem('nv_profilo')) || profilo || {};
+    const storedProfile = profilo || userProfile || {};
 
     return {
         username: storedProfile.username || '',
@@ -6996,7 +7516,7 @@ function applyLunchContextPreference(profileData) {
 
 function persistLunchContextPreference(lunchContext) {
     const normalizedLunchContext = lunchContext === 'free-day' ? 'free-day' : 'workday';
-    const currentProfile = JSON.parse(localStorage.getItem('nv_profilo')) || userProfile || null;
+    const currentProfile = profilo || userProfile || null;
     if (!currentProfile) return normalizedLunchContext;
 
     const updatedProfile = {
@@ -7006,17 +7526,7 @@ function persistLunchContextPreference(lunchContext) {
 
     profilo = updatedProfile;
     userProfile = updatedProfile;
-    localStorage.setItem('nv_profilo', JSON.stringify(updatedProfile));
-
-    const diaryProfile = JSON.parse(localStorage.getItem('userDiaryProfile')) || {};
-    localStorage.setItem('userDiaryProfile', JSON.stringify({
-        ...diaryProfile,
-        dataCreazione: diaryProfile.dataCreazione || new Date().toLocaleDateString(),
-        profilo: {
-            ...(diaryProfile.profilo || {}),
-            ...updatedProfile
-        }
-    }));
+    queueUserDataPersist(updatedProfile);
 
     return normalizedLunchContext;
 }
@@ -9080,9 +9590,9 @@ function renderChart(totalCalories, remaining) {
 function updateHomeStats() {
     const giorno = log[activeDate] || { k: 0, p: 0, c: 0, g: 0, w: 0, items: [] };
     const totalCalories = Math.round(giorno.k || 0);
-    const carbs = Math.round(giorno.c || 0);
-    const protein = Math.round(giorno.p || 0);
-    const fats = Math.round(giorno.g || 0);
+    const carbs = Number(giorno.c || 0);
+    const protein = Number(giorno.p || 0);
+    const fats = Number(giorno.g || 0);
 
     const goal = (profilo && profilo.target) ? Math.round(profilo.target) : 2200;
     const remaining = Math.max(0, goal - totalCalories);
@@ -9099,21 +9609,28 @@ function updateHomeStats() {
     const carbDisplay = document.getElementById('home-carb');
     const protDisplay = document.getElementById('home-prot');
     const fatDisplay = document.getElementById('home-fat');
-    const carbTarget = (profilo && profilo.carbsTarget) ? profilo.carbsTarget : 85;
-    const protTarget = (profilo && profilo.proteinTarget) ? profilo.proteinTarget : 360;
-    const fatTarget = (profilo && profilo.fatTarget) ? profilo.fatTarget : 180;
+    const carbEnergyDisplay = document.getElementById('home-carb-energy');
+    const protEnergyDisplay = document.getElementById('home-prot-energy');
+    const fatEnergyDisplay = document.getElementById('home-fat-energy');
+    const macroCalories = (carbs * 4) + (protein * 4) + (fats * 9);
+    const carbPercent = macroCalories > 0 ? Math.round((carbs * 4 / macroCalories) * 100) : 0;
+    const proteinPercent = macroCalories > 0 ? Math.round((protein * 4 / macroCalories) * 100) : 0;
+    const fatsPercent = macroCalories > 0 ? Math.max(0, 100 - carbPercent - proteinPercent) : 0;
 
-    if (carbDisplay) carbDisplay.innerText = `${carbs}/${carbTarget} g`;
-    if (protDisplay) protDisplay.innerText = `${protein}/${protTarget} g`;
-    if (fatDisplay) fatDisplay.innerText = `${fats}/${fatTarget} g`;
+    if (carbDisplay) carbDisplay.innerText = `${carbs.toFixed(1)} g`;
+    if (protDisplay) protDisplay.innerText = `${protein.toFixed(1)} g`;
+    if (fatDisplay) fatDisplay.innerText = `${fats.toFixed(1)} g`;
+    if (carbEnergyDisplay) carbEnergyDisplay.innerText = `${carbPercent}%`;
+    if (protEnergyDisplay) protEnergyDisplay.innerText = `${proteinPercent}%`;
+    if (fatEnergyDisplay) fatEnergyDisplay.innerText = `${fatsPercent}%`;
 
     const barCarb = document.getElementById('bar-carb');
     const barProt = document.getElementById('bar-prot');
     const barFat = document.getElementById('bar-fat');
 
-    if (barCarb) barCarb.style.width = `${Math.min(100, (carbs / carbTarget) * 100)}%`;
-    if (barProt) barProt.style.width = `${Math.min(100, (protein / protTarget) * 100)}%`;
-    if (barFat) barFat.style.width = `${Math.min(100, (fats / fatTarget) * 100)}%`;
+    if (barCarb) barCarb.style.width = `${carbPercent}%`;
+    if (barProt) barProt.style.width = `${proteinPercent}%`;
+    if (barFat) barFat.style.width = `${fatsPercent}%`;
 
     aggiornaRaccomandazioneAcqua((profilo && profilo.weight) || (userProfile && userProfile.weight) || 0);
 
@@ -9146,9 +9663,34 @@ function updateHomeStats() {
     renderChart(totalCalories, remaining);
 }
 
-function logout() {
-    localStorage.clear();
-    location.reload();
+async function logout() {
+    await saveActiveSession(null);
+    wizardShowProfileCreatedPopup = false;
+    pendingWizardProfileDraft = null;
+    profilo = null;
+    userProfile = {};
+    diario = [];
+    acqua = 0;
+    log = {};
+    ricetteSalvate = [];
+    selectedAvatarPath = '';
+    showAuthScreen();
+    switchAuthMode('login');
+}
+
+async function deleteCurrentUserAccount() {
+    if (!activeSession?.userId) {
+        await logout();
+        return;
+    }
+
+    const userIdToDelete = activeSession.userId;
+    const usernameKeyToDelete = normalizeUsernameKey(activeSession.username || '');
+    const remainingUsers = getRegisteredUsers().filter((user) => user.userId !== userIdToDelete && user.usernameKey !== usernameKeyToDelete);
+
+    saveRegisteredUsers(remainingUsers);
+    localStorage.removeItem(getUserDataStorageKey(userIdToDelete));
+    await logout();
 }
 
 function apriConfermaResetProfilo() {
@@ -9165,9 +9707,9 @@ function chiudiConfermaResetProfilo() {
     }
 }
 
-function eseguiResetProfilo() {
+async function eseguiResetProfilo() {
     chiudiConfermaResetProfilo();
-    logout();
+    await deleteCurrentUserAccount();
 }
 
 function salvaRicettaAI(index) {
@@ -9224,7 +9766,7 @@ function salvaRicettaAI(index) {
     };
 
     ricetteSalvate.push(savedRecipe);
-    localStorage.setItem('nv_ricette', JSON.stringify(ricetteSalvate));
+    queueUserDataPersist();
     aggiornaListaRicetteSalvate();
     alert('Ricetta AI salvata nei tuoi piatti!');
 }
@@ -9237,7 +9779,17 @@ function setScannerVisibility(visible) {
 
     const scanButton = document.querySelector('.scan-trigger-btn');
     if (scanButton) {
-        scanButton.textContent = visible ? 'Chiudi scanner' : '📷 Scansiona';
+        const scanLabel = scanButton.querySelector('.scan-trigger-label');
+        if (scanLabel) {
+            scanLabel.textContent = visible ? 'Chiudi scanner' : 'Scansiona';
+        }
+        const scanIcon = scanButton.querySelector('i[data-lucide]');
+        if (scanIcon) {
+            scanIcon.setAttribute('data-lucide', visible ? 'scan-search' : 'scan-line');
+        }
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
     }
 }
 

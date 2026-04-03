@@ -13,7 +13,56 @@
 </head>
 <body>
 
-    <div id="setup-screen" class="organic-panel welcome-card">
+    <div id="auth-screen" class="auth-shell">
+        <div class="organic-panel welcome-card auth-card">
+            <header class="welcome-header auth-header">
+                <div class="brand-logo" aria-label="Nutri-Me">
+                    <svg width="220" height="56" viewBox="0 0 220 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="g1-auth" x1="0" y1="0" x2="1" y2="0">
+                                <stop offset="0%" stop-color="#00C0B2" />
+                                <stop offset="100%" stop-color="#00A9D6" />
+                            </linearGradient>
+                        </defs>
+                        <text x="0" y="38" font-family="'Poppins', sans-serif" font-weight="800" font-size="44" fill="url(#g1-auth)">NUTRI-ME</text>
+                    </svg>
+                </div>
+                <div class="auth-copy">
+                    <h1>Accedi o crea il tuo profilo</h1>
+                    <p>Se hai gia un account puoi entrare subito. Se sei nuovo, scegli subito username e password e poi completa il questionario personale.</p>
+                </div>
+            </header>
+
+            <div class="auth-tabs" role="tablist" aria-label="Autenticazione">
+                <button type="button" id="auth-login-tab" class="auth-tab active" data-auth-mode="login">Login</button>
+                <button type="button" id="auth-register-tab" class="auth-tab" data-auth-mode="register">Nuovo profilo</button>
+            </div>
+
+            <div class="auth-forms-wrap">
+                <form id="login-form" class="auth-form active" autocomplete="on">
+                    <label for="login-username">Username</label>
+                    <input type="text" id="login-username" class="main-input" placeholder="Inserisci il tuo username" required>
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" class="main-input" placeholder="Inserisci la password" required>
+                    <button type="submit" class="btn-main">Accedi</button>
+                </form>
+
+                <form id="register-form" class="auth-form" autocomplete="off">
+                    <label for="register-username">Username</label>
+                    <input type="text" id="register-username" class="main-input" placeholder="Scegli un username" required>
+                    <label for="register-password">Password</label>
+                    <input type="password" id="register-password" class="main-input" placeholder="Crea una password" required>
+                    <label for="register-confirm-password">Conferma Password</label>
+                    <input type="password" id="register-confirm-password" class="main-input" placeholder="Ripeti la password" required>
+                    <button type="submit" class="btn-main">Crea profilo e continua</button>
+                </form>
+            </div>
+
+            <p id="auth-feedback" class="auth-feedback" role="status" aria-live="polite"></p>
+        </div>
+    </div>
+
+    <div id="setup-screen" class="organic-panel welcome-card" style="display:none;">
         <header class="welcome-header">
             <div class="brand-logo" aria-label="Nutri-Me">
                 <svg width="220" height="56" viewBox="0 0 220 56" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -31,8 +80,6 @@
         <div class="progress-container"><div class="progress-bar-fill" id="wizard-progress"></div></div>
         <div class="setup-wizard" id="setup-wizard">
             <div class="wizard-step active" data-step="1">
-                <label>Username<span style="color:#000;">*</span></label>
-                <input type="text" id="username" placeholder="Inserisci il tuo username" />
                 <label>Genere<span style="color:#000;">*</span></label>
                                 <input type="hidden" id="user-sex" value="">
                                 <div class="meal-selector chip-group">
@@ -141,7 +188,7 @@
             </div>
             <!-- No steps beyond 6 -->
             <div class="wizard-controls">
-                <button class="btn-secondary" id="prev-btn" onclick="prevStep()" disabled>Indietro</button>
+                <button class="btn-secondary" id="prev-btn" onclick="prevStep()" disabled style="display:none;">Indietro</button>
                 <button class="btn-secondary" id="skip-btn" onclick="skipStep()" style="display:none;">Skip</button>
                 <button class="btn-main" id="next-btn" onclick="nextStep()">Avanti</button>
             </div>
@@ -188,12 +235,12 @@
                             </div>
                             <div class="kcal-details">
                                 <div class="kcal-item">
-                                    <span class="dot consumate"></span>
-                                    <p>Consumate <strong id="home-kcal-intake">0 kcal</strong></p>
+                                    <span class="kcal-item-label">Obiettivo giornaliero</span>
+                                    <strong id="home-kcal-goal" class="kcal-item-value">2200 kcal</strong>
                                 </div>
                                 <div class="kcal-item">
-                                    <span class="dot obiettivo"></span>
-                                    <p>Obiettivo <strong id="home-kcal-goal">2200 kcal</strong></p>
+                                    <span class="kcal-item-label">Kcal consumate</span>
+                                    <strong id="home-kcal-intake" class="kcal-item-value">0 kcal</strong>
                                 </div>
                             </div>
                         </div>
@@ -201,29 +248,30 @@
                             <div class="macro-card carb">
                                 <div class="macro-info">
                                     <label>Carboidrati</label>
-                                    <span id="home-carb">0/0 g</span>
+                                    <strong id="home-carb">0.0 g</strong>
                                 </div>
                                 <div class="progress-bar"><div id="bar-carb" style="width: 0%"></div></div>
+                                <small id="home-carb-energy">0%</small>
                             </div>
                             <div class="macro-card prot">
                                 <div class="macro-info">
                                     <label>Proteine</label>
-                                    <span id="home-prot">0/0 g</span>
+                                    <strong id="home-prot">0.0 g</strong>
                                 </div>
                                 <div class="progress-bar"><div id="bar-prot" style="width: 0%"></div></div>
+                                <small id="home-prot-energy">0%</small>
                             </div>
                             <div class="macro-card fat">
                                 <div class="macro-info">
                                     <label>Grassi</label>
-                                    <span id="home-fat">0/0 g</span>
+                                    <strong id="home-fat">0.0 g</strong>
                                 </div>
                                 <div class="progress-bar"><div id="bar-fat" style="width: 0%"></div></div>
+                                <small id="home-fat-energy">0%</small>
                             </div>
                         </div>
 
                 <div class="micro-targets">
-                    <h3>Target Micronutrienti</h3>
-
                     <div class="micro-row">
                         <div class="water-recommendation-panel">
                             <span class="water-icon">💧</span>
@@ -231,53 +279,59 @@
                         </div>
                     </div>
 
-                    <div class="micro-row">
-                        <div class="micro-row-top">
-                            <div class="micro-row-title"><i data-lucide="droplet" class="micro-icon"></i><span>Ferro</span></div>
-                            <strong id="val-fe">0 / 14 mg</strong>
-                        </div>
-                        <div class="micro-progress"><div id="bar-fe" style="width:0%"></div></div>
-                    </div>
+                    <details class="micro-details">
+                        <summary class="micro-details-toggle">Micronutrienti</summary>
 
-                    <div class="micro-row">
-                        <div class="micro-row-top">
-                            <div class="micro-row-title"><i data-lucide="milk" class="micro-icon"></i><span>Calcio</span></div>
-                            <strong id="val-ca">0 / 1000 mg</strong>
-                        </div>
-                        <div class="micro-progress"><div id="bar-ca" style="width:0%"></div></div>
-                    </div>
+                        <div class="micro-details-content">
+                            <div class="micro-row">
+                                <div class="micro-row-top">
+                                    <div class="micro-row-title"><i data-lucide="droplet" class="micro-icon"></i><span>Ferro</span></div>
+                                    <strong id="val-fe">0 / 14 mg</strong>
+                                </div>
+                                <div class="micro-progress"><div id="bar-fe" style="width:0%"></div></div>
+                            </div>
 
-                    <div class="micro-row">
-                        <div class="micro-row-top">
-                            <div class="micro-row-title"><i data-lucide="flask-conical" class="micro-icon"></i><span>Magnesio</span></div>
-                            <strong id="val-mg">0 / 300 mg</strong>
-                        </div>
-                        <div class="micro-progress"><div id="bar-mg" style="width:0%"></div></div>
-                    </div>
+                            <div class="micro-row">
+                                <div class="micro-row-top">
+                                    <div class="micro-row-title"><i data-lucide="milk" class="micro-icon"></i><span>Calcio</span></div>
+                                    <strong id="val-ca">0 / 1000 mg</strong>
+                                </div>
+                                <div class="micro-progress"><div id="bar-ca" style="width:0%"></div></div>
+                            </div>
 
-                    <div class="micro-row">
-                        <div class="micro-row-top">
-                            <div class="micro-row-title"><i data-lucide="banana" class="micro-icon"></i><span>Potassio</span></div>
-                            <strong id="val-k">0 / 3500 mg</strong>
-                        </div>
-                        <div class="micro-progress"><div id="bar-k" style="width:0%"></div></div>
-                    </div>
+                            <div class="micro-row">
+                                <div class="micro-row-top">
+                                    <div class="micro-row-title"><i data-lucide="flask-conical" class="micro-icon"></i><span>Magnesio</span></div>
+                                    <strong id="val-mg">0 / 300 mg</strong>
+                                </div>
+                                <div class="micro-progress"><div id="bar-mg" style="width:0%"></div></div>
+                            </div>
 
-                    <div class="micro-row">
-                        <div class="micro-row-top">
-                            <div class="micro-row-title"><i data-lucide="dna" class="micro-icon"></i><span>Vit. B12</span></div>
-                            <strong id="val-b12">0 / 2.4 µg</strong>
-                        </div>
-                        <div class="micro-progress"><div id="bar-b12" style="width:0%"></div></div>
-                    </div>
+                            <div class="micro-row">
+                                <div class="micro-row-top">
+                                    <div class="micro-row-title"><i data-lucide="banana" class="micro-icon"></i><span>Potassio</span></div>
+                                    <strong id="val-k">0 / 3500 mg</strong>
+                                </div>
+                                <div class="micro-progress"><div id="bar-k" style="width:0%"></div></div>
+                            </div>
 
-                    <div class="micro-row">
-                        <div class="micro-row-top">
-                            <div class="micro-row-title"><i data-lucide="leaf" class="micro-icon"></i><span>Acido folico</span></div>
-                            <strong id="val-fol">0 / 400 µg</strong>
+                            <div class="micro-row">
+                                <div class="micro-row-top">
+                                    <div class="micro-row-title"><i data-lucide="dna" class="micro-icon"></i><span>Vit. B12</span></div>
+                                    <strong id="val-b12">0 / 2.4 µg</strong>
+                                </div>
+                                <div class="micro-progress"><div id="bar-b12" style="width:0%"></div></div>
+                            </div>
+
+                            <div class="micro-row">
+                                <div class="micro-row-top">
+                                    <div class="micro-row-title"><i data-lucide="leaf" class="micro-icon"></i><span>Acido folico</span></div>
+                                    <strong id="val-fol">0 / 400 µg</strong>
+                                </div>
+                                <div class="micro-progress"><div id="bar-fol" style="width:0%"></div></div>
+                            </div>
                         </div>
-                        <div class="micro-progress"><div id="bar-fol" style="width:0%"></div></div>
-                    </div>
+                    </details>
                 </div>
 
                 <div class="stats-row">
@@ -313,7 +367,7 @@
                 <div class="search-box diary-search-box">
                     <div class="diary-search-row">
                         <input type="text" id="food-search" placeholder="Cerca cibo o ricetta..." oninput="cercaAlimento(event, 'main')">
-                        <button type="button" class="scan-trigger-btn" onclick="avviaScansioneIntelligente()"><i data-lucide="scan-line"></i>Scansiona</button>
+                        <button type="button" class="scan-trigger-btn" onclick="avviaScansioneIntelligente()"><i data-lucide="scan-line"></i><span class="scan-trigger-label">Scansiona</span></button>
                     </div>
                     <div id="reader" class="barcode-reader" style="display:none;"></div>
                     <div id="search-results" class="search-dropdown"></div>
@@ -666,17 +720,22 @@
                     <img id="profile-avatar-preview" src="avatars/1.jpg" alt="Avatar profilo">
                 </div>
 
-                <div id="profilo-summary" class="profile-summary-box" style="margin-bottom: 20px; padding: 14px; background: #f8f9fa; border-radius: 14px; border: 1px solid var(--border);">
-                    <strong class="profile-summary-title">Riepilogo attuale</strong>
-                    <div id="profilo-summary-content" class="profile-summary-content" style="margin-top: 10px; color: var(--text);"></div>
-                </div>
+                <details id="profilo-summary" class="profile-summary-box profile-summary-panel">
+                    <summary class="profile-summary-toggle">
+                        <div class="profile-summary-toggle-copy">
+                            <strong class="profile-summary-title">Riepilogo attuale</strong>
+                            <span class="profile-summary-subtitle">Tocca per vedere tutte le informazioni del profilo</span>
+                        </div>
+                    </summary>
+                    <div id="profilo-summary-content" class="profile-summary-content"></div>
+                </details>
 
                 <details class="profile-editor">
-                    <summary class="btn-main orange profile-editor-toggle">MODIFICA PROFILO</summary>
+                    <summary class="btn-main profile-editor-toggle profile-editor-toggle-edit">MODIFICA PROFILO</summary>
 
                     <div class="profile-editor-content">
                         <div style="display: grid; gap: 12px;">
-                            <input type="text" id="profilo-username" class="main-input" placeholder="Nome utente">
+                            <input type="text" id="profilo-username" class="main-input" placeholder="Nome utente" readonly>
                             <select id="profilo-sex">
                                 <option value="uomo">Uomo</option>
                                 <option value="donna">Donna</option>
@@ -737,13 +796,13 @@
                 </details>
 
                 <details class="profile-editor">
-                    <summary class="btn-main orange profile-editor-toggle">CRONOLOGIA</summary>
+                    <summary class="btn-main profile-editor-toggle profile-editor-toggle-history">CRONOLOGIA PASTI</summary>
                     <div class="profile-editor-content">
                         <div id="chronology-list" class="chronology-list"></div>
                     </div>
                 </details>
 
-                <button onclick="apriConfermaResetProfilo()" style="background-color: #dc3545; color: white; margin-top: 20px;" class="btn-main">Resetta il mio profilo</button>
+                <button onclick="apriConfermaResetProfilo()" class="btn-main btn-logout-profile" style="margin-top: 20px;">LOG OUT</button>
                 <div class="section-brand-footer" aria-label="Nutri-Me">NUTRI-ME</div>
             </div>
         </section>
@@ -751,11 +810,22 @@
         <div id="reset-profile-modal" class="confirm-modal" style="display:none;">
             <div class="confirm-modal-backdrop" onclick="chiudiConfermaResetProfilo()"></div>
             <div class="confirm-modal-card" role="dialog" aria-modal="true" aria-labelledby="reset-profile-title">
-                <h3 id="reset-profile-title" class="confirm-modal-title">Conferma reset</h3>
-                <p class="confirm-modal-text">Se resetti il tuo profilo tutte le informazioni inserite andranno perse. Procedo?</p>
+                <h3 id="reset-profile-title" class="confirm-modal-title">Conferma log out</h3>
+                <p class="confirm-modal-text">Se effettui il log out il profilo verra eliminato e tutti i dati registrati fino a questo momento saranno cancellati definitivamente. Procedo?</p>
                 <div class="confirm-modal-actions">
-                    <button onclick="eseguiResetProfilo()" class="btn-main" style="background-color: #dc3545; color: white;">Si</button>
+                    <button onclick="eseguiResetProfilo()" class="btn-main btn-logout-profile">Si, elimina tutto</button>
                     <button onclick="chiudiConfermaResetProfilo()" class="btn-secondary">No</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="profile-created-modal" class="confirm-modal" style="display:none;">
+            <div class="confirm-modal-backdrop" onclick="closeProfileCreatedModal()"></div>
+            <div class="confirm-modal-card profile-created-card" role="dialog" aria-modal="true" aria-labelledby="profile-created-title">
+                <h3 id="profile-created-title" class="confirm-modal-title profile-created-title">Profilo creato</h3>
+                <p id="profile-created-message" class="confirm-modal-text"></p>
+                <div class="confirm-modal-actions profile-created-actions">
+                    <button type="button" class="btn-main" onclick="closeProfileCreatedModal()">Vai alla Home</button>
                 </div>
             </div>
         </div>

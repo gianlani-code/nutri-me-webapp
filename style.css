@@ -1,3 +1,58 @@
+.kcal-details {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 6px;
+}
+
+.kcal-item {
+    display: grid;
+    gap: 6px;
+    justify-items: center;
+    text-align: center;
+    padding: 11px 12px;
+    border-radius: 18px;
+    border: 1px solid #dfe8f2;
+    background: linear-gradient(180deg, #fbfdff 0%, #f4f8fc 100%);
+    box-shadow: 0 6px 16px rgba(21, 41, 61, 0.05);
+}
+
+.kcal-item-label {
+    color: #607694;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    line-height: 1.2;
+}
+
+.kcal-item-value {
+    color: #1f3758;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.18rem;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+@media (max-width: 420px) {
+    .kcal-details {
+        grid-template-columns: 1fr;
+    }
+}
+
+[data-theme="dark"] .kcal-item {
+    background: #1a2233;
+    border-color: rgba(255,255,255,0.08);
+    box-shadow: none;
+}
+
+[data-theme="dark"] .kcal-item-label {
+    color: #94a3b8;
+}
+
+[data-theme="dark"] .kcal-item-value {
+    color: #e2e8f0;
+}
 /* Bottoni più piccoli solo per la domanda motivazione (traccia nutrienti) */
 .chip-group[data-type="motivation"] .chip {
     font-size: 0.87rem;
@@ -236,10 +291,17 @@ Esempio di utilizzo dei pulsanti:
 
 .brand-logo {
     display: block;
-    max-width: 180px;
+    max-width: 240px;
     width: 100%;
-    margin: 0 auto 6px;
+    margin: 0 auto;
     object-fit: contain;
+}
+
+.brand-logo svg {
+    display: block;
+    width: 220px;
+    max-width: 100%;
+    margin: 0 auto;
 }
 
 .progress-container {
@@ -247,7 +309,7 @@ Esempio di utilizzo dei pulsanti:
     height: 6px;
     background: #ebf0f6;
     border-radius: 8px;
-    margin-bottom: 20px;
+    margin: 0 0 10px;
     overflow: hidden;
 }
 
@@ -258,15 +320,209 @@ Esempio di utilizzo dei pulsanti:
     transition: width 0.4s ease;
 }
 
-#setup-screen {
+.auth-shell {
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 30px 0;
+    padding: 30px 16px;
+    background:
+        radial-gradient(circle at top left, rgba(52, 178, 127, 0.16), transparent 32%),
+        radial-gradient(circle at bottom right, rgba(47, 127, 230, 0.16), transparent 30%),
+        linear-gradient(180deg, #f6fbff 0%, #f1f5f9 100%);
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.auth-shell .brand-logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    max-width: 220px;
+    width: 100%;
+    margin: 0 auto 8px;
+}
+
+.auth-shell .brand-logo svg {
+    display: block;
+    width: 220px;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.auth-card {
+    width: min(100%, 430px);
+    padding: 28px 24px 24px;
+    position: relative;
+    overflow: hidden;
+}
+
+.auth-card::before {
+    content: '';
+    position: absolute;
+    inset: -30% auto auto 58%;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: linear-gradient(180deg, rgba(0, 192, 178, 0.18), rgba(0, 169, 214, 0));
+    pointer-events: none;
+}
+
+.auth-header {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.auth-copy {
+    text-align: center;
+    margin: 0 auto;
+    max-width: 320px;
+}
+
+.auth-copy h1 {
+    font-size: 1.6rem;
+    color: #1f3758;
+    margin-bottom: 10px;
+}
+
+.auth-copy p {
+    margin: 0;
+    color: #58718f;
+    font-size: 0.98rem;
+}
+
+.auth-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 26px 0 18px;
+    padding: 6px;
+    border-radius: 18px;
+    background: linear-gradient(180deg, #eef4fa 0%, #e7eff7 100%);
+    border: 1px solid #d8e3ee;
+}
+
+.auth-tab {
+    border: none;
+    border-radius: 14px;
+    padding: 12px 14px;
+    background: transparent;
+    color: #58718f;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.auth-tab.active {
+    background: #ffffff;
+    color: #1f3758;
+    box-shadow: 0 10px 18px rgba(31, 55, 88, 0.08);
+}
+
+.auth-forms-wrap {
+    position: relative;
+}
+
+.auth-form {
+    display: none;
+    flex-direction: column;
+    gap: 6px;
+    animation: fadeIn 0.28s ease forwards;
+}
+
+.auth-form.active {
+    display: flex;
+}
+
+.auth-form label {
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1f3758;
+}
+
+.auth-form .main-input {
+    margin-bottom: 10px;
+}
+
+.auth-start-copy {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.auth-start-copy h2 {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.1rem;
+    color: #1f3758;
+}
+
+.auth-start-copy p {
+    margin: 0;
+    color: #58718f;
+    font-size: 0.95rem;
+    line-height: 1.55;
+}
+
+.auth-switch-copy {
+    margin: 8px 0 0;
+    text-align: center;
+    color: #5d728c;
+    font-size: 0.94rem;
+}
+
+.auth-inline-switch {
+    padding: 0;
+    border: none;
+    background: none;
+    color: #0074a6;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.auth-feedback {
+    min-height: 22px;
+    margin: 16px 0 0;
+    text-align: center;
+    color: #7f1d1d;
+    font-size: 0.9rem;
+    font-family: 'Inter', sans-serif;
+}
+
+.auth-feedback.success {
+    color: #17603d;
+}
+
+#setup-screen {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: min(100%, 440px);
+    margin: 0 auto;
+    padding: 36px 16px 30px;
+    gap: 6px;
     background: linear-gradient(180deg, #f6fbff 0%, #f1f5f9 100%);
     user-select: none;
     -webkit-user-select: none;
+}
+
+#setup-screen .welcome-header {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
 }
 
 #welcome-screen, .welcome-card, .organic-panel {
@@ -285,9 +541,9 @@ Esempio di utilizzo dei pulsanti:
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 16px;
+    padding: 18px 16px 16px;
     border-radius: 22px;
-    gap: 10px;
+    gap: 12px;
     background: linear-gradient(180deg, #f5f7fa 0%, #edf2f7 100%);
     border: 1px solid #d9e3ee;
     box-shadow: 0 20px 30px rgba(39, 66, 110, 0.08);
@@ -300,7 +556,7 @@ Esempio di utilizzo dei pulsanti:
     border-radius: 16px;
     border: 1px solid #d7e1ec;
     box-shadow: 0 8px 16px rgba(34, 61, 99, 0.06);
-    padding: 14px 12px 16px;
+    padding: 16px 12px 18px;
     color: #1f3758;
 }
 
@@ -427,17 +683,21 @@ Esempio di utilizzo dei pulsanti:
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 8px;
+    gap: 5px;
     width: 100%;
     max-width: 360px;
-    margin-top: 14px;
+    margin-top: 16px;
 }
 
 .wizard-controls button {
-    padding: 8px 14px;
+    width: 104px;
+    max-width: 104px;
+    flex: 0 0 104px;
+    padding: 8px 8px;
     font-size: 0.82rem;
     border-radius: 12px;
     min-width: 100px;
+    margin-top: 0;
 }
 
 .btn-main {
@@ -488,6 +748,10 @@ body {
     color: var(--text);
     padding-bottom: 90px;
     line-height: 1.6;
+}
+
+#main-app {
+    display: none;
 }
 
 h1, h2, h3, h4 {
@@ -567,10 +831,28 @@ h1, h2, h3, h4 {
     align-items: center;
     justify-content: center;
     margin-bottom: 0;
+    border: 1px solid transparent;
+    box-shadow: none;
 }
 
 .profile-editor-toggle::-webkit-details-marker {
     display: none;
+}
+
+.profile-editor-toggle-edit {
+    background: linear-gradient(180deg, #ffdcae 0%, #ffc66f 100%);
+    color: #7b4a12;
+    border-color: #f2c178;
+}
+
+.profile-editor-toggle-history {
+    background: linear-gradient(180deg, #cfeaff 0%, #a8d8ff 100%);
+    color: #1d587f;
+    border-color: #9fcaef;
+}
+
+.profile-editor-toggle:hover {
+    transform: translateY(-1px);
 }
 
 .profile-editor-content {
@@ -584,6 +866,61 @@ h1, h2, h3, h4 {
     font-weight: 700;
     letter-spacing: 0.03em;
     color: #1f5f94;
+}
+
+.profile-summary-panel {
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    background: linear-gradient(180deg, #fbfdff 0%, #f4f8fc 100%);
+    box-shadow: 0 12px 28px rgba(21, 41, 61, 0.08);
+    overflow: hidden;
+}
+
+.profile-summary-toggle {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 18px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.profile-summary-toggle::-webkit-details-marker {
+    display: none;
+}
+
+.profile-summary-toggle::after {
+    content: '+';
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    background: rgba(0, 116, 166, 0.08);
+    color: #0074a6;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.profile-summary-panel[open] .profile-summary-toggle::after {
+    content: '-';
+}
+
+.profile-summary-toggle-copy {
+    display: grid;
+    gap: 4px;
+}
+
+.profile-summary-subtitle {
+    color: #607694;
+    font-size: 0.8rem;
+    font-weight: 600;
 }
 
 .profile-avatar-wrapper {
@@ -602,10 +939,160 @@ h1, h2, h3, h4 {
 }
 
 .profile-summary-content {
+    padding: 0 18px 18px;
     font-family: 'Inter', sans-serif;
     font-size: 0.98rem;
     line-height: 1.65;
     color: #31475f;
+}
+
+.profile-summary-hero {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(0, 116, 166, 0.08) 0%, rgba(52, 178, 127, 0.08) 100%);
+    border: 1px solid rgba(76, 154, 192, 0.16);
+}
+
+.profile-summary-name {
+    color: #173656;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.profile-summary-meta {
+    margin-top: 4px;
+    color: #607694;
+    font-size: 0.84rem;
+    font-weight: 600;
+}
+
+.profile-summary-goal-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid rgba(76, 154, 192, 0.18);
+    color: #1f5f94;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.profile-summary-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.profile-summary-stat {
+    padding: 12px 13px;
+    border-radius: 16px;
+    border: 1px solid #dfe8f2;
+    background: #fff;
+}
+
+.profile-summary-stat span {
+    display: block;
+    color: #607694;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.profile-summary-stat strong {
+    display: block;
+    margin-top: 4px;
+    color: #1f3758;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.96rem;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.profile-summary-stat-kcal {
+    background: linear-gradient(180deg, #f6fbff 0%, #eef7ff 100%);
+}
+
+.profile-summary-stat-protein {
+    background: linear-gradient(180deg, #f2fbf6 0%, #ebf8f0 100%);
+}
+
+.profile-summary-stat-water {
+    background: linear-gradient(180deg, #f3fbff 0%, #eaf6ff 100%);
+}
+
+.profile-summary-stat-activity {
+    background: linear-gradient(180deg, #fff9f2 0%, #fff2e4 100%);
+}
+
+.profile-summary-list {
+    display: grid;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.profile-summary-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 11px 0;
+    border-bottom: 1px solid rgba(167, 182, 201, 0.24);
+}
+
+.profile-summary-row:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+}
+
+.profile-summary-row span {
+    color: #607694;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.profile-summary-row strong {
+    color: #1f3758;
+    font-size: 0.86rem;
+    font-weight: 700;
+    text-align: right;
+    line-height: 1.45;
+}
+
+@media (max-width: 420px) {
+    .profile-summary-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-summary-hero {
+        flex-direction: column;
+    }
+
+    .profile-summary-goal-pill {
+        align-self: flex-start;
+    }
+
+    .profile-summary-row {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .profile-summary-row strong {
+        text-align: left;
+    }
 }
 
 .confirm-modal {
@@ -658,6 +1145,63 @@ h1, h2, h3, h4 {
 .confirm-modal-actions .btn-main,
 .confirm-modal-actions .btn-secondary {
     margin: 0;
+}
+
+.profile-creation-title,
+.profile-created-title {
+    color: #1f3758;
+}
+
+.profile-creation-card,
+.profile-created-card {
+    width: min(100%, 440px);
+}
+
+.account-creation-form {
+    display: grid;
+    gap: 8px;
+}
+
+.account-creation-form label {
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1f3758;
+}
+
+.account-creation-form .main-input {
+    margin-bottom: 4px;
+}
+
+.modal-feedback {
+    min-height: 22px;
+    margin: 6px 0 2px;
+    text-align: center;
+    color: #7f1d1d;
+    font-size: 0.9rem;
+    font-family: 'Inter', sans-serif;
+}
+
+.modal-feedback.success {
+    color: #17603d;
+}
+
+.account-creation-actions,
+.profile-created-actions {
+    justify-content: center;
+}
+
+.btn-logout-profile {
+    background: linear-gradient(180deg, #4a5565 0%, #2f3844 100%);
+    color: #ffffff;
+    border: 1px solid rgba(36, 43, 52, 0.72);
+    box-shadow: 0 10px 20px rgba(29, 36, 46, 0.18);
+}
+
+.btn-logout-profile:hover,
+.btn-logout-profile:focus {
+    background: linear-gradient(180deg, #434d5c 0%, #27303a 100%);
+    color: #ffffff;
 }
 
 .btn-main:active {
@@ -773,6 +1317,27 @@ h1, h2, h3, h4, h5 { margin: 0; font-family: 'Poppins', sans-serif; }
     max-width: 385px;
     border: 1px solid var(--border);
     box-shadow: var(--shadow);
+}
+
+@media (max-width: 640px) {
+    .auth-card {
+        padding: 24px 18px 20px;
+        border-radius: 24px;
+    }
+
+    .auth-copy h1 {
+        font-size: 1.38rem;
+    }
+
+    #setup-screen {
+        padding: 28px 14px 24px;
+        gap: 12px;
+    }
+
+    .setup-wizard {
+        min-width: 0;
+        padding-top: 16px;
+    }
 }
 
 #pasti-rapidi .organic-panel {
@@ -1390,6 +1955,166 @@ h1, h2, h3, h4, h5 { margin: 0; font-family: 'Poppins', sans-serif; }
     line-height: 1.4;
 }
 
+.manual-recipe-summary {
+    display: grid;
+    gap: 12px;
+    padding: 14px;
+    border-radius: 18px;
+    border: 1px solid #d9e6ef;
+    background: linear-gradient(180deg, #fbfdff 0%, #f4f8fc 100%);
+    box-shadow: 0 10px 22px rgba(31, 79, 136, 0.06);
+}
+
+.manual-recipe-summary-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.manual-recipe-summary-title {
+    display: block;
+    color: #1f4f88;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.manual-recipe-summary-note {
+    margin: 0;
+    color: #5f748f;
+    font-size: 0.82rem;
+    line-height: 1.45;
+}
+
+.manual-recipe-summary-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: #e8f3ff;
+    color: #1f5fa5;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.manual-recipe-assessment-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.manual-recipe-assessment-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #eef6ff;
+    border: 1px solid #d7e7fb;
+    color: #1f5fa5;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.manual-recipe-macro-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.manual-recipe-macro-card {
+    padding: 12px 10px;
+    border-radius: 14px;
+    border: 1px solid #e1ebf5;
+    background: #ffffff;
+    text-align: center;
+}
+
+.manual-recipe-macro-card span {
+    display: block;
+    margin-bottom: 6px;
+    color: #607694;
+    font-size: 0.76rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    font-weight: 700;
+}
+
+.manual-recipe-macro-card strong {
+    color: #1f3758;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+}
+
+.manual-recipe-macro-card small {
+    display: block;
+    margin-top: 2px;
+    color: #607694;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+.manual-recipe-macro-bar {
+    width: 100%;
+    height: 8px;
+    margin: 10px 0 6px;
+    border-radius: 999px;
+    background: rgba(187, 203, 221, 0.42);
+    overflow: hidden;
+}
+
+.manual-recipe-macro-bar span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+}
+
+.manual-recipe-macro-card.protein {
+    background: linear-gradient(180deg, #f2fbf6 0%, #ebf8f0 100%);
+    border-color: #d4ebdb;
+}
+
+.manual-recipe-macro-card.protein .manual-recipe-macro-bar span {
+    background: linear-gradient(90deg, #2fbf71 0%, #34b27f 100%);
+}
+
+.manual-recipe-macro-card.carbs {
+    background: linear-gradient(180deg, #f8f6ff 0%, #f0edff 100%);
+    border-color: #dfdaf9;
+}
+
+.manual-recipe-macro-card.carbs .manual-recipe-macro-bar span {
+    background: linear-gradient(90deg, #7c6cf2 0%, #9387ff 100%);
+}
+
+.manual-recipe-macro-card.fats {
+    background: linear-gradient(180deg, #fff8ef 0%, #fff1df 100%);
+    border-color: #f4e0bd;
+}
+
+.manual-recipe-macro-card.fats .manual-recipe-macro-bar span {
+    background: linear-gradient(90deg, #f59e0b 0%, #f7b84d 100%);
+}
+
+.manual-recipe-summary-total {
+    margin: 0;
+    color: #607694;
+    font-size: 0.78rem;
+    text-align: center;
+}
+
+@media (max-width: 420px) {
+    .manual-recipe-macro-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 .ai-nutrition-details {
     margin: 12px 0 10px;
     border: 1px solid #d9e6ef;
@@ -1998,6 +2723,10 @@ input[type='text']:focus, input[type='number']:focus, select:focus {
 }
 
 .scan-trigger-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     border: none;
     border-radius: 14px;
     padding: 12px 14px;
@@ -2009,6 +2738,12 @@ input[type='text']:focus, input[type='number']:focus, select:focus {
     white-space: nowrap;
     cursor: pointer;
     box-shadow: 0 10px 20px rgba(31, 95, 165, 0.18);
+}
+
+.scan-trigger-label {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
 }
 
 .barcode-reader {
@@ -2095,35 +2830,34 @@ input[type='text']:focus, input[type='number']:focus, select:focus {
 }
 
 .macro-card {
-    background: #ffffff;
-    border: 1px solid #e6ecf4;
-    border-radius: 18px;
-    box-shadow: 0 10px 22px rgba(24, 52, 91, 0.08);
-    padding: 11px 10px;
+    border-radius: 14px;
+    border: 1px solid #e1ebf5;
+    box-shadow: none;
+    padding: 12px 10px;
     position: relative;
     overflow: hidden;
-    min-height: 82px;
+    min-height: 0;
 }
 
-.macro-card.carb::after,
-.macro-card.prot::after,
-.macro-card.fat::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 6px;
+.macro-card.prot {
+    background: linear-gradient(180deg, #f2fbf6 0%, #ebf8f0 100%);
+    border-color: #d4ebdb;
 }
 
-.macro-card.carb::after { background: linear-gradient(90deg, #ff9f1c 0%, #ff6e00 100%); }
-.macro-card.prot::after { background: linear-gradient(90deg, #32c58d 0%, #00a56c 100%); }
-.macro-card.fat::after { background: linear-gradient(90deg, #ff5656 0%, #dd2828 100%); }
+.macro-card.carb {
+    background: linear-gradient(180deg, #f8f6ff 0%, #f0edff 100%);
+    border-color: #dfdaf9;
+}
+
+.macro-card.fat {
+    background: linear-gradient(180deg, #fff8ef 0%, #fff1df 100%);
+    border-color: #f4e0bd;
+}
 
 .macro-card .macro-info {
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 6px;
     align-items: center;
     width: 100%;
     z-index: 1;
@@ -2142,10 +2876,10 @@ input[type='text']:focus, input[type='number']:focus, select:focus {
 
 .macro-card .macro-info label {
     font-family: 'Poppins', sans-serif;
-    font-size: 0.66rem;
+    font-size: 0.76rem;
     text-transform: uppercase;
-    letter-spacing: 0.35px;
-    color: #7f93a6;
+    letter-spacing: 0.03em;
+    color: #607694;
     font-weight: 700;
     display: block;
     text-align: center;
@@ -2154,21 +2888,50 @@ input[type='text']:focus, input[type='number']:focus, select:focus {
     white-space: nowrap;
 }
 
-.macro-card.carb .macro-info label {
-    transform: translateX(-7px);
-}
-
-.macro-card .macro-info span {
+.macro-card .macro-info strong {
     font-family: 'Poppins', sans-serif;
-    font-size: 0.84rem;
-    margin-bottom: 12px;
-    color: #243f5e;
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0;
+    color: #1f3758;
     white-space: nowrap;
     line-height: 1.2;
 }
 
 .macro-card .progress-bar {
-    display: none;
+    display: block;
+    width: 100%;
+    height: 8px;
+    margin: 10px 0 0;
+    border-radius: 999px;
+    background: rgba(187, 203, 221, 0.42);
+    overflow: hidden;
+}
+
+.macro-card .progress-bar div {
+    height: 100%;
+    border-radius: inherit;
+}
+
+.macro-card.prot .progress-bar div {
+    background: linear-gradient(90deg, #2fbf71 0%, #34b27f 100%);
+}
+
+.macro-card.carb .progress-bar div {
+    background: linear-gradient(90deg, #7c6cf2 0%, #9387ff 100%);
+}
+
+.macro-card.fat .progress-bar div {
+    background: linear-gradient(90deg, #f59e0b 0%, #f7b84d 100%);
+}
+
+.macro-card small {
+    display: block;
+    margin-top: 6px;
+    color: #607694;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-align: center;
 }
 
 .m-pill {
@@ -2219,12 +2982,12 @@ input[type='text']:focus, input[type='number']:focus, select:focus {
 .chart-container { width: 226px; height: 226px; margin: 0 auto; position: relative; }
 
 .micro-targets {
-    margin: 24px 16px 0;
-    background: #fff;
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow);
-    border-radius: 22px;
-    padding: 16px;
+    margin: 18px 0 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    border-radius: 0;
+    padding: 18px 0 0;
 }
 
 .micro-targets h3 {
@@ -2232,6 +2995,62 @@ input[type='text']:focus, input[type='number']:focus, select:focus {
     font-family: 'Poppins', sans-serif;
     font-size: 1rem;
     color: var(--text);
+}
+
+.micro-details {
+    margin-top: 14px;
+}
+
+.micro-details-toggle {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    padding: 13px 16px;
+    border: 1px solid rgba(76, 154, 192, 0.18);
+    border-radius: 16px;
+    background: linear-gradient(180deg, rgba(248, 251, 255, 0.98) 0%, rgba(242, 247, 252, 0.98) 100%);
+    color: #24415f;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    user-select: none;
+}
+
+.micro-details-toggle::-webkit-details-marker {
+    display: none;
+}
+
+.micro-details-toggle::after {
+    content: '+';
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    background: rgba(76, 154, 192, 0.12);
+    color: #2b608b;
+    font-size: 1rem;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.micro-details[open] .micro-details-toggle::after {
+    content: '-';
+}
+
+.micro-details-content {
+    padding-top: 14px;
+}
+
+.micro-details-content .micro-row:last-child {
+    margin-bottom: 0;
 }
 
 .micro-row {
@@ -2311,7 +3130,7 @@ input[type='text']:focus, input[type='number']:focus, select:focus {
     border: 1px solid rgba(76, 154, 192, 0.18);
     border-radius: 16px;
     background: linear-gradient(180deg, rgba(241, 250, 255, 0.95) 0%, rgba(248, 252, 251, 0.98) 100%);
-    box-shadow: 0 10px 24px rgba(46, 94, 129, 0.08);
+    box-shadow: none;
 }
 
 .water-icon {
@@ -2336,7 +3155,7 @@ input[type='text']:focus, input[type='number']:focus, select:focus {
 .dash-header, .stats-row { display: none !important; }
 
 /* elimina spazio sopra il grafico */
-.main-chart-card { margin-top: 0; padding-top: 16px; }
+.main-chart-card { margin-top: 0; padding-top: 0; }
 
 .progress-bar {
     background: #e8f0f8;
@@ -2456,12 +3275,12 @@ hr.spacer {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 16px;
+    padding: 12px 16px 16px;
     border-radius: 22px;
-    gap: 10px;
-    background: linear-gradient(180deg, #f5f7fa 0%, #edf2f7 100%);
-    border: 1px solid #d9e3ee;
-    box-shadow: 0 20px 30px rgba(39, 66, 110, 0.08);
+    gap: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
     overflow-x: hidden;
 }
 
@@ -2900,6 +3719,17 @@ hr.spacer {
   border-color: var(--border);
 }
 
+[data-theme="dark"] .micro-details-toggle {
+    background: rgba(30, 38, 56, 0.9);
+    border-color: rgba(255, 255, 255, 0.08);
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .micro-details-toggle::after {
+    background: rgba(148, 163, 184, 0.14);
+    color: #cbd5e1;
+}
+
 [data-theme="dark"] .micro-progress    { background: #1e2638; }
 [data-theme="dark"] .micro-row strong  { color: #e2e8f0; }
 [data-theme="dark"] .micro-row-title span { color: #94a3b8; }
@@ -2918,6 +3748,45 @@ hr.spacer {
 [data-theme="dark"] .profile-summary-content,
 [data-theme="dark"] #profilo-summary-content { color: var(--text); }
 [data-theme="dark"] .profile-summary-title    { color: #60a5fa; }
+[data-theme="dark"] .profile-summary-subtitle { color: #94a3b8; }
+[data-theme="dark"] .profile-summary-toggle::after {
+    background: rgba(96, 165, 250, 0.14);
+    color: #93c5fd;
+}
+[data-theme="dark"] .profile-summary-hero {
+    background: linear-gradient(135deg, rgba(96, 165, 250, 0.12) 0%, rgba(52, 211, 153, 0.1) 100%);
+    border-color: rgba(255,255,255,0.08);
+}
+[data-theme="dark"] .profile-summary-name,
+[data-theme="dark"] .profile-summary-row strong,
+[data-theme="dark"] .profile-summary-stat strong { color: #e2e8f0; }
+[data-theme="dark"] .profile-summary-meta,
+[data-theme="dark"] .profile-summary-row span,
+[data-theme="dark"] .profile-summary-stat span { color: #94a3b8; }
+[data-theme="dark"] .profile-summary-goal-pill {
+    background: rgba(15, 23, 42, 0.72);
+    border-color: rgba(255,255,255,0.08);
+    color: #93c5fd;
+}
+[data-theme="dark"] .profile-editor-toggle-edit {
+    background: linear-gradient(180deg, #7c5a2d 0%, #946a34 100%);
+    color: #fff2d7;
+    border-color: rgba(255,255,255,0.08);
+}
+[data-theme="dark"] .profile-editor-toggle-history {
+    background: linear-gradient(180deg, #284861 0%, #315977 100%);
+    color: #d9f0ff;
+    border-color: rgba(255,255,255,0.08);
+}
+[data-theme="dark"] .profile-summary-stat {
+    border-color: rgba(255,255,255,0.08);
+    box-shadow: none;
+}
+[data-theme="dark"] .profile-summary-stat-kcal { background: rgba(59, 130, 246, 0.12); }
+[data-theme="dark"] .profile-summary-stat-protein { background: rgba(34, 197, 94, 0.1); }
+[data-theme="dark"] .profile-summary-stat-water { background: rgba(14, 165, 233, 0.12); }
+[data-theme="dark"] .profile-summary-stat-activity { background: rgba(251, 146, 60, 0.12); }
+[data-theme="dark"] .profile-summary-row { border-bottom-color: rgba(255,255,255,0.08); }
 
 /* -- Dark Mode: Chronology -- */
 [data-theme="dark"] .chronology-item-row { background: #1e2638; border-color: rgba(255,255,255,0.06); }
@@ -2959,6 +3828,87 @@ hr.spacer {
 [data-theme="dark"] .ai-plan-stat span,
 [data-theme="dark"] .ai-plan-items,
 [data-theme="dark"] .ai-plan-note-list { color: #94a3b8; }
+
+[data-theme="dark"] .manual-recipe-summary {
+    background: #1a2233;
+    border-color: rgba(255,255,255,0.08);
+    box-shadow: none;
+}
+
+[data-theme="dark"] .manual-recipe-summary-title,
+[data-theme="dark"] .manual-recipe-macro-card strong {
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .manual-recipe-summary-note,
+[data-theme="dark"] .manual-recipe-macro-card span {
+    color: #94a3b8;
+}
+
+[data-theme="dark"] .manual-recipe-summary-badge {
+    background: rgba(59, 130, 246, 0.18);
+    color: #93c5fd;
+}
+
+[data-theme="dark"] .manual-recipe-assessment-tag {
+    background: rgba(59, 130, 246, 0.16);
+    border-color: rgba(147, 197, 253, 0.16);
+    color: #93c5fd;
+}
+
+[data-theme="dark"] .manual-recipe-macro-card {
+    background: #111827;
+    border-color: rgba(255,255,255,0.08);
+}
+
+[data-theme="dark"] .manual-recipe-macro-card small,
+[data-theme="dark"] .manual-recipe-summary-total {
+    color: #94a3b8;
+}
+
+[data-theme="dark"] .manual-recipe-macro-bar {
+    background: rgba(148, 163, 184, 0.18);
+}
+
+[data-theme="dark"] .manual-recipe-macro-card.protein {
+    background: rgba(34, 197, 94, 0.08);
+}
+
+[data-theme="dark"] .manual-recipe-macro-card.carbs {
+    background: rgba(129, 140, 248, 0.12);
+}
+
+[data-theme="dark"] .manual-recipe-macro-card.fats {
+    background: rgba(245, 158, 11, 0.1);
+}
+
+[data-theme="dark"] .macro-card .macro-info label {
+    color: #94a3b8;
+}
+
+[data-theme="dark"] .macro-card .macro-info strong {
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .macro-card small {
+    color: #94a3b8;
+}
+
+[data-theme="dark"] .macro-card .progress-bar {
+    background: rgba(148, 163, 184, 0.18);
+}
+
+[data-theme="dark"] .macro-card.prot {
+    background: rgba(34, 197, 94, 0.08);
+}
+
+[data-theme="dark"] .macro-card.carb {
+    background: rgba(129, 140, 248, 0.12);
+}
+
+[data-theme="dark"] .macro-card.fat {
+    background: rgba(245, 158, 11, 0.1);
+}
 
 [data-theme="dark"] .ai-recipe-insight {
     background: #1a2233;
@@ -3118,38 +4068,68 @@ hr.spacer {
 
 /* -- Bento Grid: Home Dashboard -- */
 .home-main-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 18px 18px 14px;
+    border-radius: 24px;
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    overflow-x: hidden;
 }
 
 /* On narrower displays, give each bento tile a consistent look */
 .home-main-content > .organic-panel,
 .home-main-content > .micro-targets {
-  border-radius: 22px;
-  border: 1px solid var(--border);
+    margin: 0;
+    padding-left: 0;
+    padding-right: 0;
+    border-radius: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
   transition: var(--transition-smooth);
+}
+
+#home-screen .macros-grid {
+    margin: 18px 0 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#home-screen .micro-targets {
+    border-top: 1px solid rgba(167, 182, 201, 0.28);
+}
+
+#home-screen .section-brand-footer {
+    margin: 22px auto 2px;
 }
 
 /* On screens wide enough to show 2-col bento beside the side-nav */
 @media (min-width: 600px) {
   #home-screen .home-main-content {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 14px;
-    padding: 0 4px;
+        display: flex;
+        grid-template-columns: none;
+        gap: 0;
+        padding: 18px 18px 14px;
   }
 
-  #home-screen .main-chart-card,
-  #home-screen .home-profile-summary,
-  #home-screen .micro-targets,
-  #home-screen .macros-grid {
-    grid-column: 1 / -1;
-  }
-
+    #home-screen .main-chart-card,
+    #home-screen .home-profile-summary,
+    #home-screen .micro-targets,
+    #home-screen .macros-grid,
     #home-screen .section-brand-footer {
-        grid-column: 1 / -1;
-        justify-self: center;
+        grid-column: auto;
+        justify-self: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    #home-screen .section-brand-footer {
+        margin-bottom: 2px;
     }
 }
 
@@ -3432,11 +4412,13 @@ hr.spacer {
 
 /* Scan trigger matches Lucide icon alignment */
 .scan-trigger-btn i[data-lucide] {
-  display: inline-block;
-    width: 12px;
-    height: 12px;
-  vertical-align: middle;
-    margin-right: 4px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 15px;
+        height: 15px;
+        margin-right: 0;
+        flex: 0 0 15px;
 }
 
 /* == CSS appended successfully == */
