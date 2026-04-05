@@ -7,7 +7,8 @@
 - `netlify.toml`: configurazione pronta per Netlify.
 - `.nojekyll`: utile per GitHub Pages statico.
 - `app-config.example.js`: esempio di configurazione frontend condivisa per puntare tutti i dispositivi alla stessa function pubblica.
-- `app-config.js`: puo essere pubblicato nel repository o insieme ai file statici, perche contiene solo l'URL pubblico del backend e non segreti.
+- `app-config.js`: puo essere pubblicato nel repository o insieme ai file statici, perche contiene solo gli URL pubblici del backend e non segreti.
+- `api/auth.js`: endpoint backend per registrazione, login e salvataggio dati profilo condivisi tra dispositivi.
 
 ## Nota costi
 
@@ -48,15 +49,15 @@ Questo aggiorna `avatar-assets.js` con le immagini reali incorporate. Dopo il de
 
 Nota: se usi `avatar-assets.js` aggiornato, anche se la cartella `avatars` avesse problemi, gli avatar incorporati continueranno a funzionare.
 
-### Gemini da GitHub Pages o da altri host statici
+### Backend condiviso da GitHub Pages o da altri host statici
 
-GitHub Pages non esegue Netlify Functions. Se il frontend viene pubblicato li, devi puntare la UI a una function pubblica gia deployata altrove.
+GitHub Pages non esegue funzioni serverless. Se il frontend viene pubblicato li, devi puntare la UI a endpoint pubblici gia deployati altrove.
 
 1. Crea o aggiorna `app-config.js` nella root del progetto partendo da `app-config.example.js`.
-2. Imposta `geminiFunctionUrl` con l'URL assoluto della function pubblica, ad esempio `https://tuo-sito.netlify.app/.netlify/functions/gemini`.
+2. Imposta `authFunctionUrl` e `geminiFunctionUrl` con URL assoluti pubblici, ad esempio `https://tuo-progetto.vercel.app/api/auth` e `https://tuo-progetto.vercel.app/api/gemini`.
 3. Pubblica anche `app-config.js` insieme agli altri file statici oppure versionalo nel repository, dato che non contiene segreti.
 
-In questo modo ogni dispositivo che apre il sito usa lo stesso backend Gemini, senza configurazioni manuali nel browser.
+In questo modo ogni dispositivo che apre il sito usa lo stesso backend condiviso sia per Gemini sia per autenticazione, senza configurazioni manuali nel browser.
 
 Come rete di sicurezza, il client include anche un endpoint pubblico di fallback integrato: se `app-config.js` non viene caricato, continua comunque a tentare il backend pubblico condiviso.
 
@@ -141,13 +142,42 @@ Se il telefono e su una rete diversa dal PC, un server locale del PC non e pubbl
 
 ## 7. Architettura consigliata per tutti i dispositivi
 
+- Backend auth: endpoint `api/auth` pubblicato su Vercel e collegato a un archivio condiviso.
 - Backend Gemini: una Netlify Function pubblica con `GEMINI_API_KEY` lato server.
 - Frontend: puo stare sullo stesso sito Netlify oppure su un altro host statico.
-- Se il frontend non sta su Netlify: usa `app-config.js` per puntare tutti i client alla stessa function pubblica.
+- Se il frontend non sta sullo stesso host del backend: usa `app-config.js` per puntare tutti i client agli stessi endpoint pubblici.
 
 Questa resta la soluzione corretta se non vuoi rendere visibile la chiave nel client.
 
-## 8. Alternativa gratuita consigliata: Vercel per la sola function
+## 8. Username unici tra dispositivi
+
+Con la sola `localStorage`, username e password restano salvati soltanto nel browser che ha creato l'account. Per renderli davvero unici tra tutti i dispositivi serve un archivio centrale.
+
+Questa versione dell'app supporta due modalita:
+
+- senza backend auth configurato: fallback locale, utile solo per sviluppo o prove sullo stesso device;
+- con backend auth configurato: registrazione e login passano da `api/auth`, quindi lo username viene bloccato globalmente dal primo utilizzo.
+
+### Archivio remoto consigliato gratuito
+
+Per rendere persistenti gli utenti del backend `api/auth`, configura un database Redis REST gratuito su Upstash:
+
+1. Crea un database Redis su Upstash.
+2. Copia `REST URL` e `REST TOKEN`.
+3. In Vercel imposta queste environment variables:
+   - `AUTH_KV_REST_URL`
+   - `AUTH_KV_REST_TOKEN`
+   - `AUTH_TOKEN_SECRET`
+   - `AUTH_CORS_MODE=public`
+4. Ridistribuisci il progetto.
+
+Con questa configurazione:
+
+- se un utente registra `Davide`, nessun altro potra piu registrare `Davide` o `davide`;
+- i dati profilo e diario vengono caricati da backend su qualsiasi dispositivo;
+- la sessione resta memorizzata sul singolo device, ma l'account esiste globalmente.
+
+## 9. Alternativa gratuita consigliata: Vercel per la sola function
 
 Se il provider attuale chiede un upgrade per le environment variables, puoi pubblicare solo la function Gemini su Vercel free e lasciare il frontend su GitHub Pages.
 
@@ -156,6 +186,10 @@ Se il provider attuale chiede un upgrade per le environment variables, puoi pubb
 3. Alla schermata `Configure Project`, lascia framework auto-detected oppure `Other` se non viene rilevato nulla.
 4. Apri la sezione `Environment Variables` prima del primo deploy.
 5. Inserisci queste variabili:
+   - `AUTH_KV_REST_URL` = REST URL del tuo database Upstash Redis;
+   - `AUTH_KV_REST_TOKEN` = REST TOKEN del tuo database Upstash Redis;
+   - `AUTH_TOKEN_SECRET` = una stringa lunga e casuale per firmare le sessioni;
+   - `AUTH_CORS_MODE` = `public`;
    - `GEMINI_API_KEY` = la tua chiave Gemini ruotata e valida;
    - `GEMINI_BACKUP_API_KEY` = opzionale, seconda chiave Gemini su un progetto separato solo per backup;
    - `GEMINI_MODEL` = `gemini-2.0-flash`;
@@ -174,14 +208,14 @@ Se il provider attuale chiede un upgrade per le environment variables, puoi pubb
 6. Lascia vuota `GEMINI_ALLOWED_ORIGINS` se vuoi accesso pubblico da qualsiasi device. Compilala solo se in futuro torni a `GEMINI_CORS_MODE=restricted`.
 7. Completa il deploy con `Deploy`.
 8. Quando il progetto e online, apri `Settings > Domains` e copia il dominio Vercel finale, ad esempio `https://tuo-progetto.vercel.app`.
-9. Verifica l'endpoint pubblico finale: `https://tuo-progetto.vercel.app/api/gemini`.
-10. Nel frontend crea o aggiorna `app-config.js` impostando `geminiFunctionUrl` verso quell'endpoint.
+9. Verifica gli endpoint pubblici finali: `https://tuo-progetto.vercel.app/api/auth` e `https://tuo-progetto.vercel.app/api/gemini`.
+10. Nel frontend crea o aggiorna `app-config.js` impostando `authFunctionUrl` e `geminiFunctionUrl` verso quegli endpoint.
 11. Pubblica o aggiorna il frontend statico.
 12. Apri il frontend da telefono, desktop e tablet: con `GEMINI_CORS_MODE=public` non serve aggiungere origin manualmente.
 
 In questo schema il frontend resta gratuito su GitHub Pages e la chiave continua a restare solo lato server.
 
-## 9. Strategia gratuita anti-abuso
+## 10. Strategia gratuita anti-abuso
 
 La function ora include un rate limiting gratuito e leggero, senza servizi esterni.
 

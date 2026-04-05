@@ -399,6 +399,18 @@
                 </div>
                 <div id="calendar-grid" class="calendar-grid"></div>
                 <p id="future-date-note" class="future-date-note" style="display:none;">*nel caso in cui venga selezionata una data futura rispetto a quella di oggi non si potra aggiungere ingredienti o pasti.</p>
+
+                <details class="profile-editor diary-chronology-panel">
+                    <summary class="profile-summary-toggle profile-editor-toggle profile-editor-toggle-history">
+                        <div class="profile-summary-toggle-copy">
+                            <strong class="profile-summary-title">Cronologia pasti</strong>
+                            <span class="profile-summary-subtitle">Qui troverai i pasti che hai svolto</span>
+                        </div>
+                    </summary>
+                    <div class="profile-editor-content">
+                        <div id="chronology-list" class="chronology-list"></div>
+                    </div>
+                </details>
             </div>
 
             <div class="section-brand-footer" aria-label="Nutri-Me">NUTRI-ME</div>
@@ -731,54 +743,142 @@
                 </details>
 
                 <details class="profile-editor">
-                    <summary class="btn-main profile-editor-toggle profile-editor-toggle-edit">MODIFICA PROFILO</summary>
+                    <summary class="profile-summary-toggle profile-editor-toggle profile-editor-toggle-edit">
+                        <div class="profile-summary-toggle-copy">
+                            <strong class="profile-summary-title">Modifica profilo</strong>
+                            <span class="profile-summary-subtitle">Qui puoi modificare le tue informazioni</span>
+                        </div>
+                    </summary>
 
                     <div class="profile-editor-content">
-                        <div style="display: grid; gap: 12px;">
-                            <input type="text" id="profilo-username" class="main-input" placeholder="Nome utente" readonly>
-                            <select id="profilo-sex">
-                                <option value="uomo">Uomo</option>
-                                <option value="donna">Donna</option>
-                            </select>
-                            <input type="number" id="profilo-age" class="main-input" placeholder="Età">
-                            <input type="number" id="profilo-weight" class="main-input" placeholder="Peso (kg)">
-                            <input type="number" id="profilo-height" class="main-input" placeholder="Altezza (cm)">
-                            <select id="profilo-job">
-                                <option value="sedentario">Sedentario</option>
-                                <option value="moderato">Moderato</option>
-                                <option value="attivo">Attivo</option>
-                            </select>
-                            <input type="number" id="profilo-workouts" class="main-input" placeholder="Allenamenti a settimana">
-                            <select id="profilo-goal">
-                                <option value="dimagrire">Dimagrire</option>
-                                <option value="mantenere">Mantenere</option>
-                                <option value="massa">Massa</option>
-                            </select>
-                            <input type="text" id="profilo-diet" class="main-input" placeholder="Dieta">
-                            <input type="text" id="profilo-allergies" class="main-input" placeholder="Allergie">
-                            <input type="text" id="profilo-intolerances" class="main-input" placeholder="Intolleranze">
+                        <div class="profile-form-grid">
+                            <label class="profile-field" for="profilo-username">
+                                <span class="profile-field-question">Come vuoi essere identificato nell'app?</span>
+                                <input type="text" id="profilo-username" class="main-input" placeholder="Nome utente" readonly>
+                            </label>
+                            <label class="profile-field" for="profilo-sex">
+                                <span class="profile-field-question">Qual e il tuo genere?</span>
+                                <select id="profilo-sex">
+                                    <option value="uomo">Uomo</option>
+                                    <option value="donna">Donna</option>
+                                </select>
+                            </label>
+                            <label class="profile-field" for="profilo-age">
+                                <span class="profile-field-question">Quanti anni hai?</span>
+                                <input type="number" id="profilo-age" class="main-input" placeholder="Eta">
+                            </label>
+                            <label class="profile-field" for="profilo-weight">
+                                <span class="profile-field-question">Qual e il tuo peso attuale in kg?</span>
+                                <input type="number" id="profilo-weight" class="main-input" placeholder="Peso (kg)">
+                            </label>
+                            <label class="profile-field" for="profilo-height">
+                                <span class="profile-field-question">Qual e la tua altezza in cm?</span>
+                                <input type="number" id="profilo-height" class="main-input" placeholder="Altezza (cm)">
+                            </label>
+                            <label class="profile-field" for="profilo-job">
+                                <span class="profile-field-question">Che tipo di lavoro svolgi?</span>
+                                <select id="profilo-job">
+                                    <option value="sedentario">Sedentario</option>
+                                    <option value="moderato">Moderato</option>
+                                    <option value="attivo">Attivo</option>
+                                </select>
+                            </label>
+                            <label class="profile-field" for="profilo-workouts">
+                                <span class="profile-field-question">Quante volte ti alleni a settimana?</span>
+                                <input type="number" id="profilo-workouts" class="main-input" placeholder="Allenamenti a settimana">
+                            </label>
+                            <div id="profilo-sport-details" class="profile-conditional-block" style="display:none;">
+                                <label class="profile-field" for="profilo-sport-toggle">
+                                    <span class="profile-field-question">Vuoi specificare lo sport che pratichi?</span>
+                                    <select id="profilo-sport-toggle">
+                                        <option value="">Seleziona</option>
+                                        <option value="no">No</option>
+                                        <option value="si">Si</option>
+                                    </select>
+                                </label>
+                                <label id="profilo-sport-name-wrap" class="profile-field" for="profilo-sport-name" style="display:none;">
+                                    <span class="profile-field-question">Quale sport pratichi?</span>
+                                    <input type="text" id="profilo-sport-name" class="main-input" placeholder="Es. corsa, palestra, nuoto">
+                                </label>
+                            </div>
+                            <label class="profile-field" for="profilo-goal">
+                                <span class="profile-field-question">Qual e il tuo obiettivo principale?</span>
+                                <select id="profilo-goal">
+                                    <option value="dimagrire">Dimagrire</option>
+                                    <option value="mantenere">Mantenere</option>
+                                    <option value="massa">Massa</option>
+                                </select>
+                            </label>
+                            <label class="profile-field" for="profilo-diet">
+                                <span class="profile-field-question">Segui un regime alimentare specifico?</span>
+                                <input type="text" id="profilo-diet" class="main-input" placeholder="Dieta">
+                            </label>
+                            <label class="profile-field" for="profilo-allergies">
+                                <span class="profile-field-question">Hai allergie da segnalare?</span>
+                                <input type="text" id="profilo-allergies" class="main-input" placeholder="Allergie">
+                            </label>
+                            <label class="profile-field" for="profilo-intolerances">
+                                <span class="profile-field-question">Hai intolleranze da segnalare?</span>
+                                <input type="text" id="profilo-intolerances" class="main-input" placeholder="Intolleranze">
+                            </label>
+                            <label class="profile-field" for="profilo-other-pathologies">
+                                <span class="profile-field-question">Hai altre patologie o condizioni da indicare?</span>
                                 <input type="text" id="profilo-other-pathologies" class="main-input" placeholder="Altri tipi di patologie">
-                            <input type="number" id="profilo-meals" class="main-input" placeholder="Pasti al giorno">
-                            <select id="profilo-dinner-protein-preference">
-                                <option value="variata">Preferenza serale: nessuna preferenza</option>
-                                <option value="uova">Preferenza serale: preferisco uova</option>
-                                <option value="tofu-tempeh">Preferenza serale: preferisco tofu o tempeh</option>
-                                <option value="latticini-light">Preferenza serale: preferisco latticini light</option>
-                                <option value="burger-vegetali">Preferenza serale: preferisco burger vegetali o lupini</option>
-                            </select>
-                            <select id="profilo-dinner-protein-frequency">
-                                <option value="libera">Uso suggerito: libero durante la settimana</option>
-                                <option value="1-2">Uso suggerito: circa 1-2 cene a settimana</option>
-                                <option value="2-3">Uso suggerito: circa 2-3 cene a settimana</option>
-                                <option value="3-4">Uso suggerito: circa 3-4 cene a settimana</option>
-                                <option value="5+">Uso suggerito: quasi ogni sera</option>
-                            </select>
-                            <input type="text" id="profilo-weakpoint" class="main-input" placeholder="Punto debole">
-                            <input type="number" step="0.1" id="profilo-water" class="main-input" placeholder="Acqua giornaliera (L)">
+                            </label>
+                            <label class="profile-field" for="profilo-meals">
+                                <span class="profile-field-question">Quanti pasti fai in una giornata tipo?</span>
+                                <input type="number" id="profilo-meals" class="main-input" placeholder="Pasti al giorno">
+                            </label>
+                            <label class="profile-field" for="profilo-dinner-protein-preference">
+                                <span class="profile-field-question">A cena hai una fonte proteica che preferisci piu spesso?</span>
+                                <select id="profilo-dinner-protein-preference">
+                                    <option value="variata">Preferenza serale: nessuna preferenza</option>
+                                    <option value="uova">Preferenza serale: preferisco uova</option>
+                                    <option value="tofu-tempeh">Preferenza serale: preferisco tofu o tempeh</option>
+                                    <option value="latticini-light">Preferenza serale: preferisco latticini light</option>
+                                    <option value="burger-vegetali">Preferenza serale: preferisco burger vegetali o lupini</option>
+                                </select>
+                            </label>
+                            <label class="profile-field" for="profilo-dinner-protein-frequency">
+                                <span class="profile-field-question">Quante sere a settimana vuoi usare piu spesso quella scelta?</span>
+                                <select id="profilo-dinner-protein-frequency">
+                                    <option value="libera">Uso suggerito: libero durante la settimana</option>
+                                    <option value="1-2">Uso suggerito: circa 1-2 cene a settimana</option>
+                                    <option value="2-3">Uso suggerito: circa 2-3 cene a settimana</option>
+                                    <option value="3-4">Uso suggerito: circa 3-4 cene a settimana</option>
+                                    <option value="5+">Uso suggerito: quasi ogni sera</option>
+                                </select>
+                            </label>
+                            <label class="profile-field" for="profilo-weakpoint">
+                                <span class="profile-field-question">Qual e il tuo punto debole o il momento piu delicato della giornata?</span>
+                                <input type="text" id="profilo-weakpoint" class="main-input" placeholder="Punto debole">
+                            </label>
+                            <label class="profile-field" for="profilo-smoke">
+                                <span class="profile-field-question">Fumi?</span>
+                                <select id="profilo-smoke">
+                                    <option value="non specificato">Seleziona</option>
+                                    <option value="si">Si</option>
+                                    <option value="no">No</option>
+                                    <option value="qualche_volta">Qualche volta</option>
+                                </select>
+                            </label>
+                            <label class="profile-field" for="profilo-motivation">
+                                <span class="profile-field-question">Perche vuoi tenere traccia dei nutrienti che assumi?</span>
+                                <select id="profilo-motivation">
+                                    <option value="non specificato">Seleziona</option>
+                                    <option value="Voglio sentirmi meglio con me stesso">Voglio sentirmi meglio con me stesso</option>
+                                    <option value="Voglio iniziare a seguire uno stile di vita piu sano">Voglio iniziare a seguire uno stile di vita piu sano</option>
+                                    <option value="Non so mai cosa mangiare e vorrei equilibrare i nutrienti">Non so mai cosa mangiare e vorrei equilibrare i nutrienti</option>
+                                </select>
+                            </label>
+                            <label class="profile-field" for="profilo-water">
+                                <span class="profile-field-question">Quanta acqua bevi al giorno in litri?</span>
+                                <input type="number" step="0.1" id="profilo-water" class="main-input" placeholder="Acqua giornaliera (L)">
+                            </label>
                         </div>
 
-                        <div style="margin-top: 20px;">
-                            <h3 style="text-align:center;font-family:'Poppins',sans-serif;font-weight:800;font-size:1.2rem;letter-spacing:0.05em;color:#0074A6;margin-bottom:18px;text-transform:uppercase;white-space:nowrap;">OGGI MI IDENTIFICO IN:</h3>
+                        <div class="profile-avatar-edit-section">
+                            <h3 class="profile-avatar-edit-title">OGGI MI IDENTIFICO IN:</h3>
                             <div class="avatar-selection-grid">
                                 <img src="avatars/1.jpg" onclick="selectAvatar(this)">
                                 <img src="avatars/2.jpg" onclick="selectAvatar(this)">
@@ -792,13 +892,6 @@
                         </div>
 
                         <button onclick="salvaModificheProfilo()" class="btn-main">Salva Modifiche</button>
-                    </div>
-                </details>
-
-                <details class="profile-editor">
-                    <summary class="btn-main profile-editor-toggle profile-editor-toggle-history">CRONOLOGIA PASTI</summary>
-                    <div class="profile-editor-content">
-                        <div id="chronology-list" class="chronology-list"></div>
                     </div>
                 </details>
 

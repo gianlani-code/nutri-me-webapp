@@ -1276,7 +1276,7 @@ function assertGeminiPayloadProcedureQuality(payload) {
     return true;
 }
 
-const NUTRIME_DEFAULT_PUBLIC_GEMINI_ENDPOINT = 'https://nutri-me-webapp-api.vercel.app/api/gemini';
+const NUTRIME_DEFAULT_PUBLIC_GEMINI_ENDPOINT = 'https://nutri-me-webapp-nkxey7k8j-nutri-me.vercel.app/api/gemini';
 
 function getConfiguredGeminiEndpointOverride() {
     try {
@@ -4797,6 +4797,7 @@ function normalizeSavedRecipesCollection(recipes) {
     const AUTH_USERS_STORAGE_KEY = 'nutrime_auth_users_v1';
     const AUTH_SESSION_STORAGE_KEY = 'nutrime_active_session_v1';
     const USER_DATA_STORAGE_PREFIX = 'nutrime_user_data_v1';
+    const AUTH_API_DEFAULT_PATH = '/api/auth';
 
     let activeSession = null;
     let persistStatePromise = Promise.resolve();
@@ -4811,6 +4812,92 @@ function normalizeSavedRecipesCollection(recipes) {
 
     function getUserDataStorageKey(userId) {
         return `${USER_DATA_STORAGE_PREFIX}:${userId}`;
+    }
+
+    function getAuthApiUrl() {
+        const configuredUrl = String(window.NUTRIME_CONFIG?.authFunctionUrl || '').trim();
+        if (configuredUrl) {
+            return configuredUrl;
+        }
+
+        const currentProtocol = String(window.location?.protocol || '').toLowerCase();
+        if (currentProtocol === 'http:' || currentProtocol === 'https:') {
+            return new URL(AUTH_API_DEFAULT_PATH, window.location.origin).toString();
+        }
+
+        return '';
+    }
+
+    function hasExplicitAuthApiConfig() {
+        return Boolean(String(window.NUTRIME_CONFIG?.authFunctionUrl || '').trim());
+    }
+
+    function shouldFallbackToLocalAuth(error) {
+        if (hasExplicitAuthApiConfig()) {
+            return false;
+        }
+
+        const status = Number(error?.status || 0);
+        return error?.isNetworkError === true || status === 0 || status === 404 || status === 405;
+    }
+
+    async function callAuthApi(action, payload = {}, options = {}) {
+        const authApiUrl = getAuthApiUrl();
+        if (!authApiUrl) {
+            const error = new Error('Backend autenticazione non configurato.');
+            error.status = 0;
+            throw error;
+        }
+
+        let response;
+        try {
+            response = await fetch(authApiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(options.token ? { Authorization: `Bearer ${options.token}` } : {})
+                },
+                body: JSON.stringify({ action, ...payload })
+            });
+        } catch (networkError) {
+            const error = new Error('Impossibile contattare il backend autenticazione.');
+            error.status = 0;
+            error.isNetworkError = true;
+            error.cause = networkError;
+            throw error;
+        }
+
+        const rawResponse = await response.text();
+        const parsedResponse = safeJsonParse(rawResponse, null);
+        const responsePayload = parsedResponse && typeof parsedResponse === 'object'
+            ? parsedResponse
+            : { ok: false, error: rawResponse || 'Risposta non valida dal backend autenticazione.' };
+
+        if (!response.ok || responsePayload.ok === false) {
+            const error = new Error(responsePayload.error || 'Operazione autenticazione non riuscita.');
+            error.status = response.status;
+            error.payload = responsePayload;
+            throw error;
+        }
+
+        return responsePayload;
+    }
+
+    async function tryRemoteAuthAction(action, payload = {}, options = {}) {
+        const authApiUrl = getAuthApiUrl();
+        if (!authApiUrl) {
+            return null;
+        }
+
+        try {
+            return await callAuthApi(action, payload, options);
+        } catch (error) {
+            if (shouldFallbackToLocalAuth(error)) {
+                return null;
+            }
+
+            throw error;
+        }
     }
 
     function normalizeUsernameKey(username) {
@@ -4872,7 +4959,15 @@ function normalizeSavedRecipesCollection(recipes) {
             throw new Error('Nessun utente attivo per il salvataggio dati.');
         }
 
-        const normalized = normalizeUserData(data, activeSession?.username || '');
+        let normalized = normalizeUserData(data, activeSession?.username || '');
+
+        if (activeSession?.token) {
+            const remoteResponse = await tryRemoteAuthAction('saveUserData', { data: normalized }, { token: activeSession.token });
+            if (remoteResponse?.data) {
+                normalized = normalizeUserData(remoteResponse.data, activeSession?.username || '');
+            }
+        }
+
         localStorage.setItem(getUserDataStorageKey(userId), JSON.stringify(normalized));
 
         if (activeSession?.userId === userId) {
@@ -4885,6 +4980,20 @@ function normalizeSavedRecipesCollection(recipes) {
     async function loadUserData(userId) {
         if (!userId) {
             return normalizeUserData();
+        }
+
+        if (activeSession?.token) {
+            const remoteResponse = await tryRemoteAuthAction('loadUserData', {}, { token: activeSession.token });
+            if (remoteResponse?.data && typeof remoteResponse.data === 'object') {
+                const remoteNormalized = normalizeUserData(remoteResponse.data, activeSession?.username || '');
+                localStorage.setItem(getUserDataStorageKey(userId), JSON.stringify(remoteNormalized));
+
+                if (activeSession?.userId === userId) {
+                    syncLegacyStorageMirror(remoteNormalized);
+                }
+
+                return remoteNormalized;
+            }
         }
 
         const stored = safeJsonParse(localStorage.getItem(getUserDataStorageKey(userId)), null);
@@ -4912,7 +5021,7 @@ function normalizeSavedRecipesCollection(recipes) {
 
     async function loadActiveSession() {
         const session = safeJsonParse(localStorage.getItem(AUTH_SESSION_STORAGE_KEY), null);
-        activeSession = session;
+        activeSession = session && typeof session === 'object' ? session : null;
         return session;
     }
 
@@ -4932,6 +5041,23 @@ function normalizeSavedRecipesCollection(recipes) {
 
         if (!trimmedUsername || !trimmedPassword) {
             throw new Error('Username e password sono obbligatori.');
+        }
+
+        const remoteResponse = await tryRemoteAuthAction('register', { username: trimmedUsername, password: trimmedPassword });
+        if (remoteResponse?.user && remoteResponse?.session) {
+            const session = {
+                userId: remoteResponse.session.userId,
+                username: remoteResponse.session.username,
+                createdAt: remoteResponse.session.createdAt,
+                token: remoteResponse.session.token
+            };
+
+            await saveActiveSession(session);
+            await saveUserData(normalizeUserData(remoteResponse.data || {}, remoteResponse.user.username), remoteResponse.user.userId);
+            return {
+                ...remoteResponse.user,
+                token: remoteResponse.session.token
+            };
         }
 
         const users = getRegisteredUsers();
@@ -4957,6 +5083,22 @@ function normalizeSavedRecipesCollection(recipes) {
     async function loginUser(username, password) {
         const usernameKey = normalizeUsernameKey(username);
         const passwordHash = simplePasswordHash(password);
+
+        const remoteResponse = await tryRemoteAuthAction('login', { username, password });
+        if (remoteResponse?.user && remoteResponse?.session) {
+            await saveActiveSession({
+                userId: remoteResponse.session.userId,
+                username: remoteResponse.session.username,
+                createdAt: remoteResponse.session.createdAt,
+                token: remoteResponse.session.token
+            });
+
+            return {
+                ...remoteResponse.user,
+                token: remoteResponse.session.token
+            };
+        }
+
         const userRecord = getRegisteredUsers().find((user) => user.usernameKey === usernameKey);
 
         if (!userRecord || userRecord.passwordHash !== passwordHash) {
@@ -5461,6 +5603,7 @@ window.onload = async () => {
     setupAvatarFallbacks();
     setupWizardNumericFieldFeedback();
     setupWizardStepThreeLogic();
+    setupProfileEditorLogic();
     setupAuthScreen();
 
     const session = await loadActiveSession();
@@ -5470,7 +5613,17 @@ window.onload = async () => {
         return;
     }
 
-    await handleAuthenticatedUser(session);
+    try {
+        await handleAuthenticatedUser(session);
+    } catch (error) {
+        console.error('Ripristino sessione non riuscito:', error);
+        await saveActiveSession(null);
+        showAuthScreen();
+        switchAuthMode('login');
+        setAuthFeedback('La sessione salvata non e piu valida. Effettua di nuovo l\'accesso.');
+        return;
+    }
+
     toggleAiMode();
 };
 
@@ -5601,6 +5754,51 @@ function setupWizardStepThreeLogic() {
     }
 
     updateWizardSportFieldState();
+}
+
+function updateProfileSportFieldState() {
+    const workoutsInput = document.getElementById('profilo-workouts');
+    const sportDetails = document.getElementById('profilo-sport-details');
+    const sportToggle = document.getElementById('profilo-sport-toggle');
+    const sportNameWrap = document.getElementById('profilo-sport-name-wrap');
+    const sportNameInput = document.getElementById('profilo-sport-name');
+
+    if (!workoutsInput || !sportDetails || !sportToggle || !sportNameWrap || !sportNameInput) return;
+
+    const workoutsValue = Number(workoutsInput.value);
+    const shouldShowSportQuestion = Number.isFinite(workoutsValue) && workoutsValue >= 1;
+
+    sportDetails.style.display = shouldShowSportQuestion ? 'grid' : 'none';
+
+    if (!shouldShowSportQuestion) {
+        sportToggle.value = '';
+        sportNameInput.value = '';
+        sportNameWrap.style.display = 'none';
+        return;
+    }
+
+    const shouldShowSportName = sportToggle.value === 'si';
+    sportNameWrap.style.display = shouldShowSportName ? 'grid' : 'none';
+
+    if (!shouldShowSportName) {
+        sportNameInput.value = '';
+    }
+}
+
+function setupProfileEditorLogic() {
+    const workoutsInput = document.getElementById('profilo-workouts');
+    const sportToggle = document.getElementById('profilo-sport-toggle');
+
+    if (workoutsInput) {
+        workoutsInput.addEventListener('input', updateProfileSportFieldState);
+        workoutsInput.addEventListener('blur', updateProfileSportFieldState);
+    }
+
+    if (sportToggle) {
+        sportToggle.addEventListener('change', updateProfileSportFieldState);
+    }
+
+    updateProfileSportFieldState();
 }
 
 function showWizardStep(step) {
@@ -5823,6 +6021,8 @@ function caricaDatiProfilo() {
     setValue('profilo-height', datiProfilo.height);
     setValue('profilo-job', datiProfilo.jobType);
     setValue('profilo-workouts', datiProfilo.workoutsPerWeek);
+    setValue('profilo-sport-toggle', datiProfilo.sportName && datiProfilo.sportName !== 'non specificato' ? 'si' : 'no');
+    setValue('profilo-sport-name', datiProfilo.sportName && datiProfilo.sportName !== 'non specificato' ? datiProfilo.sportName : '');
     setValue('profilo-goal', datiProfilo.goal);
     setValue('profilo-diet', datiProfilo.diet);
     setValue('profilo-allergies', datiProfilo.allergies);
@@ -5832,8 +6032,11 @@ function caricaDatiProfilo() {
     setValue('profilo-dinner-protein-preference', normalizeDinnerProteinPreference(datiProfilo.dinnerProteinPreference));
     setValue('profilo-dinner-protein-frequency', normalizeDinnerProteinFrequency(datiProfilo.dinnerProteinFrequency));
     setValue('profilo-weakpoint', datiProfilo.weakPoint);
+    setValue('profilo-smoke', datiProfilo.smoke || 'non specificato');
+    setValue('profilo-motivation', datiProfilo.motivation || 'non specificato');
     setValue('profilo-water', datiProfilo.waterIntake);
     applyLunchContextPreference(datiProfilo);
+    updateProfileSportFieldState();
 
     const summary = document.getElementById('profilo-summary-content');
     if (summary) {
@@ -5849,6 +6052,7 @@ function caricaDatiProfilo() {
             ['Obiettivo', escapeHtml(getWizardGoalLabel(datiProfilo.goal))],
             ['Attivita', escapeHtml(getWizardJobLabel(datiProfilo.jobType))],
             ['Sport', escapeHtml(formatSportLabel(datiProfilo.sportName))],
+            ['Fumo', escapeHtml(datiProfilo.smoke || '-')],
             ['Eta', `${escapeHtml(datiProfilo.age || '-')} anni`],
             ['Peso', `${escapeHtml(datiProfilo.weight || '-')} kg`],
             ['Altezza', `${escapeHtml(datiProfilo.height || '-')} cm`],
@@ -5911,6 +6115,9 @@ function salvaModificheProfilo() {
         height: height,
         jobType: document.getElementById('profilo-job').value,
         workoutsPerWeek: parseInt(document.getElementById('profilo-workouts').value, 10),
+        sportName: document.getElementById('profilo-sport-toggle')?.value === 'si'
+            ? (document.getElementById('profilo-sport-name')?.value.trim() || 'non specificato')
+            : 'non specificato',
         goal: document.getElementById('profilo-goal').value,
         diet: document.getElementById('profilo-diet').value,
         allergies: document.getElementById('profilo-allergies').value,
@@ -5920,6 +6127,8 @@ function salvaModificheProfilo() {
         dinnerProteinPreference: normalizeDinnerProteinPreference(document.getElementById('profilo-dinner-protein-preference')?.value),
         dinnerProteinFrequency: normalizeDinnerProteinFrequency(document.getElementById('profilo-dinner-protein-frequency')?.value),
         weakPoint: document.getElementById('profilo-weakpoint').value,
+        smoke: document.getElementById('profilo-smoke')?.value || 'non specificato',
+        motivation: document.getElementById('profilo-motivation')?.value || 'non specificato',
         waterIntake: parseFloat(document.getElementById('profilo-water').value),
         lunchContextPreference: document.getElementById('day-plan-lunch-context')?.value === 'free-day'
             ? 'free-day'
@@ -5973,6 +6182,7 @@ function mostraSezione(tabId) {
     if (tabId === 'diario') {
         renderCalendar();
         aggiornaUI();
+        renderCronologia();
     }
     if (tabId === 'cronologia') {
         renderCronologia();
@@ -10230,6 +10440,63 @@ async function searchOpenFoodFactsByCodeText(code) {
     return null;
 }
 
+async function searchOpenFoodFactsByBarcodeCandidates(codeCandidates) {
+    const uniqueCandidates = [...new Set((codeCandidates || []).map((item) => String(item || '').replace(/\D/g, '')).filter(Boolean))];
+    if (uniqueCandidates.length === 0) {
+        return null;
+    }
+
+    for (const candidate of uniqueCandidates) {
+        const safeCode = encodeURIComponent(candidate);
+        const fields = encodeURIComponent('code,product_name,product_name_it,brands,nutriments,nutriscore_grade,quantity,categories,categories_tags,ingredients_text,ingredients_text_it,image_front_small_url,image_small_url,image_front_url,image_url');
+        const endpoints = [
+            `https://it.openfoodfacts.org/cgi/search.pl?search_terms=${safeCode}&search_simple=1&action=process&json=1&page_size=8&fields=${fields}`,
+            `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${safeCode}&search_simple=1&action=process&json=1&page_size=8&fields=${fields}`
+        ];
+
+        for (const endpoint of endpoints) {
+            try {
+                const response = await fetch(endpoint, { cache: 'no-store' });
+                if (!response.ok) {
+                    continue;
+                }
+
+                const data = await response.json();
+                if (!Array.isArray(data?.products) || data.products.length === 0) {
+                    continue;
+                }
+
+                const exactMatch = data.products.find((product) => {
+                    const productCode = String(product?.code || '').replace(/\D/g, '');
+                    return productCode && uniqueCandidates.includes(productCode);
+                });
+
+                if (exactMatch) {
+                    return exactMatch;
+                }
+
+                const firstCompleteProduct = data.products.find((product) => {
+                    const nutriments = product?.nutriments || {};
+                    return Boolean(product?.product_name || product?.product_name_it)
+                        && (
+                            Number(nutriments['energy-kcal_100g'] || 0) > 0
+                            || Number(nutriments.energy_100g || 0) > 0
+                            || Number(nutriments.proteins_100g || 0) > 0
+                        );
+                });
+
+                if (firstCompleteProduct) {
+                    return firstCompleteProduct;
+                }
+            } catch (error) {
+                console.warn('Errore OFF barcode candidate search:', endpoint, error);
+            }
+        }
+    }
+
+    return null;
+}
+
 async function gestisciBarcodeScansionato(barcode) {
     const codeCandidates = getBarcodeCandidates(barcode);
     if (codeCandidates.length === 0) {
@@ -10270,8 +10537,20 @@ async function gestisciBarcodeScansionato(barcode) {
         }
 
         if (!mappedFood) {
+            const searchMatchedProduct = await searchOpenFoodFactsByBarcodeCandidates(codeCandidates);
+            if (searchMatchedProduct) {
+                usedCode = String(searchMatchedProduct?.code || usedCode).trim() || usedCode;
+                mappedFood = mapOpenFoodFactsProduct(searchMatchedProduct, usedCode);
+            }
+        }
+
+        if (!mappedFood) {
             console.warn('Nessun match Kaggle/OpenFoodFacts per codici candidati', codeCandidates);
-            alert('Prodotto non trovato su dataset Kaggle/OpenFoodFacts. Prova con un altro barcode o usa AI Foto.');
+            await avviaRiconoscimentoAI({
+                preferProductInfoModal: true,
+                sourceContext: 'barcode-fallback',
+                originalBarcode: codeCandidates[0] || String(barcode || '').trim()
+            });
             return;
         }
 
@@ -10407,7 +10686,7 @@ function applySmartScanResultToAddPanel(scanResult) {
 
 // --- AI Camera Food Recognition ---
 
-function avviaRiconoscimentoAI() {
+function avviaRiconoscimentoAI(options = {}) {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/jpeg,image/png,image/webp';
@@ -10428,16 +10707,25 @@ function avviaRiconoscimentoAI() {
             const result = await riconosciProdottoDaFotoGratis(file);
             if (!result) {
                 chiudiModalScanAI();
-                alert('Prodotto non trovato. Prova a inquadrare meglio etichetta o barcode.');
+                alert(options.sourceContext === 'barcode-fallback'
+                    ? 'Barcode letto, ma prodotto non risolto dai database. Ho provato anche il riconoscimento da foto senza trovare un match affidabile. Riprova con una foto piu nitida della confezione.'
+                    : 'Prodotto non trovato. Prova a inquadrare meglio etichetta o barcode.');
                 return;
             }
 
             applySmartScanResultToAddPanel(result);
-            mostraModalScanAI('risultato', result);
+            if (options.preferProductInfoModal) {
+                chiudiModalScanAI();
+                showProductInfoModal(result);
+            } else {
+                mostraModalScanAI('risultato', result);
+            }
         } catch (err) {
             console.error('Errore scansione foto gratuita:', err);
             chiudiModalScanAI();
-            alert('Errore durante la scansione foto. Riprova.');
+            alert(options.sourceContext === 'barcode-fallback'
+                ? 'Barcode letto, ma il recupero avanzato del prodotto non e riuscito. Riprova con una foto nitida della confezione.'
+                : 'Errore durante la scansione foto. Riprova.');
         }
     };
 

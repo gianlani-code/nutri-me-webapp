@@ -1,5 +1,8 @@
 {
   "functions": {
+    "api/auth.js": {
+      "maxDuration": 30
+    },
     "api/gemini.js": {
       "maxDuration": 30
     }
