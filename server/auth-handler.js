@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { BlobPreconditionFailedError, del, get, put } = require('@vercel/blob');
 
 function readLocalEnvValue(key) {
   try {
@@ -61,6 +62,7 @@ function parseIntegerEnv(key, fallback) {
 
 const AUTH_KV_REST_URL = String(process.env.AUTH_KV_REST_URL || readLocalEnvValue('AUTH_KV_REST_URL') || '').trim();
 const AUTH_KV_REST_TOKEN = String(process.env.AUTH_KV_REST_TOKEN || readLocalEnvValue('AUTH_KV_REST_TOKEN') || '').trim();
+const BLOB_READ_WRITE_TOKEN = String(process.env.BLOB_READ_WRITE_TOKEN || readLocalEnvValue('BLOB_READ_WRITE_TOKEN') || '').trim();
 const AUTH_TOKEN_SECRET = String(process.env.AUTH_TOKEN_SECRET || readLocalEnvValue('AUTH_TOKEN_SECRET') || 'dev-only-auth-secret-change-me').trim();
 const AUTH_CORS_MODE = String(process.env.AUTH_CORS_MODE || readLocalEnvValue('AUTH_CORS_MODE') || process.env.GEMINI_CORS_MODE || readLocalEnvValue('GEMINI_CORS_MODE') || 'public').trim().toLowerCase();
 const AUTH_ALLOWED_ORIGINS = parseListEnv('AUTH_ALLOWED_ORIGINS', parseListEnv('GEMINI_ALLOWED_ORIGINS'));
@@ -284,8 +286,72 @@ function writeFileStore(store) {
   fs.writeFileSync(FILE_STORE_PATH, JSON.stringify(store, null, 2), 'utf8');
 }
 
+function hasBlobStore() {
+  return Boolean(BLOB_READ_WRITE_TOKEN);
+}
+
 function hasRedisStore() {
   return Boolean(AUTH_KV_REST_URL && AUTH_KV_REST_TOKEN);
+}
+
+function encodeBlobSegment(value) {
+  return encodeURIComponent(String(value || '').trim());
+}
+
+function getBlobPathForUsername(usernameKey) {
+  return `nutrime-auth/usernames/${encodeBlobSegment(usernameKey)}.json`;
+}
+
+function getBlobPathForUser(userId) {
+  return `nutrime-auth/users/${encodeBlobSegment(userId)}.json`;
+}
+
+function getBlobPathForUserData(userId) {
+  return `nutrime-auth/user-data/${encodeBlobSegment(userId)}.json`;
+}
+
+async function readBlobJson(blobPath, fallback = null) {
+  try {
+    const response = await get(blobPath, {
+      access: 'private',
+      token: BLOB_READ_WRITE_TOKEN,
+      useCache: false
+    });
+
+    if (!response) {
+      return {
+        data: fallback,
+        etag: null
+      };
+    }
+
+    const raw = await new Response(response.stream).text();
+    return {
+      data: safeJsonParse(raw, fallback),
+      etag: response.blob?.etag || null
+    };
+  } catch (error) {
+    const message = String(error?.message || '');
+    if (message.includes('does not exist') || message.includes('not found')) {
+      return {
+        data: fallback,
+        etag: null
+      };
+    }
+
+    throw error;
+  }
+}
+
+async function writeBlobJson(blobPath, payload, options = {}) {
+  const normalizedPayload = payload === undefined ? null : payload;
+  return put(blobPath, JSON.stringify(normalizedPayload), {
+    access: 'private',
+    token: BLOB_READ_WRITE_TOKEN,
+    addRandomSuffix: false,
+    contentType: 'application/json',
+    ...options
+  });
 }
 
 async function redisRequest(command, args = [], searchParams = null) {
@@ -316,6 +382,17 @@ async function redisRequest(command, args = [], searchParams = null) {
 }
 
 async function getUserByUsername(usernameKey) {
+  if (hasBlobStore()) {
+    const mappingResult = await readBlobJson(getBlobPathForUsername(usernameKey), null);
+    const userId = mappingResult.data?.userId;
+    if (!userId) {
+      return null;
+    }
+
+    const userResult = await readBlobJson(getBlobPathForUser(userId), null);
+    return userResult.data || null;
+  }
+
   if (hasRedisStore()) {
     const userId = await redisRequest('get', [`nutrime:auth:user-by-username:${usernameKey}`]);
     if (!userId) {
@@ -334,6 +411,9 @@ async function getUserByUsername(usernameKey) {
 async function createUserRecord(username, password) {
   const { username: trimmedUsername, usernameKey, password: normalizedPassword } = validateCredentials(username, password);
   const userId = buildUserId(trimmedUsername);
+  const usernamePath = getBlobPathForUsername(usernameKey);
+  const userPath = getBlobPathForUser(userId);
+  const userDataPath = getBlobPathForUserData(userId);
   const userRecord = {
     userId,
     username: trimmedUsername,
@@ -342,6 +422,31 @@ async function createUserRecord(username, password) {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
+
+  if (hasBlobStore()) {
+    try {
+      await writeBlobJson(usernamePath, { userId }, { allowOverwrite: false });
+    } catch (error) {
+      if (error instanceof BlobPreconditionFailedError || String(error?.message || '').includes('Precondition failed')) {
+        throw new Error('Questo username e gia registrato.');
+      }
+
+      throw error;
+    }
+
+    try {
+      await writeBlobJson(userPath, userRecord, { allowOverwrite: false });
+      await writeBlobJson(userDataPath, {}, { allowOverwrite: false });
+      return userRecord;
+    } catch (error) {
+      await Promise.allSettled([
+        del(usernamePath, { token: BLOB_READ_WRITE_TOKEN }),
+        del(userPath, { token: BLOB_READ_WRITE_TOKEN }),
+        del(userDataPath, { token: BLOB_READ_WRITE_TOKEN })
+      ]);
+      throw error;
+    }
+  }
 
   if (hasRedisStore()) {
     const lockResult = await redisRequest('set', [`nutrime:auth:user-by-username:${usernameKey}`, userId], { NX: 'true' });
@@ -367,6 +472,11 @@ async function createUserRecord(username, password) {
 }
 
 async function loadStoredUserData(userId) {
+  if (hasBlobStore()) {
+    const dataResult = await readBlobJson(getBlobPathForUserData(userId), {});
+    return dataResult.data && typeof dataResult.data === 'object' ? dataResult.data : {};
+  }
+
   if (hasRedisStore()) {
     const serializedData = await redisRequest('get', [`nutrime:auth:data:${userId}`]);
     return safeJsonParse(serializedData, {}) || {};
@@ -378,6 +488,28 @@ async function loadStoredUserData(userId) {
 
 async function saveStoredUserData(userId, data) {
   const normalizedData = data && typeof data === 'object' ? data : {};
+
+  if (hasBlobStore()) {
+    const blobPath = getBlobPathForUserData(userId);
+    const existing = await readBlobJson(blobPath, null);
+
+    try {
+      await writeBlobJson(blobPath, normalizedData, existing.etag
+        ? { allowOverwrite: true, ifMatch: existing.etag }
+        : { allowOverwrite: false });
+    } catch (error) {
+      if (error instanceof BlobPreconditionFailedError) {
+        const latest = await readBlobJson(blobPath, null);
+        await writeBlobJson(blobPath, normalizedData, latest.etag
+          ? { allowOverwrite: true, ifMatch: latest.etag }
+          : { allowOverwrite: false });
+      } else {
+        throw error;
+      }
+    }
+
+    return normalizedData;
+  }
 
   if (hasRedisStore()) {
     await redisRequest('set', [`nutrime:auth:data:${userId}`, JSON.stringify(normalizedData)]);
