@@ -1276,7 +1276,7 @@ function assertGeminiPayloadProcedureQuality(payload) {
     return true;
 }
 
-const NUTRIME_DEFAULT_PUBLIC_GEMINI_ENDPOINT = 'https://nutri-me-webapp-nkxey7k8j-nutri-me.vercel.app/api/gemini';
+const NUTRIME_DEFAULT_PUBLIC_GEMINI_ENDPOINT = 'https://nutri-me-webapp-api.vercel.app/api/gemini';
 
 function getConfiguredGeminiEndpointOverride() {
     try {

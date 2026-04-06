@@ -4,11 +4,34 @@
 
 - `avatar-assets.js`: file caricato prima di `script.js`. Se contiene avatar incorporati, l'app usa quelli.
 - `scripts/generate-avatar-assets.ps1`: converte gli avatar reali in data URI dentro `avatar-assets.js`.
+- `scripts/export-github-pages.ps1`: crea una cartella separata con solo i file necessari da caricare su GitHub Pages, evitando `node_modules` e gli altri file di sviluppo.
 - `netlify.toml`: configurazione pronta per Netlify.
 - `.nojekyll`: utile per GitHub Pages statico.
 - `app-config.example.js`: esempio di configurazione frontend condivisa per puntare tutti i dispositivi alla stessa function pubblica.
 - `app-config.js`: puo essere pubblicato nel repository o insieme ai file statici, perche contiene solo gli URL pubblici del backend e non segreti.
 - `api/auth.js`: endpoint backend per registrazione, login e salvataggio dati profilo condivisi tra dispositivi.
+
+## 0. Problema dei piu di 100 file su GitHub
+
+Se provi a caricare l'intera cartella `APP +` dal browser, il numero di file sale facilmente oltre 100 soprattutto a causa di `node_modules/` e di file di sviluppo che non servono al frontend pubblicato.
+
+Per GitHub Pages non devi caricare l'intero progetto: ti basta una versione ridotta del frontend.
+
+Usa questo comando PowerShell dalla cartella del progetto:
+
+```powershell
+Set-Location "c:\Users\gianl\OneDrive\Desktop\APP +"
+.\scripts\export-github-pages.ps1
+```
+
+Lo script genera una cartella separata chiamata `APP+-github-upload` sul Desktop con solo i file necessari al funzionamento dell'app su GitHub Pages.
+
+In questo modo:
+
+- non carichi `node_modules/`;
+- resti ampiamente sotto il limite dei file;
+- lasci inalterate le funzionalita del frontend;
+- mantieni gli avatar reali perche vengono incorporati anche in `avatar-assets.js`.
 
 ## Nota costi
 
