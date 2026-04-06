@@ -416,6 +416,8 @@ Esempio di utilizzo dei pulsanti:
     font-size: 0.95rem;
     font-weight: 700;
     cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
     transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -786,7 +788,7 @@ h1, h2, h3, h4 {
     border: 1px solid #e0e7ed;
     background: #f9fbfe;
     font-family: 'Inter', sans-serif;
-    font-size: 1rem;
+    font-size: 16px;
     transition: all 0.3s ease;
     margin-bottom: 12px;
 }
@@ -2702,6 +2704,11 @@ h1, h2, h3, h4, h5 { margin: 0; font-family: 'Poppins', sans-serif; }
 
 .panel-title { font-size: 1.05rem; color: #607694; margin-bottom: 12px; font-weight: 700; }
 
+html {
+    -webkit-text-size-adjust: 100%;
+    touch-action: manipulation;
+}
+
 input, select, button {
     font-family: 'Inter', sans-serif;
 }
@@ -2714,9 +2721,18 @@ input[type='text'], input[type='number'], select {
     border: 1px solid #e0e7ed;
     background: #f9fbfe;
     font-family: 'Inter', sans-serif;
-    font-size: 0.95rem;
+    font-size: 16px;
     transition: all 0.3s ease;
     margin-bottom: 10px;
+}
+
+button,
+.btn-main,
+.btn-secondary,
+.chip,
+.auth-tab {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 input[type='text']:focus, input[type='number']:focus, select:focus {

@@ -4801,6 +4801,7 @@ function normalizeSavedRecipesCollection(recipes) {
 
     let activeSession = null;
     let persistStatePromise = Promise.resolve();
+    let authScreenSetupComplete = false;
 
     function safeJsonParse(value, fallback = null) {
         try {
@@ -5249,6 +5250,10 @@ function normalizeSavedRecipesCollection(recipes) {
     window.closeProfileCreatedModal = closeProfileCreatedModal;
 
     function setupAuthScreen() {
+        if (authScreenSetupComplete) {
+            return;
+        }
+
         document.querySelectorAll('[data-auth-mode]').forEach((element) => {
             element.addEventListener('click', () => switchAuthMode(element.dataset.authMode || 'login'));
         });
@@ -5291,6 +5296,13 @@ function normalizeSavedRecipesCollection(recipes) {
                 setAuthFeedback(error.message || 'Creazione profilo non riuscita.');
             }
         });
+
+        authScreenSetupComplete = true;
+    }
+
+    function bootstrapAuthInteractions() {
+        setupAuthScreen();
+        switchAuthMode('login');
     }
 
     function syncAISelectedIngredientsInput() {
@@ -5604,12 +5616,11 @@ window.onload = async () => {
     setupWizardNumericFieldFeedback();
     setupWizardStepThreeLogic();
     setupProfileEditorLogic();
-    setupAuthScreen();
+    bootstrapAuthInteractions();
 
     const session = await loadActiveSession();
     if (!session?.userId) {
         showAuthScreen();
-        switchAuthMode('login');
         return;
     }
 
@@ -5619,13 +5630,15 @@ window.onload = async () => {
         console.error('Ripristino sessione non riuscito:', error);
         await saveActiveSession(null);
         showAuthScreen();
-        switchAuthMode('login');
+        bootstrapAuthInteractions();
         setAuthFeedback('La sessione salvata non e piu valida. Effettua di nuovo l\'accesso.');
         return;
     }
 
     toggleAiMode();
 };
+
+bootstrapAuthInteractions();
 
 function salvaProfilo() {
     finalizzaProfilo();
