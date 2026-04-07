@@ -16,7 +16,7 @@
     <div id="auth-screen" class="auth-shell">
         <div class="organic-panel welcome-card auth-card">
             <header class="welcome-header auth-header">
-                <div class="brand-logo" aria-label="Nutri-Me">
+                <div class="brand-logo questionnaire-brand-logo" aria-label="Nutri-Me">
                     <svg width="220" height="56" viewBox="0 0 220 56" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="g1-auth" x1="0" y1="0" x2="1" y2="0">
@@ -34,8 +34,8 @@
             </header>
 
             <div class="auth-tabs" role="tablist" aria-label="Autenticazione">
-                <button type="button" id="auth-login-tab" class="auth-tab active" data-auth-mode="login">Login</button>
-                <button type="button" id="auth-register-tab" class="auth-tab" data-auth-mode="register">Nuovo profilo</button>
+                <button type="button" id="auth-login-tab" class="auth-tab active" data-auth-mode="login" onclick="switchAuthMode('login')">Login</button>
+                <button type="button" id="auth-register-tab" class="auth-tab" data-auth-mode="register" onclick="switchAuthMode('register')">Nuovo profilo</button>
             </div>
 
             <div class="auth-forms-wrap">
@@ -50,6 +50,7 @@
                 <form id="register-form" class="auth-form" autocomplete="off">
                     <label for="register-username">Username</label>
                     <input type="text" id="register-username" class="main-input" placeholder="Scegli un username" required>
+                    <p id="register-username-error" class="auth-field-error" role="status" aria-live="polite"></p>
                     <label for="register-password">Password</label>
                     <input type="password" id="register-password" class="main-input" placeholder="Crea una password" required>
                     <label for="register-confirm-password">Conferma Password</label>
@@ -64,7 +65,7 @@
 
     <div id="setup-screen" class="organic-panel welcome-card" style="display:none;">
         <header class="welcome-header">
-            <div class="brand-logo" aria-label="Nutri-Me">
+            <div class="brand-logo questionnaire-brand-logo" aria-label="Nutri-Me">
                 <svg width="220" height="56" viewBox="0 0 220 56" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <linearGradient id="g1" x1="0" y1="0" x2="1" y2="0">
@@ -375,15 +376,21 @@
 
                 <div id="add-panel" class="floating-add-panel" style="display:none;">
                     <div class="add-content">
-                        <span id="selected-name">Mela</span>
+                        <div class="add-content-header">
+                            <small class="add-content-eyebrow">Ingredienti del tuo pasto</small>
+                            <span id="selected-name" class="selected-food-name">Mela</span>
+                        </div>
                         <div class="selected-food-preview">
-                            <strong id="selected-kcal-preview">0 kcal</strong>
+                            <strong id="selected-kcal-preview">0 kcal totali</strong>
                             <small id="selected-macros-preview">P 0 g • C 0 g • G 0 g</small>
                         </div>
+                        <label for="qty" class="qty-label">Quantita in grammi</label>
                         <div class="qty-control">
-                            <input type="number" id="qty" value="100" oninput="updateSelectedFoodPreview()"> <span>g</span>
+                            <input type="number" id="qty" value="100" min="1" step="1" oninput="updateSelectedFoodPreview()">
+                            <span>g</span>
                             <button onclick="salvaPasto()" class="btn-confirm">AGGIUNGI</button>
                         </div>
+                        <small class="qty-helper">Le calorie e i macronutrienti si aggiornano in tempo reale in base alla grammatura scelta.</small>
                     </div>
                 </div>
 
@@ -420,7 +427,7 @@
 
         <section id="pasti-rapidi" class="tab-content" style="display:none;">
             <div class="organic-panel chef-mode-panel" style="margin: 20px auto; background: #f8f9fa; border-radius: 15px; border-left: 4px solid var(--info);">
-                <h3 id="manual-recipes-title" class="panel-title">Modalita Manuale</h3>
+                <h3 id="manual-recipes-title" class="panel-title">LE MIE RICETTE</h3>
                 <input type="text" id="recipe-name" class="main-input" placeholder="Nome della tua ricetta...">
                 <div class="search-box">
                     <input type="text" id="recipe-search" placeholder="Aggiungi ingrediente..." oninput="cercaAlimento(event, 'ricetta')">
@@ -651,7 +658,13 @@
                                     <button type="button" class="chip" data-value="weekly" onclick="selezionaOpzioneChip(this, 'ai-mode-selector', 'weekly');toggleAiMode()">Piano settimanale</button>
                                 </div>
 
-                <div id="ai-mode-recipes-fields" class="ai-mode-fields">
+                <div id="ai-mode-shared-notes-default-slot">
+                    <div id="ai-mode-shared-notes-wrap" class="ai-mode-fields" style="display:none;">
+                        <input type="text" id="ai-mode-shared-notes" class="main-input" placeholder="Preferenze, timing o richieste (opzionale)">
+                    </div>
+                </div>
+
+                <div id="ai-mode-recipes-fields" class="ai-mode-fields" style="display:none;">
                     <div id="chef-mode-recipe-options" class="ai-mode-fields">
                         <div id="chef-mode-meal-type-group" class="ai-mode-fields" style="display:none;">
                             <label for="chef-recipe-meal-type" class="ai-mode-field-label">Tipo di pasto</label>
@@ -668,44 +681,35 @@
                             <label for="chef-recipe-difficulty" class="ai-mode-field-label">Difficolta</label>
                                                     <input type="hidden" id="chef-recipe-difficulty" value="">
                                                     <div class="meal-selector chip-group">
-                                                        <button type="button" class="chip" data-value="semplice" onclick="selezionaOpzioneChip(this, 'chef-recipe-difficulty', 'semplice')">Semplice</button>
-                                                        <button type="button" class="chip" data-value="media" onclick="selezionaOpzioneChip(this, 'chef-recipe-difficulty', 'media')">Media</button>
-                                                        <button type="button" class="chip" data-value="chef" onclick="selezionaOpzioneChip(this, 'chef-recipe-difficulty', 'chef')">Chef</button>
-                                                        <button type="button" class="chip" data-value="salvafrigo" onclick="selezionaOpzioneChip(this, 'chef-recipe-difficulty', 'salvafrigo')">Salvafrigo</button>
+                                                        <button type="button" class="chip" data-value="semplice" onclick="selezionaOpzioneChip(this, 'chef-recipe-difficulty', 'semplice');toggleChefModeRecipeFlow()">Semplice</button>
+                                                        <button type="button" class="chip" data-value="media" onclick="selezionaOpzioneChip(this, 'chef-recipe-difficulty', 'media');toggleChefModeRecipeFlow()">Media</button>
+                                                        <button type="button" class="chip" data-value="chef" onclick="selezionaOpzioneChip(this, 'chef-recipe-difficulty', 'chef');toggleChefModeRecipeFlow()">Chef</button>
+                                                        <button type="button" class="chip" data-value="salvafrigo" onclick="selezionaOpzioneChip(this, 'chef-recipe-difficulty', 'salvafrigo');toggleChefModeRecipeFlow()">Salvafrigo</button>
                                                     </div>
                         </div>
                     </div>
 
-                    <input type="hidden" id="discover-ingredients" class="main-input" placeholder="Ingredienti a disposizione (es. Zucchine, uova...)" style="display:none;">
-                    <div class="search-box" style="margin-top: 10px;">
-                        <input type="text" id="discover-ingredient-search" placeholder="Cerca ingrediente da aggiungere..." oninput="cercaAlimento(event, 'ai')">
-                        <div id="ai-results" class="search-dropdown"></div>
+                    <div id="chef-mode-recipe-notes-slot"></div>
+
+                    <div id="chef-mode-recipe-build-fields" class="ai-mode-fields" style="display:none;">
+                        <input type="hidden" id="discover-ingredients" class="main-input" placeholder="Ingredienti a disposizione (es. Zucchine, uova...)" style="display:none;">
+                        <div class="search-box" style="margin-top: 10px;">
+                            <input type="text" id="discover-ingredient-search" placeholder="Cerca ingrediente da aggiungere..." oninput="cercaAlimento(event, 'ai')">
+                            <div id="ai-results" class="search-dropdown"></div>
+                        </div>
+                        <ul id="ai-ingredient-list" class="recipe-build-list" style="margin-top: 10px;"></ul>
+                        <label for="discover-people" class="ai-mode-field-label">Numero di persone</label>
+                        <input type="number" id="discover-people" class="main-input" placeholder="Numero di persone" style="margin-top: 10px;" min="1" value="1">
+                        <button id="chef-generate-recipe-btn" onclick="generaRicettaAI()" class="btn-main orange" style="margin-top: 15px;">GENERA RICETTA</button>
                     </div>
-                    <ul id="ai-ingredient-list" class="recipe-build-list" style="margin-top: 10px;"></ul>
-                    <label for="discover-people" class="ai-mode-field-label">Numero di persone</label>
-                    <input type="number" id="discover-people" class="main-input" placeholder="Numero di persone" style="margin-top: 10px;" min="1" value="1">
-                    <button id="chef-generate-recipe-btn" onclick="generaRicettaAI()" class="btn-main orange" style="margin-top: 15px;">GENERA RICETTA</button>
                 </div>
 
                 <div id="ai-mode-daily-fields" class="ai-mode-fields" style="display:none;">
-                    <p class="ai-mode-subtitle">Genera un piano giornaliero coerente con il tuo profilo e con il contesto della giornata.</p>
-                    <label for="day-plan-lunch-context" class="ai-mode-field-label">Contesto pranzo</label>
-                    <select id="day-plan-lunch-context" class="main-input">
-                        <option value="workday">Giorno lavorativo</option>
-                        <option value="free-day">Giorno libero</option>
-                    </select>
-                    <input type="text" id="day-plan-ai-notes" class="main-input" placeholder="Preferenze, timing o richieste del giorno (opzionale)">
                     <button id="chef-generate-daily-btn" onclick="generaPianoGiornalieroAI()" class="btn-main orange">GENERA PIANO GIORNALIERO</button>
                 </div>
 
                 <div id="ai-mode-weekly-fields" class="ai-mode-fields" style="display:none;">
                     <p class="ai-mode-subtitle">Imposta un prompt sintetico per un piano settimanale. Il flusso resta unificato nello stesso box risultati.</p>
-                    <label for="weekly-plan-lunch-context" class="ai-mode-field-label">Contesto pranzo</label>
-                    <select id="weekly-plan-lunch-context" class="main-input">
-                        <option value="workday">Giorno lavorativo</option>
-                        <option value="free-day">Giorno libero</option>
-                    </select>
-                    <input type="text" id="weekly-plan-ai-notes" class="main-input" placeholder="Preferenze, vincoli o richieste per la settimana (opzionale)">
                     <input type="text" id="weekly-plan-pantry" class="main-input" placeholder="Cosa hai gia in dispensa, frigo o freezer? Es. riso, ceci, olio EVO, spinaci" oninput="refreshWeeklyPlanDerivedViews()">
                     <button id="chef-generate-weekly-btn" onclick="generaPianoSettimanaleAI()" class="btn-main orange">GENERA PIANO SETTIMANALE</button>
                 </div>
@@ -927,6 +931,7 @@
     <script src="avatar-assets.js"></script>
     <script src="data/clinical-nutrition-overweight-50plus.js"></script>
     <script src="app-config.js" onerror="this.remove()"></script>
+    <script src="data.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
