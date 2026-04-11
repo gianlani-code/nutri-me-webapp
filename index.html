@@ -899,7 +899,10 @@
                     </div>
                 </details>
 
-                <button onclick="apriConfermaResetProfilo()" class="btn-main btn-logout-profile" style="margin-top: 20px;">LOG OUT</button>
+                <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;">
+                    <button onclick="logout()" class="btn-secondary">LOG OUT</button>
+                    <button onclick="apriConfermaResetProfilo()" class="btn-main btn-logout-profile">ELIMINA PROFILO</button>
+                </div>
                 <div class="section-brand-footer" aria-label="Nutri-Me">NUTRI-ME</div>
             </div>
         </section>
@@ -907,8 +910,8 @@
         <div id="reset-profile-modal" class="confirm-modal" style="display:none;">
             <div class="confirm-modal-backdrop" onclick="chiudiConfermaResetProfilo()"></div>
             <div class="confirm-modal-card" role="dialog" aria-modal="true" aria-labelledby="reset-profile-title">
-                <h3 id="reset-profile-title" class="confirm-modal-title">Conferma log out</h3>
-                <p class="confirm-modal-text">Se effettui il log out il profilo verra eliminato e tutti i dati registrati fino a questo momento saranno cancellati definitivamente. Procedo?</p>
+                <h3 id="reset-profile-title" class="confirm-modal-title">Conferma eliminazione profilo</h3>
+                <p class="confirm-modal-text">Il log out semplice non elimina l'account. Se confermi questa azione, il profilo verra cancellato definitivamente insieme a tutti i dati registrati e lo username tornera disponibile per una nuova registrazione.</p>
                 <div class="confirm-modal-actions">
                     <button onclick="eseguiResetProfilo()" class="btn-main btn-logout-profile">Si, elimina tutto</button>
                     <button onclick="chiudiConfermaResetProfilo()" class="btn-secondary">No</button>

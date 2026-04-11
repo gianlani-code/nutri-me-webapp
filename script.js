@@ -3476,9 +3476,16 @@ function normalizeSavedRecipesCollection(recipes) {
     let latestSmartScanFood = null;
     let smartScanFallbackTimer = null;
 
-    const AUTH_USERS_STORAGE_KEY = 'nutrime_auth_users_v1';
-    const AUTH_SESSION_STORAGE_KEY = 'nutrime_active_session_v1';
-    const USER_DATA_STORAGE_PREFIX = 'nutrime_user_data_v1';
+    const AUTH_USERS_STORAGE_KEY = 'nutrime_auth_users_v2';
+    const AUTH_SESSION_STORAGE_KEY = 'nutrime_active_session_v2';
+    const USER_DATA_STORAGE_PREFIX = 'nutrime_user_data_v2';
+    const LEGACY_AUTH_STORAGE_KEYS = [
+        'nutrime_auth_users_v1',
+        'nutrime_active_session_v1'
+    ];
+    const LEGACY_USER_DATA_STORAGE_PREFIXES = [
+        'nutrime_user_data_v1'
+    ];
     const AUTH_API_DEFAULT_PATH = '/api/auth';
 
     let activeSession = null;
@@ -3495,6 +3502,23 @@ function normalizeSavedRecipesCollection(recipes) {
 
     function getUserDataStorageKey(userId) {
         return `${USER_DATA_STORAGE_PREFIX}:${userId}`;
+    }
+
+    function clearLegacyAuthStorage() {
+        LEGACY_AUTH_STORAGE_KEYS.forEach((key) => {
+            localStorage.removeItem(key);
+        });
+
+        for (let index = localStorage.length - 1; index >= 0; index -= 1) {
+            const key = String(localStorage.key(index) || '');
+            if (!key) {
+                continue;
+            }
+
+            if (LEGACY_USER_DATA_STORAGE_PREFIXES.some((prefix) => key.startsWith(`${prefix}:`))) {
+                localStorage.removeItem(key);
+            }
+        }
     }
 
     function getAuthApiUrl() {
@@ -3587,9 +3611,12 @@ function normalizeSavedRecipesCollection(recipes) {
         return String(username || '').trim().toLowerCase();
     }
 
-    function buildUserId(username) {
-        const usernameKey = normalizeUsernameKey(username).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-        return `user_${usernameKey || 'guest'}`;
+    function buildUserId() {
+        const randomId = (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function')
+            ? crypto.randomUUID()
+            : `${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+
+        return `user_${randomId}`;
     }
 
     function simplePasswordHash(password) {
@@ -3749,7 +3776,7 @@ function normalizeSavedRecipesCollection(recipes) {
         }
 
         const userRecord = {
-            userId: buildUserId(trimmedUsername),
+            userId: buildUserId(),
             username: trimmedUsername,
             usernameKey,
             passwordHash: simplePasswordHash(trimmedPassword),
@@ -4411,6 +4438,7 @@ window.onload = async () => {
     setupWizardNumericFieldFeedback();
     setupWizardStepThreeLogic();
     setupProfileEditorLogic();
+    clearLegacyAuthStorage();
     bootstrapAuthInteractions();
 
     const session = await loadActiveSession();
@@ -8999,6 +9027,11 @@ async function deleteCurrentUserAccount() {
 
     const userIdToDelete = activeSession.userId;
     const usernameKeyToDelete = normalizeUsernameKey(activeSession.username || '');
+
+    if (activeSession?.token) {
+        await tryRemoteAuthAction('deleteAccount', {}, { token: activeSession.token });
+    }
+
     const remainingUsers = getRegisteredUsers().filter((user) => user.userId !== userIdToDelete && user.usernameKey !== usernameKeyToDelete);
 
     saveRegisteredUsers(remainingUsers);
