@@ -35,15 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     if (aiModeSelector && mealTypeGroup) {
-        aiModeSelector.addEventListener('change', toggleMealTypeGroup);
-        // anche click sui chip che cambiano il valore
-        var aiModeChips = document.querySelectorAll('.chip[data-value="recipe"], .chip[data-value="daily"], .chip[data-value="weekly"]');
-        aiModeChips.forEach(function(chip) {
-            chip.addEventListener('click', function() {
-                setTimeout(toggleMealTypeGroup, 0);
-            });
-        });
-        // inizializza stato
+        aiModeSelector.value = 'recipe';
         toggleMealTypeGroup();
     }
 });
@@ -457,88 +449,6 @@ function buildGeminiRecipeRequestPayload(profile, request) {
     };
 }
 
-function buildGeminiDailyPlanRequestPayload(profile, request) {
-    return {
-        profilo_utente: {
-            username: profile.username || '',
-            lifestyle: profile.jobType || 'moderato',
-            workout_settimanali: Number(profile.workoutsPerWeek || 0),
-            dieta: profile.diet || 'non specificata',
-            allergie: profile.allergies || 'nessuna indicata',
-            intolleranze: profile.intolerances || 'nessuna indicata',
-            patologie: profile.otherPathologies || 'nessuna indicata',
-            target_calorico: Math.round(profile.targetCalories || 0),
-            macro_target: {
-                proteine: Math.round(profile.proteinTargetGrams || 0),
-                carbo: Math.round(profile.carbsTargetGrams || 0),
-                grassi: Math.round(profile.fatTargetGrams || 0)
-            },
-            acqua_litri: Number(profile.waterTargetLiters || 0).toFixed(1)
-        },
-        richiesta_piano_giornaliero: {
-            ...request,
-            vincoli_qualitativi: [
-                'ogni pasto deve essere credibile sia sul piano gastronomico sia su quello nutrizionale',
-                'la giornata deve avere progressione energetica coerente e cena piu digeribile',
-                'riuso ingredienti solo se migliora organizzazione e non peggiora gusto o texture',
-                'ogni ricetta deve sembrare cucinata da uno chef domestico competente, non da un assemblatore casuale'
-            ],
-            requisiti_output: [
-                'ogni pasto deve avere procedimento reale e concreto',
-                'ogni step deve iniziare con un verbo guida e includere dettagli pratici di esecuzione',
-                'evidenziare riuso intelligente degli ingredienti tra pranzo e cena',
-                'garantire digeribilita serale e biodisponibilita quando il contesto nutrizionale lo richiede',
-                'cottura_consigliata e tip_antispreco sempre presenti per ogni ricetta'
-            ],
-            esempi_stile_procedimento: [
-                'Sciacqua: Se usi legumi in scatola, sciacquali bene sotto acqua corrente e lasciali sgocciolare 2 minuti.',
-                'Frulla: Metti tutto nel mixer e aggiungi un cucchiaio di acqua calda alla volta fino a ottenere una crema liscia ma sostenuta.',
-                'Inforna: Cuoci in forno statico preriscaldato a 200 gradi finche la superficie appare asciutta e dorata ai bordi.'
-            ]
-        }
-    };
-}
-
-function buildGeminiWeeklyPlanRequestPayload(profile, request) {
-    return {
-        profilo_utente: {
-            lifestyle: profile.jobType || 'moderato',
-            obiettivo: profile.goal || 'mantenere',
-            dieta: profile.diet || 'non specificata',
-            allergie: profile.allergies || 'nessuna indicata',
-            intolleranze: profile.intolerances || 'nessuna indicata',
-            patologie: profile.otherPathologies || 'nessuna indicata',
-            target_calorico: Math.round(profile.targetCalories || 0),
-            macro_target: {
-                proteine: Math.round(profile.proteinTargetGrams || 0),
-                carbo: Math.round(profile.carbsTargetGrams || 0),
-                grassi: Math.round(profile.fatTargetGrams || 0)
-            },
-            pasti_al_giorno: Number(profile.mealsPerDay || 4)
-        },
-        richiesta_piano_settimanale: {
-            ...request,
-            vincoli_qualitativi: [
-                'rotazione proteica coerente e non ripetitiva in modo meccanico',
-                'continuita di dispensa con piatti che restano appetibili e non monotoni',
-                'cene progressivamente piu leggere e digeribili senza perdere qualita culinaria',
-                'ogni ricetta deve dimostrare logica tecnica, equilibrio dei sapori e plausibilita domestica'
-            ],
-            requisiti_output: [
-                'rotazione proteica sensata sui 7 giorni',
-                'procedimenti realmente cucinabili in casa',
-                'ogni step deve iniziare con un verbo guida e includere dettagli pratici di esecuzione',
-                'integrare quando utile indicazioni per digeribilita e biodisponibilita',
-                'cottura_consigliata e tip_antispreco sempre presenti per ogni ricetta'
-            ],
-            esempi_stile_procedimento: [
-                'Prepara: Taglia le verdure in pezzi regolari su un tagliere ampio cosi cuociono in modo uniforme.',
-                'Cuoci: Scalda una padella antiaderente a fuoco medio, aggiungi il condimento e fai insaporire per 2-3 minuti prima di unire la base.',
-                'Servi: Lascia assestare 2 minuti fuori dal fuoco prima di impiattare, cosi i sapori restano piu definiti.'
-            ]
-        }
-    };
-}
 
 function buildGeminiChefPrompt(mode, payload) {
     const systemPrompt = GEMINI_PROMPT_MAP[mode];
@@ -1592,59 +1502,6 @@ async function fetchGeminiJsonPayload(prompt, mode = 'generic') {
     throw new Error(`${lastError} Avvia Netlify Dev su porta 8888, oppure configura window.NUTRIME_GEMINI_FUNCTION_URL / localStorage.nutrime_gemini_function_url o window.NUTRIME_CONFIG.geminiFunctionUrl con l'URL assoluto della tua function pubblica.`);
 }
 
-function assertGeminiDailyPlanSchema(payload) {
-    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
-        throw new Error('Schema Gemini non valido: piano giornaliero assente o non oggetto.');
-    }
-
-    if (!isNonEmptyString(payload.daily_theme)) {
-        throw new Error('Schema Gemini non valido: daily_theme mancante nel piano giornaliero.');
-    }
-
-    if (!Array.isArray(payload.pasti) || payload.pasti.length < 4) {
-        throw new Error('Schema Gemini non valido: il piano giornaliero deve contenere almeno 4 pasti.');
-    }
-
-    payload.pasti.forEach((meal, index) => assertGeminiRecipeSchema(meal, `pasto giornaliero ${index + 1}`));
-    return true;
-}
-
-function assertGeminiWeeklyPlanSchema(payload) {
-    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
-        throw new Error('Schema Gemini non valido: piano settimanale assente o non oggetto.');
-    }
-
-    if (!isNonEmptyString(payload.weekly_strategy)) {
-        throw new Error('Schema Gemini non valido: weekly_strategy mancante nel piano settimanale.');
-    }
-
-    if (!Array.isArray(payload.giorni) || payload.giorni.length !== 7) {
-        throw new Error('Schema Gemini non valido: il piano settimanale deve contenere 7 giorni.');
-    }
-
-    payload.giorni.forEach((day, dayIndex) => {
-        if (!day || typeof day !== 'object' || Array.isArray(day)) {
-            throw new Error(`Schema Gemini non valido: giorno ${dayIndex + 1} non valido.`);
-        }
-
-        if (!isNonEmptyString(day.giorno)) {
-            throw new Error(`Schema Gemini non valido: campo giorno mancante alla posizione ${dayIndex + 1}.`);
-        }
-
-        if (!isNonEmptyString(day.daily_theme)) {
-            throw new Error(`Schema Gemini non valido: daily_theme mancante per ${day.giorno || `giorno ${dayIndex + 1}`}.`);
-        }
-
-        if (!Array.isArray(day.pasti) || day.pasti.length === 0) {
-            throw new Error(`Schema Gemini non valido: pasti mancanti per ${day.giorno || `giorno ${dayIndex + 1}`}.`);
-        }
-
-        day.pasti.forEach((meal, mealIndex) => assertGeminiRecipeSchema(meal, `${day.giorno || `giorno ${dayIndex + 1}`} pasto ${mealIndex + 1}`));
-    });
-
-    return true;
-}
-
 async function generaRicettaGemini(promptConfig) {
     const mode = typeof promptConfig === 'string' ? 'generic' : promptConfig.mode;
     const prompt = typeof promptConfig === 'string'
@@ -1866,86 +1723,6 @@ function renderAIRecipeBioavailabilityDetails(recipe) {
     `;
 }
 
-const GEMINI_DAILY_SLOTS = ['Colazione', 'Spuntino', 'Pranzo', 'Cena'];
-const GEMINI_WEEK_DAYS = ['Lunedi', 'Martedi', 'Mercoledi', 'Giovedi', 'Venerdi', 'Sabato', 'Domenica'];
-
-function adaptGeminiMealToPlanEntry(recipe, slotLabel) {
-    const normalizedRecipe = normalizeGeminiRecipeShape(recipe);
-
-    return {
-        slot: slotLabel,
-        title: normalizedRecipe.titolo,
-        whyItFits: normalizedRecipe.descrizione || normalizedRecipe.chef_note,
-        items: normalizedRecipe.ingredienti,
-        kcal: Math.round(normalizedRecipe.calorie || 0),
-        protein: Number(normalizedRecipe.macro?.proteine || 0).toFixed(1),
-        carbs: Number(normalizedRecipe.macro?.carbo || 0).toFixed(1),
-        fat: Number(normalizedRecipe.macro?.grassi || 0).toFixed(1),
-        notes: [normalizedRecipe.chef_note, normalizedRecipe.bioavailability_tip].filter(Boolean)
-    };
-}
-
-function adaptGeminiDailyPlan(payload, profile, context = {}) {
-    assertGeminiDailyPlanSchema(payload);
-    const meals = (Array.isArray(payload?.pasti) ? payload.pasti : []).map((meal, index) => adaptGeminiMealToPlanEntry(meal, GEMINI_DAILY_SLOTS[index] || `Pasto ${index + 1}`));
-    const notes = (Array.isArray(payload?.pasti) ? payload.pasti : [])
-        .flatMap((meal) => {
-            const normalizedRecipe = normalizeGeminiRecipeShape(meal);
-            return [normalizedRecipe.chef_note, normalizedRecipe.bioavailability_tip];
-        })
-        .filter(Boolean);
-
-    return {
-        plan: {
-            title: 'Piano giornaliero su misura',
-            daily_theme: String(payload?.daily_theme || '').trim(),
-            rationale: `Crononutrizione applicata al tuo profilo con focus su ${String(payload?.daily_theme || 'equilibrio energetico').trim().toLowerCase()}.`,
-            lunchContext: context.lunchContext || 'workday',
-            targets: buildGeminiTargets(profile),
-            meals,
-            notes: [...new Set(notes)]
-        },
-        meta: {
-            source: 'gemini'
-        }
-    };
-}
-
-function adaptGeminiWeeklyPlan(payload, profile, context = {}) {
-    assertGeminiWeeklyPlanSchema(payload);
-    const inputDays = Array.isArray(payload?.giorni) ? payload.giorni : [];
-    const days = inputDays.map((day, dayIndex) => {
-        const meals = (Array.isArray(day?.pasti) ? day.pasti : []).map((meal, mealIndex) => adaptGeminiMealToPlanEntry(meal, GEMINI_DAILY_SLOTS[mealIndex] || `Pasto ${mealIndex + 1}`));
-        const notes = (Array.isArray(day?.pasti) ? day.pasti : []).flatMap((meal) => {
-            const normalizedRecipe = normalizeGeminiRecipeShape(meal);
-            return [normalizedRecipe.chef_note, normalizedRecipe.bioavailability_tip];
-        }).filter(Boolean);
-
-        return {
-            day: String(day?.giorno || GEMINI_WEEK_DAYS[dayIndex] || `Giorno ${dayIndex + 1}`).trim(),
-            daily_theme: String(day?.daily_theme || '').trim(),
-            focus: String(day?.daily_theme || 'Struttura del giorno').trim(),
-            meals,
-            notes: [...new Set(notes)]
-        };
-    });
-
-    return {
-        week: {
-            title: 'Piano settimanale su misura',
-            rationale: String(payload?.weekly_strategy || '').trim(),
-            targets: buildGeminiTargets(profile),
-            days,
-            notes: [
-                String(payload?.weekly_strategy || '').trim(),
-                context.preferences ? `Preferenze considerate: ${context.preferences}` : ''
-            ].filter(Boolean)
-        },
-        meta: {
-            source: 'gemini'
-        }
-    };
-}
 const wizardJobLabels = {
     sedentario: 'Sedentario',
     moderato: 'Moderato',
@@ -3465,16 +3242,137 @@ function normalizeSavedRecipesCollection(recipes) {
     const normalizedSavedRecipesState = normalizeSavedRecipesCollection([]);
     let ricetteSalvate = normalizedSavedRecipesState.recipes;
     let activeDate = formatLocalIsoDate(new Date());
+    let isCalendarDayDetailsVisible = true;
     let currentMonth = new Date();
     let currentMealType = null;
     let selectedFood = null;
     let aiSelectedIngredients = [];
     let aiGeneratedRecipes = [];
-    let barcodeScanner = null;
-    let barcodeScannerActive = false;
-    let barcodeScanLocked = false;
     let latestSmartScanFood = null;
-    let smartScanFallbackTimer = null;
+
+    const DEFAULT_WEEKLY_MEAL_PLAN = {
+        1: {
+            shortLabel: 'LUN',
+            meals: [
+                { id: 'colazione', label: 'Colazione', items: ['1 tazza di te verde', '3 g creatina', '150 g yogurt greco + 1 porzione frutta + 20 g noci'], nutrition: { k: 320, p: 19, c: 28, g: 15, fe: 1.1, ca: 240, b12: 1.1 } },
+                { id: 'pranzo', label: 'Pranzo', items: ['Inizia sempre il pasto con verdure crude (insalata o 1 carota/pezzo di finocchio)', '80 g riso integrale', '120 g legumi gia cotti', '2 verdure + 2 cucchiai olio evo'], nutrition: { k: 650, p: 22, c: 77, g: 27, fe: 5.4, ca: 120, b12: 0 } },
+                { id: 'cena', label: 'Cena', items: ['Inizia sempre il pasto con verdure crude (insalata o 1 carota/pezzo di finocchio)', '3 uova biologiche', '80 g pane scuro', '2 verdure + 2 cucchiai olio evo'], nutrition: { k: 640, p: 29, c: 47, g: 37, fe: 5.6, ca: 240, b12: 1.8 } }
+            ]
+        },
+        2: {
+            shortLabel: 'MAR',
+            meals: [
+                { id: 'colazione', label: 'Colazione', items: ['1 tazza di te verde', '3 g creatina', '150 g yogurt greco + 1 porzione frutta + 20 g noci'], nutrition: { k: 320, p: 19, c: 28, g: 15, fe: 1.1, ca: 240, b12: 1.1 } },
+                { id: 'pranzo', label: 'Pranzo', items: ['Inizia sempre il pasto con verdure crude (insalata o 1 carota/pezzo di finocchio)', '80 g pasta integrale', '120 g legumi gia cotti', '2 verdure + 2 cucchiai olio evo'], nutrition: { k: 630, p: 22, c: 84, g: 23, fe: 5.2, ca: 120, b12: 0 } },
+                { id: 'cena', label: 'Cena', items: ['Inizia sempre il pasto con verdure crude (insalata o 1 carota/pezzo di finocchio)', '250 g tofu', '60 g riso integrale', '2 verdure + 2 cucchiai olio evo'], nutrition: { k: 750, p: 37, c: 65, g: 39, fe: 6.7, ca: 560, b12: 0 } }
+            ]
+        },
+        3: {
+            shortLabel: 'MER',
+            meals: [
+                { id: 'colazione', label: 'Colazione', items: ['1 tazza di te verde', '3 g creatina', '150 g yogurt greco + 1 porzione frutta + 20 g noci'], nutrition: { k: 320, p: 19, c: 28, g: 15, fe: 1.1, ca: 240, b12: 1.1 } },
+                { id: 'pranzo', label: 'Pranzo', items: ['Inizia sempre il pasto con verdure crude (insalata o 1 carota/pezzo di finocchio)', '120 g pasta proteica Coop', '2 verdure + 2 cucchiai olio evo'], nutrition: { k: 660, p: 51, c: 44, g: 28, fe: 4.4, ca: 110, b12: 0 } },
+                { id: 'cena', label: 'Cena', items: ['Inizia sempre il pasto con verdure crude (insalata o 1 carota/pezzo di finocchio)', '2 burger lupini (150 g lupini + 100 g albume)', '2 patate medio-grandi', '2 verdure + 2 cucchiai olio evo'], nutrition: { k: 780, p: 46, c: 97, g: 24, fe: 6.8, ca: 150, b12: 0 } }
+            ]
+        },
+        4: {
+            shortLabel: 'GIO',
+            meals: [
+                { id: 'colazione', label: 'Colazione', items: ['1 tazza di te verde', '3 g creatina', '150 g yogurt greco + 1 porzione frutta + 20 g noci'], nutrition: { k: 320, p: 19, c: 28, g: 15, fe: 1.1, ca: 240, b12: 1.1 } },
+                { id: 'pranzo', label: 'Pranzo', items: ['Inizia sempre il pasto con verdure crude (insalata o 1 carota/pezzo di finocchio)', '80 g riso integrale', '100 g edamame', '2 verdure + 2 cucchiai olio evo'], nutrition: { k: 640, p: 20, c: 79, g: 27, fe: 4.6, ca: 120, b12: 0 } },
+                { id: 'cena', label: 'Cena', items: ['Inizia sempre il pasto con verdure crude (insalata o 1 carota/pezzo di finocchio)', '150 g tempeh', '60 g riso integrale', '2 verdure + 2 cucchiai olio evo'], nutrition: { k: 740, p: 36, c: 70, g: 37, fe: 4.7, ca: 180, b12: 0 } }
+            ]
+        },
+        5: {
+            shortLabel: 'VEN',
+            meals: [
+                { id: 'colazione', label: 'Colazione', items: ['1 tazza di te verde', '3 g creatina', '150 g yogurt greco + 1 porzione frutta + 20 g noci'], nutrition: { k: 320, p: 19, c: 28, g: 15, fe: 1.1, ca: 240, b12: 1.1 } },
+                { id: 'pranzo', label: 'Pranzo', items: ['Inizia sempre il pasto con verdure crude (insalata o 1 carota/pezzo di finocchio)', '150 g gnocchi', '120 g legumi gia cotti', '2 verdure + 2 cucchiai olio evo'], nutrition: { k: 590, p: 16, c: 80, g: 22, fe: 4.6, ca: 105, b12: 0 } },
+                { id: 'cena', label: 'Cena', items: ['Inizia sempre il pasto con verdure crude (insalata o 1 carota/pezzo di finocchio)', '3 uova biologiche', '80 g pane scuro', '2 verdure + 2 cucchiai olio evo'], nutrition: { k: 640, p: 29, c: 47, g: 37, fe: 5.6, ca: 240, b12: 1.8 } }
+            ]
+        },
+        6: {
+            shortLabel: 'SAB',
+            meals: [
+                { id: 'colazione', label: 'Colazione', items: ['1 tazza di te verde', '3 g creatina', '150 g yogurt greco + 1 porzione frutta + 20 g noci'], nutrition: { k: 320, p: 19, c: 28, g: 15, fe: 1.1, ca: 240, b12: 1.1 } },
+                { id: 'pranzo', label: 'Pranzo', items: ['Inizia sempre il pasto con verdure crude (insalata o 1 carota/pezzo di finocchio)', '120 g pasta proteica Coop', '2 verdure + 2 cucchiai olio evo'], nutrition: { k: 660, p: 51, c: 44, g: 28, fe: 4.4, ca: 110, b12: 0 } },
+                { id: 'cena', label: 'Cena', items: ['Pasto libero'], isFreeMeal: true, nutrition: { k: 0, p: 0, c: 0, g: 0, fe: 0, ca: 0, b12: 0 } }
+            ]
+        },
+        0: {
+            shortLabel: 'DOM',
+            meals: [
+                { id: 'colazione', label: 'Colazione', items: ['1 tazza di te verde', '3 g creatina', '150 g yogurt greco + 1 porzione frutta + 20 g noci'], nutrition: { k: 320, p: 19, c: 28, g: 15, fe: 1.1, ca: 240, b12: 1.1 } },
+                { id: 'pranzo', label: 'Pranzo', items: ['Inizia sempre il pasto con verdure crude (insalata o 1 carota/pezzo di finocchio)', '80 g pasta integrale', '120 g legumi gia cotti', '2 verdure + 2 cucchiai olio evo'], nutrition: { k: 630, p: 22, c: 84, g: 23, fe: 5.2, ca: 120, b12: 0 } },
+                { id: 'cena', label: 'Cena', items: ['Pasto libero'], isFreeMeal: true, nutrition: { k: 0, p: 0, c: 0, g: 0, fe: 0, ca: 0, b12: 0 } }
+            ]
+        }
+    };
+
+    const WEEKLY_WORKOUT_PLAN = {
+        1: {
+            shortLabel: 'LUN',
+            title: 'Forza total body',
+            videoUrl: 'https://www.youtube.com/watch?v=8QnP0_dsQPE',
+            notes: 'Riscaldamento leggero prima di iniziare.',
+            items: [
+                'Goblet squat 3 x 10',
+                'Piegamenti 3 x 10',
+                'Trazioni 3 x 8',
+                'Rematore 3 x 10',
+                'Plank 3 x 30s'
+            ]
+        },
+        2: {
+            shortLabel: 'MAR',
+            title: 'Camminata interval training',
+            items: ['Camminata 3 minuti veloce e 3 minuti lento per 30 minuti']
+        },
+        3: {
+            shortLabel: 'MER',
+            title: 'Forza parte alta e glutei',
+            videoUrl: 'https://www.youtube.com/watch?v=8QnP0_dsQPE',
+            items: [
+                'Affondi 3 x 10',
+                'Military press 3 x 10',
+                'Glute bridge 3 x 15',
+                'Dip 3 x 8',
+                'Curl 3 x 10',
+                'Curl inverso 3 x 10'
+            ]
+        },
+        4: {
+            shortLabel: 'GIO',
+            title: 'Camminata interval training',
+            items: ['Camminata 3 minuti veloce e 3 minuti lento per 30 minuti']
+        },
+        5: {
+            shortLabel: 'VEN',
+            title: 'Core e upper body',
+            videoUrl: 'https://www.youtube.com/watch?v=8QnP0_dsQPE',
+            notes: 'Recupero breve tra le serie mantenendo la postura.',
+            items: [
+                'Piegamenti 3 x 10',
+                'Plank 3 x 10s',
+                'Addominali laterali 3 x 10',
+                'Trazioni 3 x 8',
+                'Dip 3 x 8'
+            ]
+        },
+        6: {
+            shortLabel: 'SAB',
+            title: 'Camminata interval training',
+            items: ['Camminata 3 minuti veloce e 3 minuti lento per 30 minuti']
+        },
+        0: {
+            shortLabel: 'DOM',
+            title: 'Camminata interval training',
+            items: ['Camminata 3 minuti veloce e 3 minuti lento per 30 minuti']
+        }
+    };
+
+    let weeklyMealPlanState = normalizeWeeklyMealPlan();
+    let weeklyMealPlanEditorState = null;
 
     const AUTH_USERS_STORAGE_KEY = 'nutrime_auth_users_v2';
     const AUTH_SESSION_STORAGE_KEY = 'nutrime_active_session_v2';
@@ -3491,6 +3389,8 @@ function normalizeSavedRecipesCollection(recipes) {
     let activeSession = null;
     let persistStatePromise = Promise.resolve();
     let authScreenSetupComplete = false;
+    let registerUsernameAvailabilityTimer = null;
+    let registerUsernameAvailabilitySequence = 0;
 
     function safeJsonParse(value, fallback = null) {
         try {
@@ -3498,6 +3398,50 @@ function normalizeSavedRecipesCollection(recipes) {
         } catch (error) {
             return fallback;
         }
+    }
+
+    function cloneWeeklyMealPlan(plan = DEFAULT_WEEKLY_MEAL_PLAN) {
+        return JSON.parse(JSON.stringify(plan));
+    }
+
+    function normalizeWeeklyMealPlanNutrition(nutrition = {}, fallback = {}) {
+        return {
+            k: Math.max(0, Number(nutrition.k ?? fallback.k ?? 0) || 0),
+            p: Math.max(0, Number(nutrition.p ?? fallback.p ?? 0) || 0),
+            c: Math.max(0, Number(nutrition.c ?? fallback.c ?? 0) || 0),
+            g: Math.max(0, Number(nutrition.g ?? fallback.g ?? 0) || 0),
+            fe: Math.max(0, Number(nutrition.fe ?? fallback.fe ?? 0) || 0),
+            ca: Math.max(0, Number(nutrition.ca ?? fallback.ca ?? 0) || 0),
+            b12: Math.max(0, Number(nutrition.b12 ?? fallback.b12 ?? 0) || 0)
+        };
+    }
+
+    function normalizeWeeklyMealPlan(source = null) {
+        const basePlan = cloneWeeklyMealPlan(DEFAULT_WEEKLY_MEAL_PLAN);
+        const sourcePlan = source && typeof source === 'object' ? source : {};
+
+        Object.entries(basePlan).forEach(([weekday, baseDay]) => {
+            const sourceDay = sourcePlan[weekday] && typeof sourcePlan[weekday] === 'object' ? sourcePlan[weekday] : {};
+            const sourceMeals = Array.isArray(sourceDay.meals) ? sourceDay.meals : [];
+
+            baseDay.shortLabel = String(sourceDay.shortLabel || baseDay.shortLabel || '').trim() || baseDay.shortLabel;
+            baseDay.meals = baseDay.meals.map((baseMeal) => {
+                const sourceMeal = sourceMeals.find((meal) => String(meal?.id || '').trim() === baseMeal.id) || {};
+                const items = Array.isArray(sourceMeal.items)
+                    ? sourceMeal.items.map((item) => String(item || '').trim()).filter(Boolean)
+                    : baseMeal.items;
+
+                return {
+                    ...baseMeal,
+                    label: String(sourceMeal.label || baseMeal.label || '').trim() || baseMeal.label,
+                    items,
+                    isFreeMeal: Boolean(sourceMeal.isFreeMeal ?? baseMeal.isFreeMeal),
+                    nutrition: normalizeWeeklyMealPlanNutrition(sourceMeal.nutrition, baseMeal.nutrition)
+                };
+            });
+        });
+
+        return basePlan;
     }
 
     function getUserDataStorageKey(userId) {
@@ -3611,6 +3555,27 @@ function normalizeSavedRecipesCollection(recipes) {
         return String(username || '').trim().toLowerCase();
     }
 
+    function validateUsernameInput(username) {
+        const trimmedUsername = String(username || '').trim();
+
+        if (!trimmedUsername) {
+            throw new Error('Username obbligatorio.');
+        }
+
+        if (trimmedUsername.length < 3 || trimmedUsername.length > 32) {
+            throw new Error('Lo username deve contenere tra 3 e 32 caratteri.');
+        }
+
+        if (/\s{2,}/.test(trimmedUsername) || /[\r\n\t]/.test(trimmedUsername)) {
+            throw new Error('Lo username contiene caratteri non validi.');
+        }
+
+        return {
+            username: trimmedUsername,
+            usernameKey: normalizeUsernameKey(trimmedUsername)
+        };
+    }
+
     function buildUserId() {
         const randomId = (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function')
             ? crypto.randomUUID()
@@ -3630,6 +3595,7 @@ function normalizeSavedRecipesCollection(recipes) {
             username: rawProfile.username || username || activeSession?.username || ''
         } : null;
         const normalizedRecipes = normalizeSavedRecipesCollection(data.recipes || data.ricette || []).recipes;
+        const normalizedWeeklyMealPlan = normalizeWeeklyMealPlan(data.weeklyMealPlan || data.pianoSettimanale || null);
 
         return {
             profile: normalizedProfile,
@@ -3637,6 +3603,7 @@ function normalizeSavedRecipesCollection(recipes) {
             water: Number(data.water ?? data.acqua ?? 0) || 0,
             log: data.log && typeof data.log === 'object' ? data.log : {},
             recipes: normalizedRecipes,
+            weeklyMealPlan: normalizedWeeklyMealPlan,
             userDiaryProfile: data.userDiaryProfile || {
                 dataCreazione: new Date().toLocaleDateString(),
                 profilo: normalizedProfile ? { ...normalizedProfile } : null
@@ -3662,6 +3629,29 @@ function normalizeSavedRecipesCollection(recipes) {
         ['nv_profilo', 'nv_diario', 'nv_acqua', 'nv_log', 'nv_ricette', 'userDiaryProfile', 'isFirstAccess'].forEach((key) => {
             localStorage.removeItem(key);
         });
+    }
+
+    function clearPersistedUserAccount(userId, remainingUsers = null) {
+        if (userId) {
+            localStorage.removeItem(getUserDataStorageKey(userId));
+        }
+
+        if (Array.isArray(remainingUsers)) {
+            if (remainingUsers.length > 0) {
+                saveRegisteredUsers(remainingUsers);
+            } else {
+                localStorage.removeItem(AUTH_USERS_STORAGE_KEY);
+
+                for (let index = localStorage.length - 1; index >= 0; index -= 1) {
+                    const key = String(localStorage.key(index) || '');
+                    if (key.startsWith(`${USER_DATA_STORAGE_PREFIX}:`)) {
+                        localStorage.removeItem(key);
+                    }
+                }
+            }
+        }
+
+        clearLegacyStorageMirror();
     }
 
     async function saveUserData(data, userId = activeSession?.userId) {
@@ -3742,6 +3732,39 @@ function normalizeSavedRecipesCollection(recipes) {
 
     function saveRegisteredUsers(users) {
         localStorage.setItem(AUTH_USERS_STORAGE_KEY, JSON.stringify(users));
+    }
+
+    async function checkUsernameAvailability(username) {
+        const { username: trimmedUsername, usernameKey } = validateUsernameInput(username);
+
+        try {
+            const remoteResponse = await tryRemoteAuthAction('checkUsernameAvailability', { username: trimmedUsername });
+            if (remoteResponse && typeof remoteResponse.available === 'boolean') {
+                return remoteResponse;
+            }
+        } catch (error) {
+            const message = String(error?.message || '');
+            if (!message.includes('Azione autenticazione non supportata')) {
+                throw error;
+            }
+
+            if (hasExplicitAuthApiConfig()) {
+                return {
+                    ok: true,
+                    username: trimmedUsername,
+                    usernameKey,
+                    available: null,
+                    checkedRemotely: false
+                };
+            }
+        }
+
+        return {
+            ok: true,
+            username: trimmedUsername,
+            usernameKey,
+            available: !getRegisteredUsers().some((user) => user.usernameKey === usernameKey)
+        };
     }
 
     async function registerUser(username, password) {
@@ -3827,6 +3850,8 @@ function normalizeSavedRecipesCollection(recipes) {
         acqua = Number(normalized.water || 0);
         log = normalized.log && typeof normalized.log === 'object' ? normalized.log : {};
         ricetteSalvate = normalizeSavedRecipesCollection(normalized.recipes).recipes;
+        weeklyMealPlanState = normalizeWeeklyMealPlan(normalized.weeklyMealPlan);
+        weeklyMealPlanEditorState = null;
     }
 
     function getCurrentUserPayload(profileOverride = null) {
@@ -3838,6 +3863,7 @@ function normalizeSavedRecipesCollection(recipes) {
             water: acqua,
             log,
             recipes: ricetteSalvate,
+            weeklyMealPlan: weeklyMealPlanState,
             userDiaryProfile: {
                 dataCreazione: new Date().toLocaleDateString(),
                 profilo: effectiveProfile ? { ...effectiveProfile } : null
@@ -3908,19 +3934,78 @@ function normalizeSavedRecipesCollection(recipes) {
             || message.includes('already exists');
     }
 
-    function setRegisterUsernameError(message = '') {
+    function setRegisterUsernameError(message = '', tone = 'error') {
         const errorEl = document.getElementById('register-username-error');
         const usernameInput = document.getElementById('register-username');
         const hasMessage = Boolean(String(message || '').trim());
+        const isError = hasMessage && tone === 'error';
+        const isSuccess = hasMessage && tone === 'success';
+        const isPending = hasMessage && tone === 'pending';
 
         if (errorEl) {
             errorEl.textContent = hasMessage ? message : '';
             errorEl.classList.toggle('visible', hasMessage);
+            errorEl.classList.toggle('is-success', isSuccess);
+            errorEl.classList.toggle('is-pending', isPending);
         }
 
         if (usernameInput) {
-            usernameInput.classList.toggle('auth-input-invalid', hasMessage);
+            usernameInput.classList.toggle('auth-input-invalid', isError);
+            usernameInput.classList.toggle('auth-input-valid', isSuccess);
         }
+    }
+
+    async function updateRegisterUsernameAvailability(username, options = {}) {
+        const currentRequest = ++registerUsernameAvailabilitySequence;
+        const shouldAnnouncePending = options.pending !== false;
+
+        try {
+            const { username: trimmedUsername } = validateUsernameInput(username);
+
+            if (shouldAnnouncePending) {
+                setRegisterUsernameError('Verifico disponibilita...', 'pending');
+            }
+
+            const availability = await checkUsernameAvailability(trimmedUsername);
+            if (currentRequest !== registerUsernameAvailabilitySequence) {
+                return null;
+            }
+
+            if (availability.available === true) {
+                setRegisterUsernameError('Username disponibile', 'success');
+            } else if (availability.available === false) {
+                setRegisterUsernameError('username già esistente');
+            } else {
+                setRegisterUsernameError('Disponibilita finale verificata al submit', 'pending');
+            }
+
+            return availability;
+        } catch (error) {
+            if (currentRequest !== registerUsernameAvailabilitySequence) {
+                return null;
+            }
+
+            setRegisterUsernameError(error.message || 'Impossibile verificare lo username.');
+            return null;
+        }
+    }
+
+    function scheduleRegisterUsernameAvailabilityCheck(username) {
+        registerUsernameAvailabilitySequence += 1;
+
+        if (registerUsernameAvailabilityTimer) {
+            clearTimeout(registerUsernameAvailabilityTimer);
+            registerUsernameAvailabilityTimer = null;
+        }
+
+        if (!String(username || '').trim()) {
+            setRegisterUsernameError('');
+            return;
+        }
+
+        registerUsernameAvailabilityTimer = setTimeout(() => {
+            updateRegisterUsernameAvailability(username);
+        }, 260);
     }
 
     function switchAuthMode(mode = 'login') {
@@ -3993,6 +4078,8 @@ function normalizeSavedRecipesCollection(recipes) {
         log = {};
         ricetteSalvate = [];
         selectedAvatarPath = '';
+        weeklyMealPlanState = normalizeWeeklyMealPlan();
+        weeklyMealPlanEditorState = null;
     }
 
     function closeProfileCreatedModal() {
@@ -4030,7 +4117,14 @@ function normalizeSavedRecipesCollection(recipes) {
         const registerUsernameInput = document.getElementById('register-username');
 
         registerUsernameInput?.addEventListener('input', () => {
-            setRegisterUsernameError('');
+            scheduleRegisterUsernameAvailabilityCheck(registerUsernameInput.value || '');
+        });
+
+        registerUsernameInput?.addEventListener('blur', () => {
+            const currentValue = registerUsernameInput.value || '';
+            if (String(currentValue).trim()) {
+                updateRegisterUsernameAvailability(currentValue, { pending: false });
+            }
         });
 
         loginForm?.addEventListener('submit', async (event) => {
@@ -4062,6 +4156,11 @@ function normalizeSavedRecipesCollection(recipes) {
             }
 
             try {
+                const availability = await updateRegisterUsernameAvailability(username);
+                if (availability?.available === false) {
+                    return;
+                }
+
                 resetAnonymousWizardState();
                 const userRecord = await registerUser(username, password);
                 wizardShowProfileCreatedPopup = true;
@@ -4174,7 +4273,27 @@ function getDayProgress(dayLog, targetKcal) {
 
 function resetMealSelection() {
     currentMealType = null;
-    document.querySelectorAll('.chip').forEach(chip => chip.classList.remove('active'));
+    const diaryMealSelector = document.getElementById('diary-meal-selector');
+    if (diaryMealSelector) {
+        diaryMealSelector.querySelectorAll('.chip').forEach(chip => chip.classList.remove('active'));
+    }
+
+    updateDiarySearchVisibility();
+}
+
+function updateDiarySearchVisibility() {
+    const diarySearchBox = document.getElementById('diary-search-box');
+    const foodSearch = document.getElementById('food-search');
+    const isEditableDate = !isFutureDay(activeDate);
+    const shouldShowSearch = isEditableDate;
+
+    if (diarySearchBox) {
+        diarySearchBox.style.display = shouldShowSearch ? '' : 'none';
+    }
+
+    if (foodSearch && !shouldShowSearch) {
+        foodSearch.value = '';
+    }
 }
 
 function closeAddPanel() {
@@ -4217,11 +4336,14 @@ function updateDiaryAddAvailability() {
     const foodSearch = document.getElementById('food-search');
     const selectedDayLabel = document.getElementById('selected-day-label');
     const futureDateNote = document.getElementById('future-date-note');
+    const diaryMealSelector = document.getElementById('diary-meal-selector');
 
-    document.querySelectorAll('.chip').forEach(chip => {
-        chip.disabled = !isEditableDate;
-        chip.classList.toggle('is-disabled', !isEditableDate);
-    });
+    if (diaryMealSelector) {
+        diaryMealSelector.querySelectorAll('.chip').forEach(chip => {
+            chip.disabled = !isEditableDate;
+            chip.classList.toggle('is-disabled', !isEditableDate);
+        });
+    }
 
     if (foodSearch) {
         foodSearch.readOnly = isFutureDay(activeDate);
@@ -4236,6 +4358,8 @@ function updateDiaryAddAvailability() {
         resetMealSelection();
     }
 
+    updateDiarySearchVisibility();
+
     if (selectedDayLabel) {
         const formattedDate = parseIsoDate(activeDate).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'short' });
         selectedDayLabel.innerText = formattedDate;
@@ -4244,6 +4368,352 @@ function updateDiaryAddAvailability() {
     if (futureDateNote) {
         futureDateNote.style.display = isFutureDay(activeDate) ? 'block' : 'none';
     }
+
+    renderSelectedDayMealPlan(activeDate);
+    renderSelectedDayWorkout(activeDate);
+}
+
+function createEmptyDayLog() {
+    return { k: 0, p: 0, c: 0, g: 0, w: 0, fe: 0, ca: 0, b12: 0, items: [] };
+}
+
+function getWeeklyPlanForDate(dateIso = activeDate) {
+    const targetDate = parseIsoDate(dateIso);
+    return weeklyMealPlanState[targetDate.getDay()] || null;
+}
+
+function getWeeklyPlanMeal(dateIso, mealId) {
+    const dayPlan = getWeeklyPlanForDate(dateIso);
+    if (!dayPlan) return null;
+    return dayPlan.meals.find((meal) => meal.id === mealId) || null;
+}
+
+function getPlannedMealEntryId(dateIso, mealId) {
+    return `${dateIso}::${mealId}`;
+}
+
+function findPlannedMealEntry(dateIso, mealId) {
+    const dayLog = log[dateIso];
+    if (!dayLog || !Array.isArray(dayLog.items)) {
+        return { entry: null, index: -1 };
+    }
+
+    const plannedMealId = getPlannedMealEntryId(dateIso, mealId);
+    const index = dayLog.items.findIndex((item) => item?.isPlannedMealEntry && item?.plannedMealId === plannedMealId);
+    return { entry: index >= 0 ? dayLog.items[index] : null, index };
+}
+
+function isPlannedMealCompleted(dateIso, mealId) {
+    return Boolean(findPlannedMealEntry(dateIso, mealId).entry);
+}
+
+function buildPlannedMealDiaryEntry(dateIso, dayPlan, meal) {
+    const nutrition = normalizeWeeklyMealPlanNutrition(meal.nutrition);
+    return {
+        n: `Piano ${dayPlan.shortLabel} - ${meal.label}`,
+        t: normalizeMealType(meal.label) || meal.label,
+        finalized: true,
+        qty: null,
+        isPlannedMealEntry: true,
+        plannedMealId: getPlannedMealEntryId(dateIso, meal.id),
+        plannedMealTemplateId: meal.id,
+        baseK: nutrition.k,
+        baseP: nutrition.p,
+        baseC: nutrition.c,
+        baseG: nutrition.g,
+        baseFe: nutrition.fe,
+        baseCa: nutrition.ca,
+        baseB12: nutrition.b12,
+        k: nutrition.k,
+        p: nutrition.p,
+        c: nutrition.c,
+        g: nutrition.g,
+        fe: nutrition.fe,
+        ca: nutrition.ca,
+        b12: nutrition.b12
+    };
+}
+
+async function syncPlannedMealEntryWithTemplate(dateIso, mealId) {
+    const { entry, index } = findPlannedMealEntry(dateIso, mealId);
+    if (!entry || index < 0 || !log[dateIso]) {
+        return;
+    }
+
+    const dayPlan = getWeeklyPlanForDate(dateIso);
+    const meal = getWeeklyPlanMeal(dateIso, mealId);
+    if (!dayPlan || !meal) {
+        return;
+    }
+
+    aggiornaTotaliGiorno(log[dateIso], entry, -1);
+    const updatedEntry = buildPlannedMealDiaryEntry(dateIso, dayPlan, meal);
+    log[dateIso].items[index] = updatedEntry;
+    aggiornaTotaliGiorno(log[dateIso], updatedEntry, 1);
+}
+
+async function togglePlannedMealCompletion(mealId, dateIso = activeDate) {
+    if (isFutureDay(dateIso)) {
+        alert(getDiaryDateErrorMessage(dateIso));
+        return;
+    }
+
+    const dayPlan = getWeeklyPlanForDate(dateIso);
+    const meal = getWeeklyPlanMeal(dateIso, mealId);
+    if (!dayPlan || !meal) {
+        return;
+    }
+
+    const existing = findPlannedMealEntry(dateIso, mealId);
+    if (existing.entry && log[dateIso]) {
+        aggiornaTotaliGiorno(log[dateIso], existing.entry, -1);
+        log[dateIso].items.splice(existing.index, 1);
+        if (log[dateIso].items.length === 0) {
+            delete log[dateIso];
+        }
+    } else {
+        if (!log[dateIso]) {
+            log[dateIso] = createEmptyDayLog();
+        }
+
+        const entry = buildPlannedMealDiaryEntry(dateIso, dayPlan, meal);
+        log[dateIso].items.push(entry);
+        aggiornaTotaliGiorno(log[dateIso], entry, 1);
+    }
+
+    await queueUserDataPersist();
+    renderCalendar();
+    aggiornaUI();
+    renderCronologia();
+}
+
+function startWeeklyMealPlanEdit(mealId, dateIso = activeDate) {
+    const targetDate = parseIsoDate(dateIso);
+    weeklyMealPlanEditorState = {
+        dateIso,
+        weekday: targetDate.getDay(),
+        mealId
+    };
+    renderSelectedDayMealPlan(dateIso);
+}
+
+function cancelWeeklyMealPlanEdit(dateIso = activeDate) {
+    weeklyMealPlanEditorState = null;
+    renderSelectedDayMealPlan(dateIso);
+}
+
+async function saveWeeklyMealPlanEdit(mealId, dateIso = activeDate) {
+    const meal = getWeeklyPlanMeal(dateIso, mealId);
+    if (!meal) {
+        return;
+    }
+
+    const itemsInput = document.getElementById(`calendar-day-plan-editor-items-${mealId}`);
+    const kcalInput = document.getElementById(`calendar-day-plan-editor-k-${mealId}`);
+    const proteinInput = document.getElementById(`calendar-day-plan-editor-p-${mealId}`);
+    const carbsInput = document.getElementById(`calendar-day-plan-editor-c-${mealId}`);
+    const fatsInput = document.getElementById(`calendar-day-plan-editor-g-${mealId}`);
+
+    const items = String(itemsInput?.value || '')
+        .split(/\r?\n/)
+        .map((item) => item.trim())
+        .filter(Boolean);
+
+    if (items.length === 0) {
+        alert('Inserisci almeno una voce per il pasto.');
+        return;
+    }
+
+    meal.items = items;
+    meal.isFreeMeal = items.length === 1 && normalizeFoodResultKey(items[0]) === 'pasto libero';
+    meal.nutrition = normalizeWeeklyMealPlanNutrition({
+        k: kcalInput?.value,
+        p: proteinInput?.value,
+        c: carbsInput?.value,
+        g: fatsInput?.value,
+        fe: meal.nutrition.fe,
+        ca: meal.nutrition.ca,
+        b12: meal.nutrition.b12
+    }, meal.nutrition);
+
+    await syncPlannedMealEntryWithTemplate(dateIso, mealId);
+    weeklyMealPlanEditorState = null;
+    await queueUserDataPersist();
+    renderCalendar();
+    aggiornaUI();
+    renderCronologia();
+}
+
+function getCalendarMealSectionMeta(meal = {}) {
+    const mealId = String(meal.id || '').toLowerCase();
+
+    if (mealId === 'colazione') {
+        return {
+            variantClass: 'is-breakfast',
+            description: 'Apri la microsezione della colazione.'
+        };
+    }
+
+    if (mealId === 'cena') {
+        return {
+            variantClass: 'is-dinner',
+            description: 'Apri la microsezione della cena.'
+        };
+    }
+
+    return {
+        variantClass: 'is-lunch',
+        description: 'Apri la microsezione del pranzo.'
+    };
+}
+
+function renderSelectedDayMealPlan(dateIso = activeDate) {
+    const panel = document.getElementById('calendar-day-plan');
+    const title = document.getElementById('calendar-day-plan-title');
+    const subtitle = document.getElementById('calendar-day-plan-subtitle');
+    const content = document.getElementById('calendar-day-plan-content');
+    if (!panel || !title || !subtitle || !content) return;
+
+    panel.style.display = isCalendarDayDetailsVisible ? '' : 'none';
+    if (!isCalendarDayDetailsVisible) return;
+
+    const targetDate = parseIsoDate(dateIso);
+    const weekday = targetDate.getDay();
+    const dayPlan = weeklyMealPlanState[weekday];
+    const weekdayLabel = targetDate.toLocaleDateString('it-IT', { weekday: 'long' }).toLocaleUpperCase('it-IT');
+
+    title.innerText = weekdayLabel;
+    subtitle.innerText = '';
+
+    if (!dayPlan) {
+        content.innerHTML = '<p class="calendar-day-plan-empty">Nessun piano disponibile per questa data.</p>';
+        return;
+    }
+
+    const mealsMarkup = dayPlan.meals.map((meal) => {
+        const isCompleted = isPlannedMealCompleted(dateIso, meal.id);
+        const isEditing = weeklyMealPlanEditorState?.weekday === weekday && weeklyMealPlanEditorState?.mealId === meal.id;
+        const nutrition = normalizeWeeklyMealPlanNutrition(meal.nutrition);
+        const mealSectionMeta = getCalendarMealSectionMeta(meal);
+
+        if (isEditing) {
+            return `
+                <details class="calendar-day-plan-meal calendar-day-plan-toggle ${mealSectionMeta.variantClass} is-editing${meal.isFreeMeal ? ' is-free-meal' : ''}" open>
+                    <summary class="calendar-day-plan-toggle-summary" aria-label="${escapeHtml(mealSectionMeta.description)}">
+                        <div class="calendar-day-plan-toggle-copy">
+                            <div class="calendar-day-plan-meal-top">
+                                <h5>${escapeHtml(meal.label)}</h5>
+                                <span class="calendar-day-plan-status is-editing">Modifica</span>
+                            </div>
+                        </div>
+                        <span class="calendar-day-plan-toggle-indicator" aria-hidden="true"></span>
+                    </summary>
+                    <div class="calendar-day-plan-toggle-body">
+                        <textarea id="calendar-day-plan-editor-items-${meal.id}" class="calendar-day-plan-editor-textarea">${escapeHtml(meal.items.join('\n'))}</textarea>
+                        <div class="calendar-day-plan-editor-grid">
+                            <label><span>Kcal</span><input id="calendar-day-plan-editor-k-${meal.id}" type="number" min="0" step="1" value="${Math.round(nutrition.k)}"></label>
+                            <label><span>Proteine</span><input id="calendar-day-plan-editor-p-${meal.id}" type="number" min="0" step="0.1" value="${nutrition.p}"></label>
+                            <label><span>Carbo</span><input id="calendar-day-plan-editor-c-${meal.id}" type="number" min="0" step="0.1" value="${nutrition.c}"></label>
+                            <label><span>Grassi</span><input id="calendar-day-plan-editor-g-${meal.id}" type="number" min="0" step="0.1" value="${nutrition.g}"></label>
+                        </div>
+                        <div class="calendar-day-plan-actions">
+                            <button type="button" class="btn-main calendar-day-plan-action-btn" onclick="saveWeeklyMealPlanEdit('${meal.id}', '${dateIso}')">Salva</button>
+                            <button type="button" class="btn-secondary calendar-day-plan-action-btn" onclick="cancelWeeklyMealPlanEdit('${dateIso}')">Annulla</button>
+                        </div>
+                    </div>
+                </details>
+            `;
+        }
+
+        return `
+            <details class="calendar-day-plan-meal calendar-day-plan-toggle ${mealSectionMeta.variantClass}${meal.isFreeMeal ? ' is-free-meal' : ''}${isCompleted ? ' is-completed' : ''}">
+                <summary class="calendar-day-plan-toggle-summary" aria-label="${escapeHtml(mealSectionMeta.description)}">
+                    <div class="calendar-day-plan-toggle-copy">
+                        <div class="calendar-day-plan-meal-top">
+                            <h5>${escapeHtml(meal.label)}</h5>
+                            <span class="calendar-day-plan-status${isCompleted ? ' is-completed' : ''}">${isCompleted ? 'Svolto' : 'Da svolgere'}</span>
+                        </div>
+                    </div>
+                    <span class="calendar-day-plan-toggle-indicator" aria-hidden="true"></span>
+                </summary>
+                <div class="calendar-day-plan-toggle-body">
+                    <ul>
+                        ${meal.items.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}
+                    </ul>
+                    <div class="calendar-day-plan-nutrition-line">~ ${Math.round(nutrition.k)} kcal • P ${nutrition.p.toFixed(1)} g • C ${nutrition.c.toFixed(1)} g • G ${nutrition.g.toFixed(1)} g</div>
+                    <div class="calendar-day-plan-actions">
+                        <button type="button" class="btn-main calendar-day-plan-action-btn" onclick="togglePlannedMealCompletion('${meal.id}', '${dateIso}')">${isCompleted ? 'Segna come non svolto' : 'Segna come svolto'}</button>
+                        <button type="button" class="btn-secondary calendar-day-plan-action-btn" onclick="startWeeklyMealPlanEdit('${meal.id}', '${dateIso}')">Modifica</button>
+                    </div>
+                </div>
+            </details>
+        `;
+    }).join('');
+
+    const summaryMarkup = `
+        <section class="calendar-day-plan-summary">
+            <div class="calendar-day-plan-summary-header">
+                <strong>Valori nutrizionali stimati</strong>
+                <span>Colazione, pranzo e cena del giorno selezionato</span>
+            </div>
+            <div class="calendar-day-plan-summary-grid">
+                ${dayPlan.meals.map((meal) => {
+                    const nutrition = normalizeWeeklyMealPlanNutrition(meal.nutrition);
+                    return `
+                        <article class="calendar-day-plan-summary-card${meal.isFreeMeal ? ' is-free-meal' : ''}">
+                            <h6>${escapeHtml(meal.label)}</h6>
+                            <strong>${Math.round(nutrition.k)} kcal</strong>
+                            <small class="calendar-day-plan-summary-macros">
+                                <span>P ${nutrition.p.toFixed(1)} g</span>
+                                <span>C ${nutrition.c.toFixed(1)} g</span>
+                                <span>G ${nutrition.g.toFixed(1)} g</span>
+                            </small>
+                        </article>
+                    `;
+                }).join('')}
+            </div>
+        </section>
+    `;
+
+    content.innerHTML = `${mealsMarkup}${summaryMarkup}`;
+}
+
+window.togglePlannedMealCompletion = togglePlannedMealCompletion;
+window.startWeeklyMealPlanEdit = startWeeklyMealPlanEdit;
+window.cancelWeeklyMealPlanEdit = cancelWeeklyMealPlanEdit;
+window.saveWeeklyMealPlanEdit = saveWeeklyMealPlanEdit;
+
+function renderSelectedDayWorkout(dateIso = activeDate) {
+    const panel = document.getElementById('calendar-day-workout');
+    const content = document.getElementById('calendar-day-workout-content');
+    if (!panel || !content) return;
+
+    panel.style.display = '';
+
+    const targetDate = parseIsoDate(dateIso);
+    const dayPlan = WEEKLY_WORKOUT_PLAN[targetDate.getDay()];
+
+    if (!dayPlan) {
+        content.innerHTML = '<p class="calendar-day-workout-empty">Nessun allenamento disponibile per questa data.</p>';
+        return;
+    }
+
+    const videoMarkup = dayPlan.videoUrl
+        ? `<li class="calendar-day-workout-video-item"><a class="calendar-day-workout-video" href="${escapeHtml(dayPlan.videoUrl)}" target="_blank" rel="noopener noreferrer">Apri video guida</a></li>`
+        : '';
+    const notesMarkup = dayPlan.notes
+        ? `<p class="calendar-day-workout-note">${escapeHtml(dayPlan.notes)}</p>`
+        : '';
+
+    content.innerHTML = `
+        <article class="calendar-day-workout-card">
+            ${notesMarkup}
+            <ul class="calendar-day-workout-list">
+                ${videoMarkup}
+                ${dayPlan.items.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}
+            </ul>
+        </article>
+    `;
 }
 
 function normalizeMealType(type) {
@@ -5038,6 +5508,7 @@ function mostraSezione(tabId) {
     if (btn) btn.classList.add('active');
 
     if (tabId === 'diario') {
+        isCalendarDayDetailsVisible = true;
         renderCalendar();
         aggiornaUI();
         renderCronologia();
@@ -5063,6 +5534,7 @@ function mostraSezione(tabId) {
 
 function apriGiornoCronologia(dateIso) {
     activeDate = dateIso;
+    isCalendarDayDetailsVisible = true;
     currentMonth = new Date(parseIsoDate(dateIso).getFullYear(), parseIsoDate(dateIso).getMonth(), 1);
     mostraSezione('diario');
 }
@@ -5211,7 +5683,12 @@ function renderCalendar() {
 
         div.innerText = d;
         div.onclick = () => {
-            activeDate = dataIso;
+            if (activeDate === dataIso) {
+                isCalendarDayDetailsVisible = !isCalendarDayDetailsVisible;
+            } else {
+                activeDate = dataIso;
+                isCalendarDayDetailsVisible = true;
+            }
             renderCalendar();
             aggiornaUI();
         };
@@ -5224,9 +5701,14 @@ function selectMealType(type, btn) {
         alert(getDiaryDateErrorMessage(activeDate));
         return;
     }
+
     currentMealType = type;
-    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    const diaryMealSelector = document.getElementById('diary-meal-selector');
+    if (diaryMealSelector) {
+        diaryMealSelector.querySelectorAll('.chip').forEach(chip => chip.classList.remove('active'));
+    }
     if (btn) btn.classList.add('active');
+    updateDiarySearchVisibility();
 }
 
 function selezionaOpzioneChip(btn, hiddenInputId, value) {
@@ -5977,7 +6459,7 @@ function eliminaRicetta(idx) {
 
 function updateAiModeResultsVisibility(activeResultId) {
     const resultsWrap = document.getElementById('chef-mode-results');
-    const resultIds = ['ai-recipe-result', 'ai-day-plan-result'];
+    const resultIds = ['ai-recipe-result'];
     let visibleResultFound = false;
 
     resultIds.forEach((resultId) => {
@@ -6076,25 +6558,17 @@ function toggleAiMode() {
     const selector = document.getElementById('ai-mode-selector');
     if (!selector) return;
 
-    const activeModeChip = Array.from(document.querySelectorAll('.chip[data-value="recipe"], .chip[data-value="daily"], .chip[data-value="weekly"]'))
-        .find((chip) => chip.classList.contains('active'));
-    const mode = activeModeChip?.dataset?.value || '';
+    const mode = 'recipe';
     selector.value = mode;
     positionSharedChefNotes(mode);
 
     const fieldGroups = {
-        recipe: document.getElementById('ai-mode-recipes-fields'),
-        daily: document.getElementById('ai-mode-daily-fields'),
-        weekly: document.getElementById('ai-mode-weekly-fields')
+        recipe: document.getElementById('ai-mode-recipes-fields')
     };
     const resultByMode = {
-        recipe: 'ai-recipe-result',
-        daily: 'ai-day-plan-result',
-        weekly: 'ai-day-plan-result'
+        recipe: 'ai-recipe-result'
     };
     const recipeOptions = document.getElementById('chef-mode-recipe-options');
-    const dailyButton = document.getElementById('chef-generate-daily-btn');
-    const weeklyButton = document.getElementById('chef-generate-weekly-btn');
     const sharedNotesWrap = document.getElementById('ai-mode-shared-notes-wrap');
     const sharedNotesInput = document.getElementById('ai-mode-shared-notes');
 
@@ -6109,29 +6583,8 @@ function toggleAiMode() {
 
     toggleChefModeRecipeFlow();
 
-    if (dailyButton) {
-        dailyButton.style.display = mode === 'daily' ? 'block' : 'none';
-    }
-
-    if (weeklyButton) {
-        weeklyButton.style.display = mode === 'weekly' ? 'block' : 'none';
-    }
-
-    if (sharedNotesWrap) {
-        sharedNotesWrap.style.display = mode === 'daily' || mode === 'weekly' ? 'flex' : 'none';
-    }
-
     if (sharedNotesInput) {
-        if (mode === 'recipe') {
-            sharedNotesInput.placeholder = 'Preferenze, timing o richieste della ricetta (opzionale)';
-        } else if (mode === 'daily') {
-            sharedNotesInput.placeholder = 'Preferenze, timing o richieste del giorno (opzionale)';
-        } else if (mode === 'weekly') {
-            sharedNotesInput.placeholder = 'Preferenze, vincoli o richieste per la settimana (opzionale)';
-        } else {
-            sharedNotesInput.value = '';
-            sharedNotesInput.placeholder = 'Preferenze, timing o richieste (opzionale)';
-        }
+        sharedNotesInput.placeholder = 'Preferenze, timing o richieste della ricetta (opzionale)';
     }
 
     updateAiModeResultsVisibility(resultByMode[mode]);
@@ -6225,7 +6678,7 @@ function aggiornaUI() {
 
     const dateTitle = document.getElementById('date-title-pretty');
     if (dateTitle) {
-        dateTitle.innerText = 'OGGI HO MANGIATO:';
+        dateTitle.innerText = 'Aggiungi il tuo pasto di oggi:';
     }
 
     updateDiaryAddAvailability();
@@ -6334,8 +6787,6 @@ function formatDeltaKcal(value) {
 function renderAICardList(items) {
     return (items || []).map((item) => `<li>${escapeHtml(item)}</li>`).join('');
 }
-
-let lastWeeklyPlanPayload = null;
 
 function normalizePlanningText(value) {
     return String(value || '')
@@ -6603,12 +7054,6 @@ function groupShoppingItemsByCategory(items) {
             label: getShoppingCategoryLabel(key),
             items: uniquePlanningStrings(values)
         }));
-}
-
-function refreshWeeklyPlanDerivedViews() {
-    if (lastWeeklyPlanPayload) {
-        renderAIWeeklyPlanResults(lastWeeklyPlanPayload);
-    }
 }
 
 function getLunchContextLabel(value) {
@@ -8367,82 +8812,6 @@ function renderAIBreakfastSnackResults(payload) {
     updateAiModeResultsVisibility('ai-breakfast-result');
 }
 
-function renderAIDailyPlanResults(payload) {
-    const resultBox = document.getElementById('ai-day-plan-result');
-    if (!resultBox) return;
-
-    const plan = payload.plan || payload;
-    const profilePayload = getAIProfilePayload();
-    const targets = plan.targets || {};
-    const meals = Array.isArray(plan.meals) ? plan.meals : [];
-    const notes = Array.isArray(plan.notes) ? [...plan.notes] : [];
-    const lunchContext = plan.lunchContext || 'workday';
-    const dinnerPreferenceNote = buildDinnerPreferencePlanNote(profilePayload);
-    const dinnerProfileContext = `Contesto serale del profilo: ${dinnerPreferenceNote}`;
-    if (!notes.includes(dinnerPreferenceNote)) {
-        notes.push(dinnerPreferenceNote);
-    }
-    const rationale = [plan.rationale, dinnerPreferenceNote].filter(Boolean).join(' ');
-    const sourceNote = buildAiSourceBannerHtml({
-        ...(payload?.meta || {}),
-        description: payload?.meta?.source === 'fallback'
-            ? 'Il piano mostrato non arriva da Gemini live: l app sta usando il fallback locale per non interrompere l esperienza.'
-            : payload?.meta?.source === 'gemini-cache'
-                ? 'Gemini non era disponibile in questo momento: sto mostrando un piano giornaliero valido gia generato in precedenza da Gemini.'
-            : 'AI live attiva: il piano mostrato arriva da Gemini ed e organizzato come una giornata completa.'
-    });
-    const dailyTheme = String(plan.daily_theme || plan.dailyTheme || '').trim();
-
-    resultBox.style.display = 'block';
-    resultBox.innerHTML = `
-        <div class="ai-plan-block">
-            <div class="ai-mode-header">
-                <div>
-                    <h4 class="ai-mode-title">${escapeHtml(plan.title || 'Piano giornaliero su misura')}</h4>
-                    ${sourceNote}
-                    ${dailyTheme ? `<p class="ai-plan-theme ai-plan-theme-main">${escapeHtml(dailyTheme)}</p>` : ''}
-                    <p class="ai-mode-subtitle"><strong>Contesto serale:</strong> ${escapeHtml(dinnerProfileContext)}</p>
-                </div>
-            </div>
-
-            ${rationale ? `<p class="ai-recipe-fit"><strong>Ragionamento:</strong> ${escapeHtml(rationale)}</p>` : ''}
-
-            <div class="ai-plan-meta">
-                <div class="ai-plan-stat"><strong>Fabbisogno</strong><span>${escapeHtml(targets.maintenanceCalories || 0)} kcal</span></div>
-                <div class="ai-plan-stat"><strong>Piano</strong><span>${escapeHtml(targets.targetCalories || 0)} kcal</span></div>
-                <div class="ai-plan-stat"><strong>Delta</strong><span>${escapeHtml(formatDeltaKcal(targets.deltaCalories || 0))}</span></div>
-                <div class="ai-plan-stat"><strong>Proteine</strong><span>${escapeHtml(targets.proteinGrams || 0)} g (${escapeHtml(targets.proteinPerKg || 0)} g/kg)</span></div>
-                <div class="ai-plan-stat"><strong>Acqua</strong><span>${escapeHtml(targets.hydrationLiters || 0)} L</span></div>
-                <div class="ai-plan-stat"><strong>Pranzo</strong><span>${escapeHtml(getLunchContextLabel(lunchContext))}</span></div>
-            </div>
-
-            <div class="ai-recipe-grid">
-                ${meals.map((meal) => `
-                    <article class="ai-plan-day">
-                        <div class="ai-plan-day-top">
-                            <span class="ai-recipe-index">${escapeHtml(meal.slot || 'Pasto')}</span>
-                            <span class="ai-recipe-tag">${escapeHtml(meal.kcal || 0)} kcal</span>
-                        </div>
-                        <h5>${escapeHtml(meal.title || 'Pasto')}</h5>
-                        <p class="ai-recipe-fit"><strong>Perche ti puo aiutare:</strong> ${escapeHtml(meal.whyItFits || '')}</p>
-                        <ul class="ai-plan-items">${renderAICardList(meal.items || [])}</ul>
-                        <p class="ai-recipe-fit"><strong>Stima:</strong> P ${escapeHtml(meal.protein || 0)} g • C ${escapeHtml(meal.carbs || 0)} g • G ${escapeHtml(meal.fat || 0)} g</p>
-                    </article>
-                `).join('')}
-            </div>
-
-            ${(notes.length > 0) ? `
-                <div class="ai-recipe-card">
-                    <h5>Note del piano</h5>
-                    <ul class="ai-plan-note-list">${renderAICardList(notes)}</ul>
-                </div>
-            ` : ''}
-        </div>
-    `;
-    activateAIRetryCountdown(resultBox);
-    updateAiModeResultsVisibility('ai-day-plan-result');
-}
-
 function getAIWeeklyPlanFallback(profile, preferences, lunchContext = 'workday') {
     const clinicalContext = getClinicalNutritionContext(profile);
     const weeklyPattern = cloneClinicalGuidanceValue(clinicalContext.weeklyPattern || {});
@@ -8554,141 +8923,6 @@ function getAIWeeklyPlanFallback(profile, preferences, lunchContext = 'workday')
     };
 }
 
-function renderAIWeeklyPlanResults(payload) {
-    const resultBox = document.getElementById('ai-day-plan-result');
-    if (!resultBox) return;
-
-    lastWeeklyPlanPayload = payload;
-
-    const profilePayload = getAIProfilePayload();
-    const week = payload.week || payload;
-    const targets = week.targets || {};
-    const days = Array.isArray(week.days) ? week.days : [];
-    const notes = Array.isArray(week.notes) ? week.notes : [];
-    const pantryRaw = document.getElementById('weekly-plan-pantry')?.value || '';
-    const shoppingInsights = buildWeeklyShoppingInsights(week, pantryRaw);
-    const shoppingGroups = groupShoppingItemsByCategory(shoppingInsights.toBuy);
-    const sourceNote = buildAiSourceBannerHtml({
-        ...(payload?.meta || {}),
-        description: payload?.meta?.source === 'fallback'
-            ? 'Il piano settimanale mostrato usa il fallback locale: Gemini live non ha restituito una risposta valida in questo tentativo.'
-            : payload?.meta?.source === 'gemini-cache'
-                ? 'Gemini non era disponibile in questo momento: sto mostrando un piano settimanale valido gia generato in precedenza da Gemini.'
-            : payload?.meta?.source === 'example'
-                ? 'Stai vedendo uno schema settimanale statico caricato manualmente e non una risposta live di Gemini.'
-                : 'AI live attiva: il piano settimanale mostrato arriva da Gemini ed e coerente con il profilo.'
-    });
-    const proteinStat = targets.proteinLabel
-        ? escapeHtml(targets.proteinLabel)
-        : (targets.proteinGrams || targets.proteinPerKg)
-            ? `${escapeHtml(targets.proteinGrams || 0)} g (${escapeHtml(targets.proteinPerKg || 0)} g/kg)`
-            : '-';
-    const carbsStat = targets.carbsLabel
-        ? escapeHtml(targets.carbsLabel)
-        : (targets.carbsGrams ? `${escapeHtml(targets.carbsGrams)} g` : '-');
-    const fatStat = targets.fatLabel
-        ? escapeHtml(targets.fatLabel)
-        : (targets.fatGrams ? `${escapeHtml(targets.fatGrams)} g` : '-');
-    const fiberStat = targets.fiberLabel
-        ? escapeHtml(targets.fiberLabel)
-        : (targets.fiberGrams ? `${escapeHtml(targets.fiberGrams)} g` : '-');
-    const hydrationStat = targets.hydrationLabel
-        ? escapeHtml(targets.hydrationLabel)
-        : (targets.hydrationLiters ? `${escapeHtml(targets.hydrationLiters)} L` : '-');
-    const weeklyGuide = shouldUseVeganPlanning(profilePayload)
-        ? [
-            'In un menu 100% vegetale fai comparire cereali o derivati a ogni pasto principale e legumi o altre proteine vegetali almeno due volte al giorno.',
-            'A pranzo e cena tieni abbondanti le verdure; distribuisci frutta 2-3 volte al giorno e usa semi, frutta secca e olio EVO con misura nel corso della giornata.',
-            'Controlla piu volte al giorno la presenza di cibi vegetali ricchi di calcio e decidi dove inserire semi di lino o chia per il capitolo Omega 3.',
-            'Usa il piano come traccia flessibile e mediterranea: molte ricette italiane sono gia naturalmente vegetali e non richiedono sostituzioni complicate.',
-            'Quando hai finito, confronta il menu con dispensa, frigo e freezer e organizza la spesa per corsie, non come elenco casuale di piatti.'
-        ]
-        : [
-            'Parti dalle proteine dei pasti principali e verifica la rotazione della settimana: legumi, pesce, carne, uova e formaggi vanno alternati con buon senso.',
-            'Completa poi ogni pranzo e ogni cena con cereali o altra base amidacea, verdure e una quota dichiarata di grassi buoni.',
-            'Usa il piano come traccia flessibile: puoi spostare o sostituire pasti in base a lavoro, famiglia, mensa, uscite e weekend.',
-            'Quando hai finito, evidenzia quello che hai gia in dispensa, frigo o freezer e scrivi la spesa solo per cio che manca.',
-            'Procedi per piccoli passi: un menu semplice ma ripetibile vale piu di una settimana perfetta ma difficile da mantenere.'
-        ];
-
-    resultBox.style.display = 'block';
-    resultBox.innerHTML = `
-        <div class="ai-plan-block">
-            <div class="ai-mode-header">
-                <div>
-                    <h4 class="ai-mode-title">${escapeHtml(week.title || 'Piano settimanale su misura')}</h4>
-                    ${sourceNote}
-                </div>
-            </div>
-
-            ${week.rationale ? `<p class="ai-recipe-fit"><strong>Ragionamento:</strong> ${escapeHtml(week.rationale)}</p>` : ''}
-
-            <div class="ai-plan-meta">
-                <div class="ai-plan-stat"><strong>Fabbisogno</strong><span>${escapeHtml(targets.maintenanceCalories || 0)} kcal</span></div>
-                <div class="ai-plan-stat"><strong>Piano</strong><span>${escapeHtml(targets.targetCalories || 0)} kcal</span></div>
-                <div class="ai-plan-stat"><strong>Delta</strong><span>${escapeHtml(formatDeltaKcal(targets.deltaCalories || 0))}</span></div>
-                <div class="ai-plan-stat"><strong>Proteine</strong><span>${proteinStat}</span></div>
-                <div class="ai-plan-stat"><strong>Carboidrati</strong><span>${carbsStat}</span></div>
-                <div class="ai-plan-stat"><strong>Grassi</strong><span>${fatStat}</span></div>
-                <div class="ai-plan-stat"><strong>Fibra</strong><span>${fiberStat}</span></div>
-                <div class="ai-plan-stat"><strong>Acqua</strong><span>${hydrationStat}</span></div>
-                <div class="ai-plan-stat"><strong>Giorni</strong><span>${escapeHtml(days.length || 0)}</span></div>
-            </div>
-
-            <div class="ai-recipe-grid">
-                ${days.map((day) => `
-                    <article class="ai-plan-day">
-                        <div class="ai-plan-day-top">
-                            <span class="ai-recipe-index">${escapeHtml(day.day || 'Giorno')}</span>
-                            <span class="ai-recipe-tag">Settimana</span>
-                        </div>
-                        ${day.daily_theme ? `<p class="ai-plan-theme">${escapeHtml(day.daily_theme)}</p>` : ''}
-                        <h5>${escapeHtml(day.focus || 'Struttura del giorno')}</h5>
-                        ${(Array.isArray(day.meals) ? day.meals : []).map((meal) => `
-                            <div class="ai-recipe-section">
-                                <strong>${escapeHtml(meal.slot || 'Pasto')}</strong>
-                                <p class="ai-recipe-fit">${escapeHtml(meal.title || '')}</p>
-                                <ul>${renderAICardList(meal.items || [])}</ul>
-                            </div>
-                        `).join('')}
-                        ${(Array.isArray(day.notes) && day.notes.length > 0) ? `<ul class="ai-plan-note-list">${renderAICardList(day.notes)}</ul>` : ''}
-                    </article>
-                `).join('')}
-            </div>
-
-            ${(notes.length > 0) ? `
-                <div class="ai-recipe-card">
-                    <h5>Note della settimana</h5>
-                    <ul class="ai-plan-note-list">${renderAICardList(notes)}</ul>
-                </div>
-            ` : ''}
-
-            <div class="ai-recipe-card">
-                <h5>Come usare il meal plan</h5>
-                <ul class="ai-plan-note-list">${renderAICardList(weeklyGuide)}</ul>
-            </div>
-
-            <div class="ai-recipe-card">
-                <h5>Dispensa riconosciuta</h5>
-                <ul class="ai-plan-note-list">${renderAICardList(shoppingInsights.pantryLabels.length > 0 ? shoppingInsights.pantryLabels : ['Non hai ancora indicato ingredienti gia presenti in casa.'])}</ul>
-            </div>
-
-            <div class="ai-recipe-card">
-                <h5>Lista della spesa suggerita</h5>
-                ${shoppingGroups.length > 0 ? shoppingGroups.map((group) => `
-                    <div class="ai-recipe-section">
-                        <strong>${escapeHtml(group.label)}</strong>
-                        <ul class="ai-plan-note-list">${renderAICardList(group.items)}</ul>
-                    </div>
-                `).join('') : `<ul class="ai-plan-note-list">${renderAICardList(['In base alla dispensa indicata non emergono componenti mancanti da acquistare.'])}</ul>`}
-                ${shoppingInsights.alreadyCovered.length > 0 ? `<p class="ai-recipe-fit"><strong>Gia coperti in casa:</strong> ${escapeHtml(shoppingInsights.alreadyCovered.join(', '))}</p>` : ''}
-            </div>
-        </div>
-    `;
-    activateAIRetryCountdown(resultBox);
-    updateAiModeResultsVisibility('ai-day-plan-result');
-}
-
 async function generaColazioniSpuntiniAI() {
     const profilePayload = getAIProfilePayload();
     const preferences = (document.getElementById('breakfast-ai-notes')?.value || '').trim();
@@ -8705,128 +8939,6 @@ async function generaColazioniSpuntiniAI() {
         'Colazioni e spuntini non disponibili',
         'Questa modalita non e attiva in questo deploy perche qui sono consentite solo generazioni collegate a Gemini.'
     );
-}
-
-async function generaPianoGiornalieroAI() {
-    const profilePayload = getAIProfilePayload();
-    const preferences = (document.getElementById('ai-mode-shared-notes')?.value || '').trim();
-    const lunchContext = profilePayload.lunchContextPreference === 'free-day' ? 'free-day' : 'workday';
-    const dailyPlanRequestPayload = buildGeminiDailyPlanRequestPayload(profilePayload, {
-        preferenze: preferences,
-        contesto_pranzo: lunchContext,
-        crononutrizione: 'Colazione densa, pranzo per energia, cena leggera e digeribile',
-        logica_zero_sprechi: 'Riutilizza ingredienti compatibili tra pranzo e cena quando sensato',
-        ordine_atteso_pasti: GEMINI_DAILY_SLOTS
-    });
-
-    renderAIBoxLoading(
-        'ai-day-plan-result',
-        'Sto costruendo il piano giornaliero...',
-        `Distinguo fabbisogno, piano calorico, quota proteica e pranzo da ${getLunchContextLabel(lunchContext).toLowerCase()}.`
-    );
-
-    try {
-        const geminiPayload = await generaRicettaGemini({
-            mode: 'piano-giornaliero',
-            payload: dailyPlanRequestPayload
-        });
-
-        if (!geminiPayload || !Array.isArray(geminiPayload.pasti) || geminiPayload.pasti.length === 0) {
-            throw new Error('Gemini ha restituito un piano giornaliero senza pasti validi.');
-        }
-
-        const adaptedDailyPlan = adaptGeminiDailyPlan(geminiPayload, profilePayload, {
-            preferences,
-            lunchContext
-        });
-        renderAIDailyPlanResults(adaptedDailyPlan);
-        persistGeminiCacheEntry('daily', dailyPlanRequestPayload, adaptedDailyPlan, {
-            lunchContext,
-            preferences
-        });
-    } catch (error) {
-        console.error('AI daily plan error:', error);
-        const userFacingError = buildGeminiUserFacingErrorMessage(error);
-        const cachedDailyPlan = loadGeminiCacheEntry('daily', dailyPlanRequestPayload, (entry) => String(entry?.metadata?.lunchContext || '') === String(lunchContext || ''));
-        if (cachedDailyPlan?.responsePayload) {
-            renderAIDailyPlanResults({
-                ...cachedDailyPlan.responsePayload,
-                meta: {
-                    ...(cachedDailyPlan.responsePayload.meta || {}),
-                    source: 'gemini-cache',
-                    reason: userFacingError
-                }
-            });
-            return;
-        }
-        renderAIBoxError(
-            'ai-day-plan-result',
-            'Piano giornaliero non disponibile',
-            userFacingError || 'Gemini non ha risposto. Nessun piano locale verra mostrato.'
-        );
-    }
-}
-
-async function generaPianoSettimanaleAI() {
-    const profilePayload = getAIProfilePayload();
-    const preferences = (document.getElementById('ai-mode-shared-notes')?.value || '').trim();
-    const lunchContext = profilePayload.lunchContextPreference === 'free-day' ? 'free-day' : 'workday';
-    const weeklyPlanRequestPayload = buildGeminiWeeklyPlanRequestPayload(profilePayload, {
-        preferenze: preferences,
-        contesto_pranzo: lunchContext,
-        pasti_al_giorno: profilePayload.mealsPerDay,
-        obiettivo_settimanale: profilePayload.goal || 'mantenere',
-        rotazione_proteica: 'Distribuisci fonti proteiche in modo sensato senza ripetizioni monotone',
-        giorni_attesi: GEMINI_WEEK_DAYS,
-        ordine_atteso_pasti: GEMINI_DAILY_SLOTS
-    });
-
-    renderAIBoxLoading(
-        'ai-day-plan-result',
-        'Sto costruendo il piano settimanale...',
-        'Organizzo la settimana con una logica clinico-pratica, distinguendo struttura quotidiana e rotazione proteica.'
-    );
-
-    try {
-        const geminiPayload = await generaRicettaGemini({
-            mode: 'piano-settimanale',
-            payload: weeklyPlanRequestPayload
-        });
-
-        if (!geminiPayload || !Array.isArray(geminiPayload.giorni) || geminiPayload.giorni.length === 0) {
-            throw new Error('Gemini ha restituito un piano settimanale senza giorni validi.');
-        }
-
-        const adaptedWeeklyPlan = adaptGeminiWeeklyPlan(geminiPayload, profilePayload, {
-            preferences,
-            lunchContext
-        });
-        renderAIWeeklyPlanResults(adaptedWeeklyPlan);
-        persistGeminiCacheEntry('weekly', weeklyPlanRequestPayload, adaptedWeeklyPlan, {
-            lunchContext,
-            preferences
-        });
-    } catch (error) {
-        console.error('AI weekly plan error:', error);
-        const userFacingError = buildGeminiUserFacingErrorMessage(error);
-        const cachedWeeklyPlan = loadGeminiCacheEntry('weekly', weeklyPlanRequestPayload, (entry) => String(entry?.metadata?.lunchContext || '') === String(lunchContext || ''));
-        if (cachedWeeklyPlan?.responsePayload) {
-            renderAIWeeklyPlanResults({
-                ...cachedWeeklyPlan.responsePayload,
-                meta: {
-                    ...(cachedWeeklyPlan.responsePayload.meta || {}),
-                    source: 'gemini-cache',
-                    reason: userFacingError
-                }
-            });
-            return;
-        }
-        renderAIBoxError(
-            'ai-day-plan-result',
-            'Piano settimanale non disponibile',
-            userFacingError || 'Gemini non ha risposto. Nessun piano locale verra mostrato.'
-        );
-    }
 }
 
 let kcalChart;
@@ -9027,16 +9139,27 @@ async function deleteCurrentUserAccount() {
 
     const userIdToDelete = activeSession.userId;
     const usernameKeyToDelete = normalizeUsernameKey(activeSession.username || '');
+    let remoteDeleteError = null;
 
     if (activeSession?.token) {
-        await tryRemoteAuthAction('deleteAccount', {}, { token: activeSession.token });
+        try {
+            await tryRemoteAuthAction('deleteAccount', {}, { token: activeSession.token });
+        } catch (error) {
+            remoteDeleteError = error;
+            console.error('Errore durante eliminazione remota profilo:', error);
+        }
     }
 
     const remainingUsers = getRegisteredUsers().filter((user) => user.userId !== userIdToDelete && user.usernameKey !== usernameKeyToDelete);
 
-    saveRegisteredUsers(remainingUsers);
-    localStorage.removeItem(getUserDataStorageKey(userIdToDelete));
+    clearPersistedUserAccount(userIdToDelete, remainingUsers);
     await logout();
+
+    if (remoteDeleteError) {
+        const error = new Error('Il profilo locale e stato eliminato, ma la cancellazione sul server non e riuscita.');
+        error.cause = remoteDeleteError;
+        throw error;
+    }
 }
 
 function apriConfermaResetProfilo() {
@@ -9054,9 +9177,20 @@ function chiudiConfermaResetProfilo() {
 }
 
 async function eseguiResetProfilo() {
-    chiudiConfermaResetProfilo();
-    await deleteCurrentUserAccount();
+    try {
+        await deleteCurrentUserAccount();
+        chiudiConfermaResetProfilo();
+    } catch (error) {
+        console.error('Errore durante eliminazione profilo:', error);
+        alert(String(error?.message || 'Non e stato possibile eliminare il profilo. Riprova.'));
+    }
 }
+
+window.logout = logout;
+window.deleteCurrentUserAccount = deleteCurrentUserAccount;
+window.apriConfermaResetProfilo = apriConfermaResetProfilo;
+window.chiudiConfermaResetProfilo = chiudiConfermaResetProfilo;
+window.eseguiResetProfilo = eseguiResetProfilo;
 
 function salvaRicettaAI(index) {
     const recipe = aiGeneratedRecipes[index];
@@ -9115,87 +9249,6 @@ function salvaRicettaAI(index) {
     queueUserDataPersist();
     aggiornaListaRicetteSalvate();
     alert('Ricetta AI salvata nei tuoi piatti!');
-}
-
-function setScannerVisibility(visible) {
-    const reader = document.getElementById('reader');
-    if (reader) {
-        reader.style.display = visible ? 'block' : 'none';
-    }
-
-    const scanButton = document.querySelector('.scan-trigger-btn');
-    if (scanButton) {
-        const scanLabel = scanButton.querySelector('.scan-trigger-label');
-        if (scanLabel) {
-            scanLabel.textContent = visible ? 'Chiudi scanner' : 'Scansiona';
-        }
-        const scanIcon = scanButton.querySelector('i[data-lucide]');
-        if (scanIcon) {
-            scanIcon.setAttribute('data-lucide', visible ? 'scan-search' : 'scan-line');
-        }
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
-        }
-    }
-}
-
-async function fermaScanner() {
-    barcodeScanLocked = false;
-
-    if (smartScanFallbackTimer) {
-        clearTimeout(smartScanFallbackTimer);
-        smartScanFallbackTimer = null;
-    }
-
-    if (barcodeScanner) {
-        if (barcodeScannerActive) {
-            try {
-                await barcodeScanner.stop();
-            } catch (error) {
-                console.warn('Stop scanner warning:', error);
-            }
-        }
-
-        try {
-            await barcodeScanner.clear();
-        } catch (error) {
-            console.warn('Clear scanner warning:', error);
-        }
-    }
-
-    barcodeScannerActive = false;
-    barcodeScanner = null;
-    setScannerVisibility(false);
-}
-
-function mapOpenFoodFactsProduct(product, fallbackCode = '') {
-    if (!product || typeof product !== 'object') {
-        return null;
-    }
-
-    const nutriments = product.nutriments || {};
-    const kcalValue = Number(
-        nutriments['energy-kcal_100g']
-        || nutriments['energy-kcal']
-        || 0
-    );
-    const kjValue = Number(nutriments.energy_100g || nutriments.energy || 0);
-    const kcalFromKj = kjValue > 0 ? (kjValue / 4.184) : 0;
-    const kcal = kcalValue > 0 ? kcalValue : kcalFromKj;
-    const scanResult = mapOpenFoodFactsScanResult(product, `Fonte OpenFoodFacts (barcode ${fallbackCode || 'n/d'})`);
-
-    return {
-        nome: String(product.product_name_it || product.product_name || `Prodotto ${fallbackCode || 'scannerizzato'}`).trim(),
-        kcal: Number.isFinite(kcal) ? kcal : 0,
-        proteine: Number(nutriments.proteins_100g || 0),
-        carboidrati: Number(nutriments.carbohydrates_100g || 0),
-        grassi: Number(nutriments.fat_100g || 0),
-        fe: 0,
-        ca: 0,
-        b12: 0,
-        isOFF: true,
-        scanResult
-    };
 }
 
 const KAGGLE_DATASET_ENDPOINTS = [
@@ -9631,154 +9684,6 @@ async function searchOpenFoodFactsByBarcodeCandidates(codeCandidates) {
     }
 
     return null;
-}
-
-async function gestisciBarcodeScansionato(barcode) {
-    const codeCandidates = getBarcodeCandidates(barcode);
-    if (codeCandidates.length === 0) {
-        alert('Codice a barre non valido.');
-        return;
-    }
-
-    try {
-        let mappedFood = null;
-        let usedCode = codeCandidates[0];
-
-        const kaggleMatch = await findKaggleProductByBarcodeCandidates(codeCandidates);
-        if (kaggleMatch?.product) {
-            usedCode = kaggleMatch.code || usedCode;
-            mappedFood = mapKaggleProductToFoodEntry(kaggleMatch.product, usedCode);
-        }
-
-        if (!mappedFood) {
-            let foundProduct = null;
-
-            for (const candidate of codeCandidates) {
-                const product = await fetchOpenFoodFactsProductByCode(candidate);
-                if (product) {
-                    foundProduct = product;
-                    usedCode = candidate;
-                    break;
-                }
-
-                const searchedProduct = await searchOpenFoodFactsByCodeText(candidate);
-                if (searchedProduct) {
-                    foundProduct = searchedProduct;
-                    usedCode = candidate;
-                    break;
-                }
-            }
-
-            mappedFood = foundProduct ? mapOpenFoodFactsProduct(foundProduct, usedCode) : null;
-        }
-
-        if (!mappedFood) {
-            const searchMatchedProduct = await searchOpenFoodFactsByBarcodeCandidates(codeCandidates);
-            if (searchMatchedProduct) {
-                usedCode = String(searchMatchedProduct?.code || usedCode).trim() || usedCode;
-                mappedFood = mapOpenFoodFactsProduct(searchMatchedProduct, usedCode);
-            }
-        }
-
-        if (!mappedFood) {
-            console.warn('Nessun match Kaggle/OpenFoodFacts per codici candidati', codeCandidates);
-            await avviaRiconoscimentoAI({
-                preferProductInfoModal: true,
-                sourceContext: 'barcode-fallback',
-                originalBarcode: codeCandidates[0] || String(barcode || '').trim()
-            });
-            return;
-        }
-
-        selectedFood = mappedFood;
-        // Mostra schermata info nutrizionali prodotto
-        showProductInfoModal(mappedFood.scanResult || mappedFood);
-        // Se vuoi anche mostrare il pannello aggiunta, decommenta le righe sotto:
-        // document.getElementById('add-panel').style.display = 'block';
-        // document.getElementById('selected-name').innerText = mappedFood.nome;
-        // document.getElementById('qty').value = 100;
-        // updateSelectedFoodPreview();
-    } catch (error) {
-        console.error('Errore nel recupero prodotto scannerizzato:', error);
-        alert('Errore durante il recupero del prodotto.');
-    }
-}
-
-async function avviaScanner() {
-    // Compatibilita: inoltra al nuovo flusso unico foto+AI+OFF.
-    return avviaScansioneIntelligente();
-}
-
-async function avviaScansioneIntelligente() {
-    if (isFutureDay(activeDate)) {
-        alert(getDiaryDateErrorMessage(activeDate));
-        return;
-    }
-
-    if (barcodeScannerActive) {
-        await fermaScanner();
-        return;
-    }
-
-    if (typeof Html5Qrcode === 'undefined') {
-        avviaRiconoscimentoAI();
-        return;
-    }
-
-    const reader = document.getElementById('reader');
-    if (!reader) {
-        avviaRiconoscimentoAI();
-        return;
-    }
-
-    setScannerVisibility(true);
-    barcodeScanner = new Html5Qrcode('reader');
-    barcodeScanLocked = false;
-
-    try {
-        await barcodeScanner.start(
-            { facingMode: 'environment' },
-            {
-                fps: 12,
-                qrbox: { width: 280, height: 150 },
-                aspectRatio: 1.777,
-                formatsToSupport: [
-                    Html5QrcodeSupportedFormats.EAN_13,
-                    Html5QrcodeSupportedFormats.EAN_8,
-                    Html5QrcodeSupportedFormats.UPC_A,
-                    Html5QrcodeSupportedFormats.UPC_E,
-                    Html5QrcodeSupportedFormats.CODE_128
-                ]
-            },
-            async (decodedText) => {
-                if (barcodeScanLocked) {
-                    return;
-                }
-
-                barcodeScanLocked = true;
-                await fermaScanner();
-                await gestisciBarcodeScansionato(decodedText);
-            },
-            () => {}
-        );
-
-        barcodeScannerActive = true;
-
-        // Fallback automatico: se il codice non viene letto in tempo, passa alla foto prodotto.
-        smartScanFallbackTimer = setTimeout(async () => {
-            if (!barcodeScannerActive || barcodeScanLocked) {
-                return;
-            }
-
-            barcodeScanLocked = true;
-            await fermaScanner();
-            avviaRiconoscimentoAI();
-        }, 9000);
-    } catch (error) {
-        console.error('Errore avvio scanner intelligente:', error);
-        await fermaScanner();
-        avviaRiconoscimentoAI();
-    }
 }
 
 function applySmartScanResultToAddPanel(scanResult) {

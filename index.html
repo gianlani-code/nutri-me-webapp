@@ -7,7 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
@@ -353,53 +352,8 @@
         </section>
 
         <section id="diario" class="tab-content" style="display:none;">
-            <div class="organic-panel log-section">
-                <div class="section-header diary-section-header">
-                    <h2 id="date-title-pretty" class="diary-title">OGGI HO MANGIATO:</h2>
-                    <p id="selected-day-label" class="selected-day-label"></p>
-                    <div class="meal-selector">
-                        <button class="chip" onclick="selectMealType('Colazione', this)">Colazione</button>
-                        <button class="chip" onclick="selectMealType('Pranzo', this)">Pranzo</button>
-                        <button class="chip" onclick="selectMealType('Cena', this)">Cena</button>
-                        <button class="chip" onclick="selectMealType('Spuntino', this)">Spuntino</button>
-                    </div>
-                </div>
-
-                <div class="search-box diary-search-box">
-                    <div class="diary-search-row">
-                        <input type="text" id="food-search" placeholder="Cerca cibo o ricetta..." oninput="cercaAlimento(event, 'main')">
-                        <button type="button" class="scan-trigger-btn" onclick="avviaScansioneIntelligente()"><i data-lucide="scan-line"></i><span class="scan-trigger-label">Scansiona</span></button>
-                    </div>
-                    <div id="reader" class="barcode-reader" style="display:none;"></div>
-                    <div id="search-results" class="search-dropdown"></div>
-                </div>
-
-                <div id="add-panel" class="floating-add-panel" style="display:none;">
-                    <div class="add-content">
-                        <div class="add-content-header">
-                            <small class="add-content-eyebrow">Ingredienti del tuo pasto</small>
-                            <span id="selected-name" class="selected-food-name">Mela</span>
-                        </div>
-                        <div class="selected-food-preview">
-                            <strong id="selected-kcal-preview">0 kcal totali</strong>
-                            <small id="selected-macros-preview">P 0 g • C 0 g • G 0 g</small>
-                        </div>
-                        <label for="qty" class="qty-label">Quantita in grammi</label>
-                        <div class="qty-control">
-                            <input type="number" id="qty" value="100" min="1" step="1" oninput="updateSelectedFoodPreview()">
-                            <span>g</span>
-                            <button onclick="salvaPasto()" class="btn-confirm">AGGIUNGI</button>
-                        </div>
-                        <small class="qty-helper">Le calorie e i macronutrienti si aggiornano in tempo reale in base alla grammatura scelta.</small>
-                    </div>
-                </div>
-
-                <ul id="day-log-list" class="premium-list"></ul>
-                <button onclick="finishMealEntry()" class="btn-secondary diary-finish-btn">FINE AGGIUNTA</button>
-            </div>
-
-            <div class="organic-panel calendar-box">
-                <div class="cal-header">
+            <div class="organic-panel calendar-box modern-calendar-box">
+                <div class="cal-header modern-cal-header">
                     <button onclick="cambiaMese(-1)">←</button>
                     <h3 id="currentMonthYear">Mese Anno</h3>
                     <button onclick="cambiaMese(1)">→</button>
@@ -407,11 +361,75 @@
                 <div id="calendar-grid" class="calendar-grid"></div>
                 <p id="future-date-note" class="future-date-note" style="display:none;">*nel caso in cui venga selezionata una data futura rispetto a quella di oggi non si potra aggiungere ingredienti o pasti.</p>
 
+                <div id="calendar-day-plan" class="calendar-day-plan" aria-live="polite">
+                    <div class="calendar-day-plan-header">
+                        <h4 id="calendar-day-plan-title" class="calendar-day-plan-title"></h4>
+                        <p id="calendar-day-plan-subtitle" class="calendar-day-plan-subtitle"></p>
+                    </div>
+                    <div id="calendar-day-plan-content" class="calendar-day-plan-content"></div>
+                </div>
+
+                <details id="calendar-day-workout" class="calendar-day-workout" aria-live="polite" open>
+                    <summary class="profile-summary-toggle profile-editor-toggle calendar-day-workout-toggle">
+                        <div class="profile-summary-toggle-copy">
+                            <strong class="profile-summary-title">Allenamento</strong>
+                        </div>
+                    </summary>
+                    <div id="calendar-day-workout-content" class="calendar-day-workout-content"></div>
+                </details>
+
+                <details id="diary-add-panel-section" class="profile-editor diary-add-entry-panel">
+                    <summary class="profile-summary-toggle profile-editor-toggle diary-add-entry-toggle">
+                        <div class="profile-summary-toggle-copy">
+                            <strong id="date-title-pretty" class="profile-summary-title">Aggiungi il tuo pasto di oggi:</strong>
+                        </div>
+                    </summary>
+                    <div class="profile-editor-content diary-add-entry-content">
+                        <p id="selected-day-label" class="selected-day-label"></p>
+
+                        <div id="diary-meal-selector" class="meal-selector">
+                            <button class="chip" onclick="selectMealType('Colazione', this)">Colazione</button>
+                            <button class="chip" onclick="selectMealType('Pranzo', this)">Pranzo</button>
+                            <button class="chip" onclick="selectMealType('Cena', this)">Cena</button>
+                            <button class="chip" onclick="selectMealType('Spuntino', this)">Spuntino</button>
+                        </div>
+
+                        <div id="diary-search-box" class="search-box diary-search-box modern-search-box">
+                            <div class="diary-search-row">
+                                <input type="text" id="food-search" placeholder="Cerca cibo o ricetta..." oninput="cercaAlimento(event, 'main')">
+                            </div>
+                            <div id="search-results" class="search-dropdown"></div>
+                        </div>
+
+                        <div id="add-panel" class="floating-add-panel" style="display:none;">
+                            <div class="add-content">
+                                <div class="add-content-header">
+                                    <small class="add-content-eyebrow">Ingredienti del tuo pasto</small>
+                                    <span id="selected-name" class="selected-food-name">Mela</span>
+                                </div>
+                                <div class="selected-food-preview">
+                                    <strong id="selected-kcal-preview">0 kcal totali</strong>
+                                    <small id="selected-macros-preview">P 0 g • C 0 g • G 0 g</small>
+                                </div>
+                                <label for="qty" class="qty-label">Quantita in grammi</label>
+                                <div class="qty-control">
+                                    <input type="number" id="qty" value="100" min="1" step="1" oninput="updateSelectedFoodPreview()">
+                                    <span>g</span>
+                                    <button onclick="salvaPasto()" class="btn-confirm">AGGIUNGI</button>
+                                </div>
+                                <small class="qty-helper">Le calorie e i macronutrienti si aggiornano in tempo reale in base alla grammatura scelta.</small>
+                            </div>
+                        </div>
+
+                        <ul id="day-log-list" class="premium-list"></ul>
+                        <button onclick="finishMealEntry()" class="btn-secondary diary-finish-btn">FINE AGGIUNTA</button>
+                    </div>
+                </details>
+
                 <details class="profile-editor diary-chronology-panel">
                     <summary class="profile-summary-toggle profile-editor-toggle profile-editor-toggle-history">
                         <div class="profile-summary-toggle-copy">
                             <strong class="profile-summary-title">Cronologia pasti</strong>
-                            <span class="profile-summary-subtitle">Qui troverai i pasti che hai svolto</span>
                         </div>
                     </summary>
                     <div class="profile-editor-content">
@@ -426,10 +444,10 @@
         <section id="cronologia" class="tab-content" style="display:none;"></section>
 
         <section id="pasti-rapidi" class="tab-content" style="display:none;">
-            <div class="organic-panel chef-mode-panel" style="margin: 20px auto; background: #f8f9fa; border-radius: 15px; border-left: 4px solid var(--info);">
+            <div class="organic-panel chef-mode-panel modern-chef-panel" style="margin: 20px auto; background: #f8f9fa; border-radius: 15px; border-left: 4px solid var(--info);">
                 <h3 id="manual-recipes-title" class="panel-title">LE MIE RICETTE</h3>
                 <input type="text" id="recipe-name" class="main-input" placeholder="Nome della tua ricetta...">
-                <div class="search-box">
+                <div class="search-box ingredient-search-box manual-ingredient-search-box modern-search-box">
                     <input type="text" id="recipe-search" placeholder="Aggiungi ingrediente..." oninput="cercaAlimento(event, 'ricetta')">
                     <div id="recipe-results" class="search-dropdown"></div>
                 </div>
@@ -646,17 +664,11 @@
             </div>
 
             <hr class="spacer">
-            <div class="organic-panel ai-mode-panel" style="margin: 20px auto; background: #f8f9fa; border-radius: 15px; border-left: 4px solid var(--info);">
+            <div class="organic-panel ai-mode-panel modern-chef-panel modern-chef-builder" style="margin: 20px auto; background: #f8f9fa; border-radius: 15px; border-left: 4px solid var(--info);">
                 <h3 class="panel-title">CHEF MODE</h3>
-                <p class="ai-mode-subtitle">Componi il tuo piatto con un flusso guidato: scegli il risultato che vuoi ottenere e completa solo i campi pertinenti.</p>
+                <p class="ai-mode-subtitle">Componi il tuo piatto con un flusso guidato dedicato alla ricetta su misura.</p>
 
-                <label for="ai-mode-selector" class="ai-mode-field-label">Seleziona cosa vuoi generare</label>
-                                <input type="hidden" id="ai-mode-selector" value="">
-                                <div class="meal-selector chip-group">
-                                    <button type="button" class="chip" data-value="recipe" onclick="selezionaOpzioneChip(this, 'ai-mode-selector', 'recipe');toggleAiMode()">Ricetta su misura</button>
-                                    <button type="button" class="chip" data-value="daily" onclick="selezionaOpzioneChip(this, 'ai-mode-selector', 'daily');toggleAiMode()">Piano giornaliero</button>
-                                    <button type="button" class="chip" data-value="weekly" onclick="selezionaOpzioneChip(this, 'ai-mode-selector', 'weekly');toggleAiMode()">Piano settimanale</button>
-                                </div>
+                <input type="hidden" id="ai-mode-selector" value="recipe">
 
                 <div id="ai-mode-shared-notes-default-slot">
                     <div id="ai-mode-shared-notes-wrap" class="ai-mode-fields" style="display:none;">
@@ -693,7 +705,7 @@
 
                     <div id="chef-mode-recipe-build-fields" class="ai-mode-fields" style="display:none;">
                         <input type="hidden" id="discover-ingredients" class="main-input" placeholder="Ingredienti a disposizione (es. Zucchine, uova...)" style="display:none;">
-                        <div class="search-box" style="margin-top: 10px;">
+                        <div class="search-box ingredient-search-box chef-discover-search-box modern-search-box" style="margin-top: 10px;">
                             <input type="text" id="discover-ingredient-search" placeholder="Cerca ingrediente da aggiungere..." oninput="cercaAlimento(event, 'ai')">
                             <div id="ai-results" class="search-dropdown"></div>
                         </div>
@@ -704,19 +716,8 @@
                     </div>
                 </div>
 
-                <div id="ai-mode-daily-fields" class="ai-mode-fields" style="display:none;">
-                    <button id="chef-generate-daily-btn" onclick="generaPianoGiornalieroAI()" class="btn-main orange">GENERA PIANO GIORNALIERO</button>
-                </div>
-
-                <div id="ai-mode-weekly-fields" class="ai-mode-fields" style="display:none;">
-                    <p class="ai-mode-subtitle">Imposta un prompt sintetico per un piano settimanale. Il flusso resta unificato nello stesso box risultati.</p>
-                    <input type="text" id="weekly-plan-pantry" class="main-input" placeholder="Cosa hai gia in dispensa, frigo o freezer? Es. riso, ceci, olio EVO, spinaci" oninput="refreshWeeklyPlanDerivedViews()">
-                    <button id="chef-generate-weekly-btn" onclick="generaPianoSettimanaleAI()" class="btn-main orange">GENERA PIANO SETTIMANALE</button>
-                </div>
-
                 <div id="chef-mode-results" class="ai-mode-results" style="display:none;">
                     <div id="ai-recipe-result" class="ai-extra-result" style="display:none;"></div>
-                    <div id="ai-day-plan-result" class="ai-extra-result" style="display:none;"></div>
                 </div>
             </div>
 
@@ -900,8 +901,8 @@
                 </details>
 
                 <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;">
-                    <button onclick="logout()" class="btn-secondary">LOG OUT</button>
-                    <button onclick="apriConfermaResetProfilo()" class="btn-main btn-logout-profile">ELIMINA PROFILO</button>
+                    <button type="button" onclick="logout()" class="btn-secondary">LOG OUT</button>
+                    <button type="button" onclick="apriConfermaResetProfilo()" class="btn-main btn-logout-profile">ELIMINA PROFILO</button>
                 </div>
                 <div class="section-brand-footer" aria-label="Nutri-Me">NUTRI-ME</div>
             </div>
@@ -913,8 +914,8 @@
                 <h3 id="reset-profile-title" class="confirm-modal-title">Conferma eliminazione profilo</h3>
                 <p class="confirm-modal-text">Il log out semplice non elimina l'account. Se confermi questa azione, il profilo verra cancellato definitivamente insieme a tutti i dati registrati e lo username tornera disponibile per una nuova registrazione.</p>
                 <div class="confirm-modal-actions">
-                    <button onclick="eseguiResetProfilo()" class="btn-main btn-logout-profile">Si, elimina tutto</button>
-                    <button onclick="chiudiConfermaResetProfilo()" class="btn-secondary">No</button>
+                    <button type="button" onclick="eseguiResetProfilo()" class="btn-main btn-logout-profile">Si, elimina tutto</button>
+                    <button type="button" onclick="chiudiConfermaResetProfilo()" class="btn-secondary">No</button>
                 </div>
             </div>
         </div>
